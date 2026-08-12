@@ -1084,7 +1084,14 @@ a { color: var(--terracota); }
   transition: transform .12s ease, box-shadow .15s ease;
 }
 .dia__num { position: relative; z-index: 2; }
-.dia--vacio { visibility: hidden; }
+
+/* días del mes anterior y del siguiente: se ven y se pueden elegir, pero
+   apagados para que no compitan con el mes en curso */
+.dia--otro-mes { opacity: .42; }
+.dia--otro-mes:hover { opacity: .75; }
+.dia--otro-mes.dia--entrada,
+.dia--otro-mes.dia--salida,
+.dia--otro-mes.dia--rango { opacity: 1; }
 
 .dia--libre:hover, .dia--medio-entra:hover, .dia--medio-sale:hover {
   transform: scale(1.07);

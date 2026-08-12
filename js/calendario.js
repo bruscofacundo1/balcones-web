@@ -178,11 +178,16 @@ const LIMITE = (() => {
 
 /* ------------------------------------------------------------ renderizado */
 
+/* Siempre seis semanas: se completa con los días del mes anterior y del
+   siguiente. Además de dejar ver el arranque del mes que viene, hace que el
+   calendario mida siempre lo mismo, así no salta al cambiar de mes. */
+const SEMANAS_VISIBLES = 6;
+
 function dibujarMes(anio, mes, opts = {}) {
   const primero = new Date(anio, mes, 1);
-  const cantDias = new Date(anio, mes + 1, 0).getDate();
   // getDay(): 0=domingo. Queremos semanas que arranquen en lunes.
   const offset = (primero.getDay() + 6) % 7;
+  const inicioGrilla = sumarDias(primero, -offset);
 
   const cont = document.createElement('div');
   cont.className = 'cal__mes';
@@ -204,22 +209,20 @@ function dibujarMes(anio, mes, opts = {}) {
   const grilla = document.createElement('div');
   grilla.className = 'cal__dias';
 
-  for (let i = 0; i < offset; i++) {
-    const v = document.createElement('div');
-    v.className = 'dia dia--vacio';
-    grilla.appendChild(v);
-  }
-
-  for (let d = 1; d <= cantDias; d++) {
-    const iso = aIso(new Date(anio, mes, d));
+  for (let i = 0; i < SEMANAS_VISIBLES * 7; i++) {
+    const fecha = sumarDias(inicioGrilla, i);
+    const iso = aIso(fecha);
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'dia';
     btn.dataset.fecha = iso;
 
+    // los días de relleno funcionan igual, sólo se ven más apagados
+    if (fecha.getMonth() !== mes) btn.classList.add('dia--otro-mes');
+
     const numero = document.createElement('span');
     numero.className = 'dia__num';
-    numero.textContent = d;
+    numero.textContent = fecha.getDate();
     btn.appendChild(numero);
 
     const pasada = iso < HOY;
