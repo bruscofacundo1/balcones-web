@@ -25,7 +25,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=8">
+<link rel="stylesheet" href="css/estilos.css?v=9">
 
 <script type="application/ld+json">
 {
@@ -376,7 +376,15 @@
         <p class="modal-res__paso-num" id="mr-paso-num">Paso 1 de 2</p>
         <h3 id="mr-titulo">Elegí tus fechas</h3>
       </div>
-      <button class="drawer__cerrar" id="mr-cerrar" aria-label="Cerrar">&times;</button>
+
+      <div class="modal-res__cab-der">
+        <div class="cal__referencias cal__referencias--cab" id="mr-refs">
+          <span class="ref"><span class="ref__caja ref__caja--libre"></span> Libre</span>
+          <span class="ref"><span class="ref__caja ref__caja--ocupado"></span> Ocupado</span>
+          <span class="ref"><span class="ref__caja ref__caja--medio"></span> Entrada o salida</span>
+        </div>
+        <button class="drawer__cerrar" id="mr-cerrar" aria-label="Cerrar">&times;</button>
+      </div>
     </header>
 
     <div class="modal-res__cuerpo">
@@ -405,6 +413,7 @@
     <footer class="modal-res__pie">
       <p class="modal-res__estado" id="mr-estado">Elegí las fechas y los huéspedes para continuar</p>
       <div class="modal-res__botones">
+        <button class="modal-res__limpiar" id="mr-limpiar" hidden>Limpiar</button>
         <button class="boton boton--linea" id="mr-atras" hidden>Atrás</button>
         <button class="boton boton--primario" id="mr-siguiente" disabled>Siguiente</button>
       </div>
@@ -503,10 +512,10 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=8"></script>
-<script src="js/disponibilidad.js?v=8"></script>
-<script src="js/variantes.js?v=8"></script>
-<script src="js/calendario.js?v=8"></script>
-<script src="js/app.js?v=8"></script>
+<script src="js/config.js?v=9"></script>
+<script src="js/disponibilidad.js?v=9"></script>
+<script src="js/variantes.js?v=9"></script>
+<script src="js/calendario.js?v=9"></script>
+<script src="js/app.js?v=9"></script>
 </body>
 </html>

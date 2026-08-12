@@ -792,7 +792,14 @@ function actualizarModal() {
 
   const atras = document.getElementById('mr-atras');
   const siguiente = document.getElementById('mr-siguiente');
+  const limpiar = document.getElementById('mr-limpiar');
+  const refs = document.getElementById('mr-refs');
+
   if (atras) atras.hidden = pasoModal === 1;
+  // la referencia de colores sólo tiene sentido mientras se ven los días
+  if (refs) refs.hidden = pasoModal !== 1;
+  // limpiar aparece recién cuando hay algo que limpiar
+  if (limpiar) limpiar.hidden = pasoModal !== 1 || !estado.entrada;
 
   if (pasoModal === 1) {
     siguiente.textContent = 'Siguiente';
@@ -829,6 +836,8 @@ function iniciarModalReserva() {
     estado.mesBase = new Date(estado.mesBase.getFullYear(), estado.mesBase.getMonth() + 1, 1);
     dibujarCalendario();
   });
+  document.getElementById('mr-limpiar').addEventListener('click', limpiarSeleccion);
+
   document.getElementById('mr-huespedes').addEventListener('change', e => {
     estado.huespedes = Number(e.target.value);
     actualizarResumen();
