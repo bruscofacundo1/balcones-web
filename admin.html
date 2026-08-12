@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel de disponibilidad — Balcones del Arroyo</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232b2621'/><path d='M20 58 L50 32 L80 58 v22 H20z' fill='%23d89a4a'/></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+<style>
+  body { background: var(--arena); }
+  .admin-cab { background: var(--carbon); color: var(--crema); padding: 26px 0; }
+  .admin-cab h1 { color: #fff; font-size: 1.5rem; margin: 0 0 4px; }
+  .admin-cab p { margin: 0; color: #a89e91; font-size: .9rem; }
+  .admin-cab a { color: var(--ocre); }
+
+  .admin-grid { display: grid; grid-template-columns: 1fr 340px; gap: 26px; align-items: start; }
+  @media (max-width: 980px) { .admin-grid { grid-template-columns: 1fr; } }
+
+  .anio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 26px; }
+
+  .modo { display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; }
+
+  .dia--ocupado { cursor: pointer !important; }
+  .dia--pinta { outline: 2px solid var(--ocre); outline-offset: -2px; }
+  /* la otra planta está ocupada, pero la unidad elegida no */
+  .dia--parcial { background: #f6efe2; color: var(--piedra); }
+  .ref__caja--parcial { background: #f6efe2; }
+
+  .caja-json {
+    width: 100%; min-height: 150px; font-family: ui-monospace, Consolas, monospace;
+    font-size: .78rem; border: 1px solid var(--borde); border-radius: var(--radio-sm);
+    padding: 12px; background: var(--crema); color: var(--carbon); resize: vertical;
+  }
+  .lista-reservas { list-style: none; padding: 0; margin: 0; font-size: .88rem; max-height: 260px; overflow-y: auto; }
+  .lista-reservas li {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    padding: 9px 0; border-bottom: 1px solid var(--borde);
+  }
+  .lista-reservas button {
+    border: 0; background: transparent; color: var(--terracota);
+    cursor: pointer; font-size: .82rem; font-family: var(--texto);
+  }
+  .paso { counter-increment: paso; }
+  .pasos { counter-reset: paso; padding-left: 0; list-style: none; margin: 0; }
+  .pasos li { padding: 9px 0 9px 34px; position: relative; font-size: .9rem; border-bottom: 1px solid var(--borde); }
+  .pasos li:last-child { border-bottom: 0; }
+  .pasos li::before {
+    counter-increment: n; content: counter(n);
+    position: absolute; left: 0; top: 9px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--terracota); color: #fff;
+    font-size: .74rem; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pasos { counter-reset: n; }
+</style>
+</head>
+<body>
+
+<header class="admin-cab">
+  <div class="contenedor">
+    <h1>Panel de disponibilidad</h1>
+    <p>Marcá acá las fechas que ya están reservadas. · <a href="index.html">Ver el sitio</a></p>
+  </div>
+</header>
+
+<main class="contenedor" style="padding-top: 34px; padding-bottom: 60px;">
+  <div class="admin-grid">
+
+    <!-- calendario del año -->
+    <div class="panel">
+      <p style="font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--piedra);margin-bottom:8px">
+        1 · ¿Qué se alquiló?
+      </p>
+      <div class="modo" id="unidades"></div>
+
+      <p style="font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--piedra);margin-bottom:8px">
+        2 · ¿Qué querés hacer?
+      </p>
+      <div class="modo">
+        <button class="tab" id="modo-ocupar" aria-selected="true">Marcar ocupado</button>
+        <button class="tab" id="modo-liberar" aria-selected="false">Liberar</button>
+        <button class="boton boton--linea" id="btn-hoy" style="padding:9px 18px;font-size:.85rem;margin-left:auto">Ir a hoy</button>
+      </div>
+
+      <p style="font-size:.88rem;color:var(--piedra)">
+        Hacé clic en el <strong>primer día</strong> y después en el <strong>último día</strong> del bloque.
+        Para un solo día, hacé clic dos veces sobre el mismo. Los colores del calendario
+        muestran la ocupación de <strong id="unidad-actual"></strong>.
+      </p>
+
+      <div class="cal__barra">
+        <button class="cal__nav" id="ad-prev" aria-label="Año anterior">&#8249;</button>
+        <div class="cal__titulo" id="ad-anio"></div>
+        <button class="cal__nav" id="ad-next" aria-label="Año siguiente">&#8250;</button>
+      </div>
+
+      <div class="anio-grid" id="ad-meses"></div>
+
+      <div class="cal__referencias">
+        <span class="ref"><span class="ref__caja ref__caja--libre"></span> Libre</span>
+        <span class="ref"><span class="ref__caja ref__caja--ocupado"></span> Ocupado (la unidad elegida)</span>
+        <span class="ref"><span class="ref__caja ref__caja--parcial"></span> Ocupada la otra planta</span>
+      </div>
+    </div>
+
+    <!-- lateral -->
+    <div style="display:grid;gap:22px">
+
+      <div class="panel">
+        <h3 style="font-size:1.15rem;margin-bottom:14px">Cómo guardar los cambios</h3>
+        <ol class="pasos">
+          <li>Marcá o liberá las fechas en el calendario.</li>
+          <li>Apretá <strong>Descargar disponibilidad.js</strong>.</li>
+          <li>Reemplazá el archivo <code>js/disponibilidad.js</code> del sitio por el que se descargó.</li>
+          <li>Volvé a subir el sitio a tu hosting.</li>
+        </ol>
+        <p style="font-size:.82rem;color:var(--piedra);margin:16px 0 0">
+          Los cambios que hagas acá quedan guardados en este navegador hasta que descargues
+          el archivo, así que podés cerrar y seguir después.
+        </p>
+      </div>
+
+      <div class="panel">
+        <h3 style="font-size:1.15rem;margin-bottom:6px">Reservas cargadas</h3>
+        <p style="font-size:.85rem;color:var(--piedra);margin-bottom:14px" id="ad-total"></p>
+        <ul class="lista-reservas" id="ad-lista"></ul>
+      </div>
+
+      <div class="panel">
+        <button class="boton boton--primario" id="ad-descargar" style="width:100%">Descargar disponibilidad.js</button>
+        <button class="boton boton--linea" id="ad-copiar" style="width:100%;margin-top:10px">Copiar contenido</button>
+        <button class="boton boton--linea" id="ad-reset" style="width:100%;margin-top:10px">Borrar todo</button>
+        <details style="margin-top:16px">
+          <summary style="cursor:pointer;font-size:.85rem;color:var(--piedra)">Ver el contenido del archivo</summary>
+          <textarea class="caja-json" id="ad-json" readonly style="margin-top:10px"></textarea>
+        </details>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script src="js/config.js"></script>
+<script src="js/disponibilidad.js"></script>
+<script>
+/* ==========================================================================
+   Panel de disponibilidad — funciona 100% en el navegador, sin servidor.
+   ========================================================================== */
+
+const MESES_AD = ['enero','febrero','marzo','abril','mayo','junio','julio',
+                  'agosto','septiembre','octubre','noviembre','diciembre'];
+const DIAS_AD = ['Lu','Ma','Mi','Ju','Vi','Sá','Do'];
+const CLAVE = 'bda-disponibilidad';
+
+function iso(f) {
+  return `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}-${String(f.getDate()).padStart(2,'0')}`;
+}
+function deIso(t) { const [a,m,d] = t.split('-').map(Number); return new Date(a, m-1, d); }
+function masDias(f, n) { const x = new Date(f); x.setDate(x.getDate()+n); return x; }
+function fechaLarga(t) {
+  const f = deIso(t);
+  return `${f.getDate()} ${MESES_AD[f.getMonth()].slice(0,3)} ${f.getFullYear()}`;
+}
+
+/* estado --------------------------------------------------------------- */
+
+/** Estructura por planta. Acepta el formato viejo (una sola lista). */
+function desdeArchivo(d) {
+  if (Array.isArray(d.ocupadas)) {
+    return { alta: new Set(d.ocupadas), baja: new Set(d.ocupadas) };
+  }
+  return { alta: new Set(d.alta || []), baja: new Set(d.baja || []) };
+}
+
+let ocupadas = desdeArchivo(DISPONIBILIDAD);
+const guardado = localStorage.getItem(CLAVE);
+if (guardado) {
+  try { ocupadas = desdeArchivo(JSON.parse(guardado)); } catch (e) { /* nos quedamos con el archivo */ }
+}
+
+let anio = new Date().getFullYear();
+let modo = 'ocupar';
+let unidad = 'completa';          // qué se alquiló: completa | alta | baja
+let inicioRango = null;
+
+/** Plantas que afecta la unidad elegida. */
+function plantasDe(id) {
+  const m = CONFIG.modalidades.find(x => x.id === id);
+  return m ? m.ocupa : ['alta', 'baja'];
+}
+
+function persistir() {
+  localStorage.setItem(CLAVE, JSON.stringify({
+    alta: [...ocupadas.alta].sort(),
+    baja: [...ocupadas.baja].sort()
+  }));
+}
+
+/* calendario ----------------------------------------------------------- */
+function mesAd(a, m) {
+  const primero = new Date(a, m, 1);
+  const cant = new Date(a, m + 1, 0).getDate();
+  const off = (primero.getDay() + 6) % 7;
+  const hoy = iso(new Date());
+
+  const cont = document.createElement('div');
+  cont.className = 'cal__mes';
+  cont.innerHTML = `<h4>${MESES_AD[m]}</h4>
+    <div class="cal__cabecera">${DIAS_AD.map(d => `<span>${d}</span>`).join('')}</div>`;
+
+  const grilla = document.createElement('div');
+  grilla.className = 'cal__dias';
+
+  for (let i = 0; i < off; i++) {
+    const v = document.createElement('div');
+    v.className = 'dia dia--vacio';
+    grilla.appendChild(v);
+  }
+
+  const plantas = plantasDe(unidad);
+
+  for (let d = 1; d <= cant; d++) {
+    const t = iso(new Date(a, m, d));
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'dia';
+    b.textContent = d;
+
+    const propias = plantas.filter(p => ocupadas[p].has(t)).length;
+    const otras = ['alta', 'baja'].filter(p => !plantas.includes(p) && ocupadas[p].has(t)).length;
+
+    if (propias === plantas.length) b.classList.add('dia--ocupado');
+    else if (propias > 0 || otras > 0) b.classList.add('dia--parcial');
+
+    if (t === hoy) b.classList.add('dia--hoy');
+    if (t === inicioRango) b.classList.add('dia--pinta');
+    b.addEventListener('click', () => clicDia(t));
+    grilla.appendChild(b);
+  }
+
+  cont.appendChild(grilla);
+  return cont;
+}
+
+function dibujar() {
+  const cont = document.getElementById('ad-meses');
+  cont.innerHTML = '';
+  for (let m = 0; m < 12; m++) cont.appendChild(mesAd(anio, m));
+  document.getElementById('ad-anio').textContent = anio;
+  pintarLista();
+  pintarArchivo();
+}
+
+function clicDia(t) {
+  if (!inicioRango) {
+    inicioRango = t;
+    dibujar();
+    return;
+  }
+  const [a, b] = inicioRango <= t ? [inicioRango, t] : [t, inicioRango];
+  const plantas = plantasDe(unidad);
+  let f = deIso(a);
+  const fin = deIso(b);
+  while (f <= fin) {
+    const k = iso(f);
+    plantas.forEach(p => {
+      if (modo === 'ocupar') ocupadas[p].add(k); else ocupadas[p].delete(k);
+    });
+    f = masDias(f, 1);
+  }
+  inicioRango = null;
+  persistir();
+  dibujar();
+}
+
+/* lista de bloques ----------------------------------------------------- */
+
+/** Agrupa días consecutivos con la misma combinación de plantas ocupadas. */
+function bloques() {
+  const todas = [...new Set([...ocupadas.alta, ...ocupadas.baja])].sort();
+  const clave = t => (ocupadas.alta.has(t) ? 'A' : '') + (ocupadas.baja.has(t) ? 'B' : '');
+
+  const res = [];
+  let ini = null, prev = null, k = null;
+  todas.forEach(t => {
+    const kt = clave(t);
+    if (ini === null) { ini = t; prev = t; k = kt; return; }
+    if (kt === k && iso(masDias(deIso(prev), 1)) === t) { prev = t; return; }
+    res.push([ini, prev, k]);
+    ini = t; prev = t; k = kt;
+  });
+  if (ini !== null) res.push([ini, prev, k]);
+  return res;
+}
+
+const ROTULO = { AB: 'Casa completa', A: 'Planta alta', B: 'Planta baja' };
+
+function pintarLista() {
+  const ul = document.getElementById('ad-lista');
+  const bs = bloques();
+  const total = new Set([...ocupadas.alta, ...ocupadas.baja]).size;
+  document.getElementById('ad-total').textContent =
+    `${bs.length} ${bs.length === 1 ? 'reserva' : 'reservas'} · ${total} ${total === 1 ? 'noche' : 'noches'} con la casa ocupada`;
+
+  if (!bs.length) {
+    ul.innerHTML = '<li style="color:var(--piedra);border:0">Todavía no hay fechas marcadas.</li>';
+    return;
+  }
+  ul.innerHTML = bs.map(([a, b, k]) => `
+    <li>
+      <span>
+        <strong style="display:block;font-size:.78rem;color:var(--terracota)">${ROTULO[k] || k}</strong>
+        ${a === b ? fechaLarga(a) : `${fechaLarga(a)} → ${fechaLarga(b)}`}
+      </span>
+      <button data-a="${a}" data-b="${b}" data-k="${k}">Quitar</button>
+    </li>`).join('');
+
+  ul.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const plantas = [];
+      if (btn.dataset.k.includes('A')) plantas.push('alta');
+      if (btn.dataset.k.includes('B')) plantas.push('baja');
+      let f = deIso(btn.dataset.a);
+      const fin = deIso(btn.dataset.b);
+      while (f <= fin) {
+        const t = iso(f);
+        plantas.forEach(p => ocupadas[p].delete(t));
+        f = masDias(f, 1);
+      }
+      persistir();
+      dibujar();
+    });
+  });
+}
+
+/* archivo de salida ---------------------------------------------------- */
+function contenidoArchivo() {
+  const lista = p => [...ocupadas[p]].sort().map(t => `    '${t}'`).join(',\n');
+  return (
+`/* ============================================================================
+   DISPONIBILIDAD — fechas ya reservadas, planta por planta
+   ----------------------------------------------------------------------------
+   Generado desde admin.html el ${new Date().toLocaleString('es-AR')}.
+   No lo edites a mano: volvé a abrir admin.html, cambiá las fechas y descargalo.
+   ============================================================================ */
+
+const DISPONIBILIDAD = {
+  actualizado: '${iso(new Date())}',
+  alta: [
+${lista('alta')}
+  ],
+  baja: [
+${lista('baja')}
+  ]
+};
+`);
+}
+
+function pintarArchivo() {
+  document.getElementById('ad-json').value = contenidoArchivo();
+}
+
+/* controles ------------------------------------------------------------ */
+function pintarUnidades() {
+  const cont = document.getElementById('unidades');
+  cont.innerHTML = CONFIG.modalidades.map(m => `
+    <button class="tab" data-unidad="${m.id}" aria-selected="${m.id === unidad}">
+      ${m.nombre}
+    </button>`).join('');
+
+  cont.querySelectorAll('.tab').forEach(b => {
+    b.addEventListener('click', () => {
+      unidad = b.dataset.unidad;
+      inicioRango = null;
+      cont.querySelectorAll('.tab').forEach(o =>
+        o.setAttribute('aria-selected', String(o.dataset.unidad === unidad)));
+      document.getElementById('unidad-actual').textContent =
+        CONFIG.modalidades.find(m => m.id === unidad).nombre.toLowerCase();
+      dibujar();
+    });
+  });
+  document.getElementById('unidad-actual').textContent =
+    CONFIG.modalidades.find(m => m.id === unidad).nombre.toLowerCase();
+}
+
+document.getElementById('ad-prev').addEventListener('click', () => { anio--; dibujar(); });
+document.getElementById('ad-next').addEventListener('click', () => { anio++; dibujar(); });
+document.getElementById('btn-hoy').addEventListener('click', () => { anio = new Date().getFullYear(); dibujar(); });
+
+document.getElementById('modo-ocupar').addEventListener('click', () => {
+  modo = 'ocupar'; inicioRango = null;
+  document.getElementById('modo-ocupar').setAttribute('aria-selected', 'true');
+  document.getElementById('modo-liberar').setAttribute('aria-selected', 'false');
+  dibujar();
+});
+document.getElementById('modo-liberar').addEventListener('click', () => {
+  modo = 'liberar'; inicioRango = null;
+  document.getElementById('modo-liberar').setAttribute('aria-selected', 'true');
+  document.getElementById('modo-ocupar').setAttribute('aria-selected', 'false');
+  dibujar();
+});
+
+document.getElementById('ad-descargar').addEventListener('click', () => {
+  const blob = new Blob([contenidoArchivo()], { type: 'text/javascript;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'disponibilidad.js';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+document.getElementById('ad-copiar').addEventListener('click', async (e) => {
+  try {
+    await navigator.clipboard.writeText(contenidoArchivo());
+    e.target.textContent = '¡Copiado!';
+    setTimeout(() => { e.target.textContent = 'Copiar contenido'; }, 1800);
+  } catch (err) {
+    const ta = document.getElementById('ad-json');
+    ta.closest('details').open = true;
+    ta.select();
+  }
+});
+
+document.getElementById('ad-reset').addEventListener('click', () => {
+  if (!confirm('¿Borrar todas las fechas ocupadas? Esta acción no se puede deshacer.')) return;
+  ocupadas = { alta: new Set(), baja: new Set() };
+  inicioRango = null;
+  persistir();
+  dibujar();
+});
+
+pintarUnidades();
+dibujar();
+</script>
+</body>
+</html>

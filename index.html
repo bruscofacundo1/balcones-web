@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Balcones del Arroyo — Casa de campo en Traslasierra, Córdoba</title>
+
+<meta name="description" content="Casa de campo para alquiler temporario en Arroyo de los Patos, entre Nono y Mina Clavero, Valle de Traslasierra. Cuatro dormitorios, dos plantas, galerías con vista a las Sierras Grandes, asador y parque.">
+<meta name="author" content="Balcones del Arroyo">
+<meta name="theme-color" content="#b4552f">
+<link rel="canonical" href="https://balconesdelarroyo.com.ar/">
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_AR">
+<meta property="og:title" content="Balcones del Arroyo — Casa de campo en Traslasierra">
+<meta property="og:description" content="Alquiler temporario en Arroyo de los Patos, entre Nono y Mina Clavero. Vista a las sierras, galerías, asador y lugar para toda la familia.">
+<meta property="og:image" content="img/casa-atardecer.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23b4552f'/><path d='M20 58 L50 32 L80 58 v22 H20z' fill='%23f6f1e8'/><circle cx='50' cy='24' r='7' fill='%23d89a4a'/></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- El ?v= es para que el navegador no se quede con la versión vieja del
+     archivo cuando se publica un cambio: subir el número al actualizar. -->
+<link rel="stylesheet" href="css/estilos.css?v=6">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LodgingBusiness",
+  "name": "Balcones del Arroyo",
+  "description": "Casa de campo para alquiler temporario en Arroyo de los Patos, Valle de Traslasierra, Córdoba.",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Arroyo de los Patos, Nono",
+    "addressRegion": "Córdoba",
+    "addressCountry": "AR"
+  },
+  "amenityFeature": [
+    { "@type": "LocationFeatureSpecification", "name": "Wifi", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Asador", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Cochera", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Apto mascotas", "value": true }
+  ]
+}
+</script>
+</head>
+<body>
+
+<!-- ====================================================== NAVEGACIÓN ==== -->
+<header class="nav" id="nav">
+  <div class="nav__interior">
+    <a class="nav__marca" href="#inicio">
+      <img class="nav__logo nav__logo--clara" src="img/logo-icono-blanco.png" alt="" aria-hidden="true">
+      <img class="nav__logo nav__logo--oscura" src="img/logo-icono-oscuro.png" alt="" aria-hidden="true">
+      <span class="nav__marca-texto">
+        Balcones del Arroyo
+        <span>Traslasierra · Córdoba</span>
+      </span>
+    </a>
+
+    <button class="nav__burger" id="nav-burger" aria-expanded="false" aria-label="Abrir menú" aria-controls="nav-links">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="nav__links" id="nav-links">
+      <a href="#la-casa">La casa</a>
+      <a href="#galeria">Galería</a>
+      <a href="#ubicacion">Ubicación</a>
+      <a href="#tarifas">Tarifas</a>
+      <a href="#reservas">Disponibilidad</a>
+      <a href="#preguntas">Preguntas</a>
+      <a class="boton boton--fantasma" href="#reservas" data-reservar>Reservar</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============================================================ HERO ==== -->
+<section class="hero" id="inicio">
+  <div class="hero__fondo">
+    <img src="img/casa-atardecer.jpg" alt="La casa Balcones del Arroyo con el valle de Traslasierra de fondo" fetchpriority="high">
+  </div>
+  <div class="contenedor hero__contenido">
+    <h1 id="hero-titulo">Una casa de campo con el valle entero de frente</h1>
+    <p class="hero__texto" id="hero-bajada"></p>
+    <div class="hero__acciones">
+      <a class="boton boton--primario" href="#reservas" data-reservar>Ver disponibilidad</a>
+      <a class="boton boton--fantasma" href="#galeria">Recorrer la casa</a>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================= LA CASA ==== -->
+<section class="seccion seccion--sangra" id="la-casa">
+  <div class="casa__layout">
+    <div class="revelar">
+      <span class="antetitulo">La casa</span>
+      <h2 id="casa-titulo"></h2>
+      <div id="casa-texto"></div>
+      <p class="casa__cifras" id="casa-cifras"></p>
+    </div>
+    <div class="casa__foto revelar">
+      <img class="casa__foto-grande" src="img/casa-parque.jpg" alt="La casa vista desde el parque" loading="lazy">
+      <img class="casa__foto-chica" src="img/galeria-mate.jpg" alt="Mates en la galería" loading="lazy">
+    </div>
+  </div>
+  <div class="contenedor">
+    <ul class="comodidades revelar" id="comodidades"></ul>
+  </div>
+</section>
+
+<!-- ======================================================= AMBIENTES ==== -->
+<section class="seccion seccion--arena" id="ambientes-sec">
+  <div class="contenedor">
+    <div class="encabezado-seccion revelar">
+      <span class="antetitulo">Cómo se alquila</span>
+      <h2>Entera o por planta</h2>
+      <p class="bajada">Cada planta tiene su cocina completa, su baño y su acceso propio.
+        Podés tomar la casa entera o solamente una de las dos, sin compartir nada.</p>
+    </div>
+
+    <div class="modalidades-grid revelar" id="modalidades-cards" style="margin-bottom:64px"></div>
+
+    <div class="encabezado-seccion revelar">
+      <span class="antetitulo">Ambiente por ambiente</span>
+      <h2>La casa por dentro</h2>
+    </div>
+
+    <div class="tabs" id="tabs-ambientes" role="tablist">
+      <button class="tab" role="tab" aria-selected="true"  data-planta="todas">Todo</button>
+      <button class="tab" role="tab" aria-selected="false" data-planta="alta">Planta alta</button>
+      <button class="tab" role="tab" aria-selected="false" data-planta="baja">Planta baja</button>
+      <button class="tab" role="tab" aria-selected="false" data-planta="exterior">Exterior</button>
+    </div>
+
+    <!-- variante A: carrusel -->
+    <div class="carrusel" id="ambientes-carrusel">
+      <button class="carrusel__nav carrusel__nav--prev" id="carr-prev" aria-label="Anterior">&#8249;</button>
+      <div class="carrusel__pista" id="carr-pista"></div>
+      <button class="carrusel__nav carrusel__nav--next" id="carr-next" aria-label="Siguiente">&#8250;</button>
+      <div class="carrusel__puntos" id="carr-puntos"></div>
+    </div>
+
+    <!-- variante B: grilla -->
+    <div class="ambientes" id="ambientes"></div>
+  </div>
+</section>
+
+<!-- ========================================================= GALERÍA ==== -->
+<section class="seccion" id="galeria">
+  <div class="contenedor">
+    <div class="encabezado-seccion encabezado-seccion--centro revelar">
+      <h2>La casa y el lugar</h2>
+      <p class="bajada">Fotos reales, sacadas en distintas épocas del año. Hacé clic para verlas grandes.</p>
+    </div>
+
+    <!-- variante A: mosaico corto, y las demás fotos a un clic -->
+    <div class="mosaico" id="mosaico"></div>
+
+    <!-- variante B: todas las fotos con filtros -->
+    <div id="galeria-completa">
+      <div class="filtros" id="filtros">
+        <button class="tab" aria-selected="true"  data-cat="todas">Todas</button>
+        <button class="tab" aria-selected="false" data-cat="casa">La casa</button>
+        <button class="tab" aria-selected="false" data-cat="interiores">Interiores</button>
+        <button class="tab" aria-selected="false" data-cat="aire-libre">Galerías y aire libre</button>
+        <button class="tab" aria-selected="false" data-cat="entorno">El entorno</button>
+      </div>
+
+      <div class="galeria" id="galeria-grid"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= UBICACIÓN ==== -->
+<section class="seccion seccion--arena" id="ubicacion">
+  <div class="contenedor">
+    <div class="ubicacion__layout">
+      <div class="revelar">
+        <span class="antetitulo">Dónde estamos</span>
+        <h2>En Arroyo de los Patos, a un paso de todo</h2>
+        <p class="bajada" id="mapa-direccion"></p>
+        <p>El campo está sobre el camino vecinal, en el paraje Arroyo de los Patos, con las
+          Sierras Grandes de frente y el arroyo a pocos minutos caminando. Nono y Mina Clavero
+          quedan cerca para las compras, la feria y las salidas, pero acá lo que se escucha
+          de noche son los grillos.</p>
+        <ul class="distancias" id="distancias"></ul>
+        <p style="margin-top:22px">
+          <a class="boton boton--linea" id="mapa-link" href="#" target="_blank" rel="noopener">Abrir en Google Maps</a>
+        </p>
+      </div>
+      <div class="mapa revelar">
+        <iframe id="mapa-frame" title="Mapa de ubicación de Balcones del Arroyo"
+                loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================== ACTIVIDADES ==== -->
+<section class="seccion" id="actividades-sec">
+  <div class="contenedor">
+    <div class="encabezado-seccion encabezado-seccion--centro revelar">
+      <h2>Traslasierra alrededor tuyo</h2>
+      <p class="bajada">Ríos, senderos, pueblos serranos y el camino de las Altas Cumbres,
+        todo a distancia de una salida de un día.</p>
+    </div>
+    <div class="actividades" id="actividades"></div>
+  </div>
+</section>
+
+<!-- ====================================================== FRANJA FOTO ==== -->
+<section class="franja-foto">
+  <img src="img/sierras-rosa.jpg" alt="Las Sierras Grandes al atardecer" loading="lazy">
+  <p class="franja-foto__texto revelar">Cae la tarde y las sierras se ponen rosas.</p>
+</section>
+
+<!-- ========================================================= TARIFAS ==== -->
+<section class="seccion seccion--arena" id="tarifas">
+  <div class="contenedor">
+    <div class="encabezado-seccion encabezado-seccion--centro revelar">
+      <span class="antetitulo">Tarifas</span>
+      <h2>Precios por temporada</h2>
+      <p class="bajada">Valores por noche de la casa completa. El calendario de abajo calcula
+        el total exacto según las fechas que elijas.</p>
+    </div>
+
+    <div class="tarifas revelar" id="tarifas-grid"></div>
+
+    <div class="nota-tarifas revelar">
+      <strong>Buenos a saber</strong>
+      <ul id="notas-tarifas"></ul>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================== RESERVAS ==== -->
+<section class="seccion" id="reservas">
+  <div class="contenedor">
+    <div class="encabezado-seccion encabezado-seccion--centro revelar">
+      <h2>Elegí tus fechas</h2>
+      <p class="bajada">Primero elegí si querés la casa entera o una planta, y después marcá
+        la entrada y la salida. Te mostramos el precio estimado y armamos el mensaje de
+        consulta por WhatsApp.</p>
+    </div>
+
+    <div class="reservas__layout">
+      <!-- calendario -->
+      <div class="panel revelar">
+        <div class="tabs" id="modalidades" role="tablist" aria-label="Qué querés alquilar"></div>
+
+        <div class="cal__barra">
+          <button class="cal__nav" id="cal-prev" aria-label="Mes anterior">&#8249;</button>
+          <div class="cal__titulo" id="cal-titulo"></div>
+          <button class="cal__nav" id="cal-next" aria-label="Mes siguiente">&#8250;</button>
+        </div>
+
+        <div class="cal__meses" id="cal-meses"></div>
+
+        <div class="cal__referencias">
+          <span class="ref"><span class="ref__caja ref__caja--libre"></span> Libre</span>
+          <span class="ref"><span class="ref__caja ref__caja--ocupado"></span> Ocupado</span>
+          <span class="ref"><span class="ref__caja ref__caja--medio"></span> Entrada o salida</span>
+          <span class="ref"><span class="ref__caja ref__caja--sel"></span> Tu selección</span>
+          <button class="boton boton--linea" id="cal-limpiar" style="padding:7px 16px;font-size:.8rem;margin-left:auto">Limpiar</button>
+        </div>
+
+        <div class="cal__temporadas">
+          <p class="cal__temporadas-titulo">Precio por noche según la época</p>
+          <div id="cal-temporadas" style="display:grid;gap:7px"></div>
+        </div>
+        <p class="letra-chica" id="disp-actualizado"></p>
+      </div>
+
+      <!-- resumen -->
+      <div class="panel resumen revelar">
+        <h3 class="resumen__titulo">Tu estadía</h3>
+        <p class="resumen__sub" id="res-unidad"></p>
+        <p class="resumen__sub" style="margin-top:-16px">Ingreso desde las <span id="check-in"></span> · salida hasta las <span id="check-out"></span></p>
+
+        <div class="campos">
+          <div class="campo">
+            <label>Entrada</label>
+            <div class="campo__valor campo__valor--vacio" id="res-entrada">Elegí una fecha</div>
+          </div>
+          <div class="campo">
+            <label>Salida</label>
+            <div class="campo__valor campo__valor--vacio" id="res-salida">Elegí una fecha</div>
+          </div>
+          <div class="campo campo--ancho">
+            <label for="res-huespedes">Huéspedes</label>
+            <select id="res-huespedes"></select>
+          </div>
+        </div>
+
+        <div class="aviso" id="reserva-aviso"></div>
+        <div class="desglose" id="res-desglose"></div>
+
+        <button class="boton boton--primario" id="res-continuar" style="width:100%" disabled>Elegí las fechas</button>
+        <button class="boton boton--wsp" id="res-wsp" style="width:100%;margin-top:8px" hidden>Consultar por WhatsApp</button>
+        <p class="letra-chica">El valor es estimativo. La reserva se confirma con la seña.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================= FAQ ==== -->
+<section class="seccion seccion--arena" id="preguntas">
+  <div class="contenedor">
+    <div class="encabezado-seccion encabezado-seccion--centro revelar">
+      <span class="antetitulo">Preguntas frecuentes</span>
+      <h2>Lo que siempre nos consultan</h2>
+      <p class="bajada">Si te queda alguna duda, escribinos por WhatsApp y te la sacamos al toque.</p>
+    </div>
+    <div class="faq revelar" id="faq"></div>
+  </div>
+</section>
+
+<!-- ======================================================== CONTACTO ==== -->
+<section class="seccion seccion--carbon" id="contacto">
+  <div class="contenedor">
+    <div class="contacto__layout">
+      <div class="revelar">
+        <h2>Escribinos y coordinamos</h2>
+        <p class="bajada">Contestamos por WhatsApp todos los días. Contanos las fechas, cuántos
+          son y si venís con mascota, y te pasamos la disponibilidad al toque.</p>
+        <ul class="contacto__datos">
+          <li><div><strong>WhatsApp</strong><a id="dato-tel" href="#" target="_blank" rel="noopener"></a></div></li>
+          <li><div><strong>Email</strong><a id="dato-mail" href="#"></a></div></li>
+          <li><div><strong>Dirección</strong><span id="dato-dir"></span></div></li>
+        </ul>
+        <p style="margin-top:26px">
+          <a class="boton boton--wsp" data-wsp href="#" target="_blank" rel="noopener">Consultar por WhatsApp</a>
+        </p>
+      </div>
+      <div class="contacto__foto revelar">
+        <img src="img/casa-noche.jpg" alt="La casa iluminada al anochecer" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================= PIE ==== -->
+<footer class="pie">
+  <div class="contenedor pie__interior">
+    <p style="margin:0">© <span id="anio"></span> Balcones del Arroyo · Arroyo de los Patos, Traslasierra, Córdoba</p>
+    <div class="pie__redes" id="pie-redes"></div>
+  </div>
+</footer>
+
+<!-- ================================================ PANEL DE VARIANTES ==== -->
+<!-- Provisorio: sirve para comparar las versiones de cada sección.
+     Cuando estén decididas, se borra este bloque y js/variantes.js. -->
+<div class="variantes" id="variantes">
+  <button class="variantes__boton" id="pvar-boton" aria-expanded="false" aria-controls="panel-variantes">
+    <span aria-hidden="true">⚙</span> Variantes
+  </button>
+  <div class="variantes__panel" id="panel-variantes" hidden></div>
+</div>
+
+<!-- ==================================================== WSP FLOTANTE ==== -->
+<a class="wsp-flotante" data-wsp href="#" target="_blank" rel="noopener" aria-label="Escribinos por WhatsApp">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.23 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.04 21.5h-.01a9.4 9.4 0 0 1-4.79-1.31l-.34-.2-3.56.93.95-3.47-.22-.36a9.38 9.38 0 0 1-1.44-5.01c0-5.19 4.23-9.41 9.42-9.41 2.52 0 4.88.98 6.66 2.76a9.34 9.34 0 0 1 2.76 6.66c0 5.19-4.23 9.41-9.43 9.41M20.5 3.49A11.8 11.8 0 0 0 12.04 0C5.49 0 .16 5.33.16 11.88c0 2.09.55 4.14 1.59 5.94L.06 24l6.33-1.66a11.85 11.85 0 0 0 5.65 1.44h.01c6.55 0 11.88-5.33 11.88-11.88a11.8 11.8 0 0 0-3.48-8.4"/></svg>
+</a>
+
+<!-- ===================================== MODAL DE RESERVA (flujo C) ==== -->
+<div class="modal-res" id="modal-res" aria-hidden="true" data-paso="1">
+  <div class="modal-res__fondo"></div>
+  <div class="modal-res__caja" role="dialog" aria-modal="true" aria-labelledby="mr-titulo">
+
+    <header class="modal-res__cab">
+      <div>
+        <p class="modal-res__paso-num" id="mr-paso-num">Paso 1 de 2</p>
+        <h3 id="mr-titulo">Elegí tus fechas</h3>
+      </div>
+      <button class="drawer__cerrar" id="mr-cerrar" aria-label="Cerrar">&times;</button>
+    </header>
+
+    <div class="modal-res__cuerpo">
+      <!-- ------------------------------------------------- paso 1: fechas -->
+      <div class="modal-res__paso modal-res__paso--1">
+        <div class="cal cal--grande">
+          <div class="cal__barra">
+            <button class="cal__nav" id="mr-prev" aria-label="Mes anterior">&#8249;</button>
+            <div class="cal__titulo" id="mr-titulo-mes"></div>
+            <button class="cal__nav" id="mr-next" aria-label="Mes siguiente">&#8250;</button>
+          </div>
+          <div class="cal__meses cal__meses--uno" id="mr-meses"></div>
+        </div>
+
+        <div class="modal-res__lateral">
+          <div class="campo">
+            <label for="mr-huespedes">Huéspedes</label>
+            <select id="mr-huespedes"></select>
+          </div>
+
+          <div class="cal__referencias cal__referencias--col">
+            <span class="ref"><span class="ref__caja ref__caja--libre"></span> Libre</span>
+            <span class="ref"><span class="ref__caja ref__caja--ocupado"></span> Ocupado</span>
+            <span class="ref"><span class="ref__caja ref__caja--medio"></span> Entrada o salida</span>
+            <span class="ref"><span class="ref__caja ref__caja--sel"></span> Tu selección</span>
+          </div>
+
+          <div class="cal__temporadas">
+            <p class="cal__temporadas-titulo">Precio por noche</p>
+            <div id="mr-temporadas" style="display:grid;gap:7px"></div>
+          </div>
+
+          <button class="boton boton--linea" id="mr-limpiar" style="width:100%;padding:9px;font-size:.82rem">Limpiar</button>
+        </div>
+      </div>
+
+      <!-- ------------------------------------------------ paso 2: unidad -->
+      <div class="modal-res__paso modal-res__paso--2">
+        <div class="opciones" id="mr-opciones"></div>
+      </div>
+    </div>
+
+    <footer class="modal-res__pie">
+      <p class="modal-res__estado" id="mr-estado">Elegí las fechas y los huéspedes para continuar</p>
+      <div class="modal-res__botones">
+        <button class="boton boton--linea" id="mr-atras" hidden>Atrás</button>
+        <button class="boton boton--primario" id="mr-siguiente" disabled>Siguiente</button>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<!-- ========================================================== DRAWER ==== -->
+<div class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer__fondo"></div>
+  <aside class="drawer__panel" role="dialog" aria-modal="true" aria-label="Reservar">
+    <header class="drawer__cabecera">
+      <h3>Reservar</h3>
+      <button class="drawer__cerrar" id="dr-cerrar" aria-label="Cerrar">&times;</button>
+    </header>
+
+    <div class="drawer__cuerpo">
+      <div class="drawer__bloque drawer__bloque--modalidad">
+        <p class="drawer__paso" id="dr-paso-modalidad"></p>
+        <div class="tabs tabs--drawer" id="dr-modalidades" role="tablist"></div>
+      </div>
+
+      <div class="drawer__bloque drawer__bloque--fechas">
+      <p class="drawer__paso" id="dr-paso-fechas"></p>
+      <div class="cal__barra">
+        <button class="cal__nav" id="dr-prev" aria-label="Mes anterior">&#8249;</button>
+        <div class="cal__titulo" id="dr-titulo"></div>
+        <button class="cal__nav" id="dr-next" aria-label="Mes siguiente">&#8250;</button>
+      </div>
+      <div class="cal__meses cal__meses--uno" id="dr-meses"></div>
+
+      <div class="cal__temporadas">
+        <p class="cal__temporadas-titulo">Precio por noche según la época</p>
+        <div id="dr-temporadas" style="display:grid;gap:7px"></div>
+      </div>
+      </div>
+
+      <div class="drawer__bloque drawer__bloque--opciones">
+        <p class="drawer__paso" id="dr-paso-opciones"></p>
+        <div class="opciones" id="dr-opciones"></div>
+      </div>
+
+      <div class="drawer__bloque drawer__bloque--datos">
+      <div class="campos">
+        <div class="campo">
+          <label>Entrada</label>
+          <div class="campo__valor campo__valor--vacio" id="dr-entrada">Elegí una fecha</div>
+        </div>
+        <div class="campo">
+          <label>Salida</label>
+          <div class="campo__valor campo__valor--vacio" id="dr-salida">Elegí una fecha</div>
+        </div>
+        <div class="campo campo--ancho">
+          <label for="dr-huespedes">Huéspedes</label>
+          <select id="dr-huespedes"></select>
+        </div>
+      </div>
+
+      <div class="aviso" id="dr-aviso"></div>
+      <div class="desglose" id="dr-desglose"></div>
+      </div>
+    </div>
+
+    <footer class="drawer__pie">
+      <p class="drawer__unidad" id="dr-unidad"></p>
+      <button class="boton boton--primario" id="dr-continuar" style="width:100%" disabled>Elegí las fechas</button>
+      <button class="boton boton--linea" id="dr-limpiar" style="width:100%;margin-top:8px;padding:10px">Limpiar selección</button>
+    </footer>
+  </aside>
+</div>
+
+<!-- =============================== TODAS LAS FOTOS (nivel 2 galería) ==== -->
+<div class="todas-fotos" id="todas-fotos" aria-hidden="true">
+  <header class="todas-fotos__cab">
+    <button class="todas-fotos__volver" id="tf-cerrar">&#8592; Volver</button>
+    <strong>La casa y el lugar</strong>
+    <a class="boton boton--primario" href="#reservas" data-reservar style="padding:9px 18px;font-size:.85rem">Reservar</a>
+  </header>
+  <div class="todas-fotos__filtros filtros" id="tf-filtros">
+    <button class="tab" aria-selected="true"  data-cat="todas">Todas</button>
+    <button class="tab" aria-selected="false" data-cat="casa">La casa</button>
+    <button class="tab" aria-selected="false" data-cat="interiores">Interiores</button>
+    <button class="tab" aria-selected="false" data-cat="aire-libre">Galerías y aire libre</button>
+    <button class="tab" aria-selected="false" data-cat="entorno">El entorno</button>
+  </div>
+  <div class="todas-fotos__grilla" id="tf-grilla"></div>
+</div>
+
+<!-- ======================================================== LIGHTBOX ==== -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Foto ampliada">
+  <button class="lightbox__cerrar" id="lb-cerrar" aria-label="Cerrar">&times;</button>
+  <button class="lightbox__btn lightbox__btn--prev" id="lb-prev" aria-label="Anterior">&#8249;</button>
+  <img id="lb-img" src="" alt="">
+  <button class="lightbox__btn lightbox__btn--next" id="lb-next" aria-label="Siguiente">&#8250;</button>
+  <p class="lightbox__pie" id="lb-pie"></p>
+  <div class="lightbox__tira" id="lb-tira"></div>
+</div>
+
+<script src="js/config.js?v=6"></script>
+<script src="js/disponibilidad.js?v=6"></script>
+<script src="js/variantes.js?v=6"></script>
+<script src="js/calendario.js?v=6"></script>
+<script src="js/app.js?v=6"></script>
+</body>
+</html>

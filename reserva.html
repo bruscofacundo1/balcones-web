@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tu reserva — Balcones del Arroyo</title>
+
+<meta name="description" content="Confirmá los datos de tu estadía en Balcones del Arroyo, Traslasierra.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#b4552f">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23b4552f'/><path d='M20 58 L50 32 L80 58 v22 H20z' fill='%23f6f1e8'/><circle cx='50' cy='24' r='7' fill='%23d89a4a'/></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/estilos.css?v=6">
+</head>
+<body class="pagina-reserva">
+
+<!-- ====================================================== NAVEGACIÓN ==== -->
+<header class="nav nav--solida nav--estatica">
+  <div class="nav__interior">
+    <a class="nav__marca" href="index.html">
+      <img class="nav__logo nav__logo--oscura" src="img/logo-icono-oscuro.png" alt="" aria-hidden="true" style="display:block">
+      <span class="nav__marca-texto">
+        Balcones del Arroyo
+        <span>Traslasierra · Córdoba</span>
+      </span>
+    </a>
+    <a class="boton boton--linea" href="index.html">Volver al sitio</a>
+  </div>
+</header>
+
+<main class="reserva-pagina">
+  <div class="contenedor">
+
+    <!-- pasos -->
+    <ol class="pasos" aria-label="Pasos de la reserva">
+      <li class="paso paso--hecho"><span>1</span> Fechas</li>
+      <li class="paso paso--activo"><span>2</span> Tus datos</li>
+      <li class="paso"><span>3</span> Seña</li>
+    </ol>
+
+    <!-- si alguien entra directo, sin fechas elegidas -->
+    <div class="sin-reserva" id="sin-reserva" hidden>
+      <h1>Todavía no elegiste las fechas</h1>
+      <p class="bajada">Para armar la reserva necesitamos saber qué querés alquilar y qué días.</p>
+      <p><a class="boton boton--primario" href="index.html#reservas">Elegir las fechas</a></p>
+    </div>
+
+    <div class="reserva-layout" id="reserva-layout" hidden>
+      <!-- ------------------------------------------------------ columna -->
+      <div>
+        <h1 class="reserva-titulo">Confirmá tu estadía</h1>
+        <p class="bajada">Revisá que esté todo bien y dejanos tus datos. Después coordinamos
+          la seña y te confirmamos la reserva.</p>
+
+        <!-- detalle -->
+        <section class="panel panel--detalle">
+          <div class="detalle__cabecera">
+            <img id="det-foto" src="img/casa-atardecer.jpg" alt="" loading="lazy">
+            <div>
+              <h2 id="det-unidad"></h2>
+              <p class="detalle__meta" id="det-detalle"></p>
+            </div>
+          </div>
+
+          <ul class="detalle__datos">
+            <li><strong>Entrada</strong><span id="det-entrada"></span></li>
+            <li><strong>Salida</strong><span id="det-salida"></span></li>
+            <li><strong>Noches</strong><span id="det-noches"></span></li>
+            <li><strong>Huéspedes</strong><span id="det-huespedes"></span></li>
+          </ul>
+
+          <p class="detalle__horarios">
+            Ingreso desde las <strong id="det-checkin"></strong> ·
+            salida hasta las <strong id="det-checkout"></strong>
+          </p>
+
+          <p style="margin:0">
+            <a class="boton boton--linea" href="index.html#reservas" style="padding:10px 20px;font-size:.86rem">Cambiar fechas</a>
+          </p>
+        </section>
+
+        <!-- datos personales -->
+        <section class="panel">
+          <h2 class="panel__titulo">Tus datos</h2>
+          <form id="form-reserva" novalidate>
+            <div class="campos">
+              <div class="campo">
+                <label for="f-nombre">Nombre y apellido *</label>
+                <input id="f-nombre" name="nombre" type="text" autocomplete="name" required>
+              </div>
+              <div class="campo">
+                <label for="f-tel">Teléfono *</label>
+                <input id="f-tel" name="telefono" type="tel" autocomplete="tel" required>
+              </div>
+              <div class="campo">
+                <label for="f-email">Email *</label>
+                <input id="f-email" name="email" type="email" autocomplete="email" required>
+              </div>
+              <div class="campo">
+                <label for="f-localidad">¿De dónde venís?</label>
+                <input id="f-localidad" name="localidad" type="text" autocomplete="address-level2">
+              </div>
+              <div class="campo campo--ancho">
+                <label for="f-mensaje">Algo que quieras contarnos</label>
+                <textarea id="f-mensaje" name="mensaje" rows="3"
+                  placeholder="Si venís con mascota, si llegás de noche, si festejás algo..."></textarea>
+              </div>
+            </div>
+
+            <div class="aviso" id="form-aviso"></div>
+          </form>
+        </section>
+      </div>
+
+      <!-- ------------------------------------------------------- resumen -->
+      <aside class="panel resumen resumen--reserva">
+        <h2 class="resumen__titulo">Resumen</h2>
+        <p class="resumen__sub" id="res-fechas"></p>
+
+        <div class="desglose" id="det-desglose"></div>
+
+        <div class="sena">
+          <div class="sena__fila">
+            <span>Seña para confirmar (<span id="det-sena-pct"></span>%)</span>
+            <strong id="det-sena"></strong>
+          </div>
+          <div class="sena__fila sena__fila--resto">
+            <span>Resto al llegar</span>
+            <span id="det-resto"></span>
+          </div>
+        </div>
+
+        <button class="boton boton--primario" id="btn-continuar" style="width:100%">Continuar</button>
+        <button class="boton boton--wsp" id="btn-wsp" style="width:100%;margin-top:8px">Prefiero consultar antes</button>
+
+        <p class="letra-chica">El valor es estimativo hasta que confirmemos la disponibilidad.
+          No se cobra nada en este paso.</p>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<footer class="pie">
+  <div class="contenedor pie__interior">
+    <p style="margin:0">© <span id="anio"></span> Balcones del Arroyo · Arroyo de los Patos, Traslasierra, Córdoba</p>
+  </div>
+</footer>
+
+<script src="js/config.js?v=6"></script>
+<script src="js/disponibilidad.js?v=6"></script>
+<script src="js/calendario.js?v=6"></script>
+<script src="js/reserva-pagina.js?v=6"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+# archivos temporales de Office / Windows
+~$*
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# material original de trabajo (queda fuera del repo por peso)
+*.zip
+*.mp4
+*.MOV
