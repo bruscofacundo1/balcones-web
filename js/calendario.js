@@ -797,10 +797,11 @@ function actualizarModal() {
   if (pasoModal === 1) {
     siguiente.textContent = 'Siguiente';
     siguiente.disabled = !hayFechas;
+    const noches = hayFechas ? nochesEntre(estado.entrada, estado.salida) : 0;
     set('mr-estado', hayFechas
-      ? `${formatoFechaLarga(estado.entrada)} al ${formatoFechaLarga(estado.salida)} · ${nochesEntre(estado.entrada, estado.salida)} noches`
+      ? `${formatoFechaLarga(estado.entrada)} al ${formatoFechaLarga(estado.salida)} · ${noches} ${noches === 1 ? 'noche' : 'noches'}`
       : estado.entrada ? 'Ahora elegí la fecha de salida'
-      : 'Elegí las fechas y los huéspedes para continuar');
+      : 'Elegí las fechas para continuar');
   } else {
     siguiente.textContent = 'Reservar';
     siguiente.disabled = !r.listo;
@@ -828,8 +829,6 @@ function iniciarModalReserva() {
     estado.mesBase = new Date(estado.mesBase.getFullYear(), estado.mesBase.getMonth() + 1, 1);
     dibujarCalendario();
   });
-  document.getElementById('mr-limpiar').addEventListener('click', limpiarSeleccion);
-
   document.getElementById('mr-huespedes').addEventListener('change', e => {
     estado.huespedes = Number(e.target.value);
     actualizarResumen();

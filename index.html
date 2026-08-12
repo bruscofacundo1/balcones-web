@@ -25,7 +25,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=6">
+<link rel="stylesheet" href="css/estilos.css?v=8">
 
 <script type="application/ld+json">
 {
@@ -380,7 +380,7 @@
     </header>
 
     <div class="modal-res__cuerpo">
-      <!-- ------------------------------------------------- paso 1: fechas -->
+      <!-- --------------------------- paso 1: sólo el calendario, nada más -->
       <div class="modal-res__paso modal-res__paso--1">
         <div class="cal cal--grande">
           <div class="cal__barra">
@@ -390,31 +390,14 @@
           </div>
           <div class="cal__meses cal__meses--uno" id="mr-meses"></div>
         </div>
-
-        <div class="modal-res__lateral">
-          <div class="campo">
-            <label for="mr-huespedes">Huéspedes</label>
-            <select id="mr-huespedes"></select>
-          </div>
-
-          <div class="cal__referencias cal__referencias--col">
-            <span class="ref"><span class="ref__caja ref__caja--libre"></span> Libre</span>
-            <span class="ref"><span class="ref__caja ref__caja--ocupado"></span> Ocupado</span>
-            <span class="ref"><span class="ref__caja ref__caja--medio"></span> Entrada o salida</span>
-            <span class="ref"><span class="ref__caja ref__caja--sel"></span> Tu selección</span>
-          </div>
-
-          <div class="cal__temporadas">
-            <p class="cal__temporadas-titulo">Precio por noche</p>
-            <div id="mr-temporadas" style="display:grid;gap:7px"></div>
-          </div>
-
-          <button class="boton boton--linea" id="mr-limpiar" style="width:100%;padding:9px;font-size:.82rem">Limpiar</button>
-        </div>
       </div>
 
       <!-- ------------------------------------------------ paso 2: unidad -->
       <div class="modal-res__paso modal-res__paso--2">
+        <div class="campo campo--huespedes">
+          <label for="mr-huespedes">¿Cuántos son?</label>
+          <select id="mr-huespedes"></select>
+        </div>
         <div class="opciones" id="mr-opciones"></div>
       </div>
     </div>
@@ -520,10 +503,10 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=6"></script>
-<script src="js/disponibilidad.js?v=6"></script>
-<script src="js/variantes.js?v=6"></script>
-<script src="js/calendario.js?v=6"></script>
-<script src="js/app.js?v=6"></script>
+<script src="js/config.js?v=8"></script>
+<script src="js/disponibilidad.js?v=8"></script>
+<script src="js/variantes.js?v=8"></script>
+<script src="js/calendario.js?v=8"></script>
+<script src="js/app.js?v=8"></script>
 </body>
 </html>
