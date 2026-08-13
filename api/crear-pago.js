@@ -111,7 +111,7 @@ module.exports = async (req, res) => {
     });
 
     // A esta altura Mercado Pago YA le cobró (o no) al huésped: eso no se
-    // puede deshacer. Si guardar el registro en Redis falla acá (por ejemplo
+    // puede deshacer. Si guardar el registro en la base falla acá (por ejemplo
     // porque todavía no está conectada la base), no puede convertirse en un
     // error 500 — el huésped ya pagó, así que igual hay que avisarle que
     // salió bien. Queda como advertencia en los logs para revisar a mano; el
@@ -136,7 +136,7 @@ module.exports = async (req, res) => {
       } catch (errGuardado) {
         console.error(
           `crear-pago: SE COBRÓ el pago ${resultado.id} (ref ${externalRef}) pero no se pudo ` +
-          'guardar la reserva. Bloquear la fecha a mano y revisar la conexión con Redis.',
+          'guardar la reserva. Bloquear la fecha a mano y revisar la conexión con la base.',
           errGuardado
         );
         avisoGuardado = 'Se acreditó el pago, pero hubo un problema técnico al registrar la ' +
