@@ -14,9 +14,9 @@ const CONFIG = {
   contacto: {
     // Número de WhatsApp en formato internacional, SIN +, SIN espacios ni guiones.
     // Ejemplo Córdoba (3544): 549 3544 123456  ->  '5493544123456'
-    whatsapp: '5493544000000',                    // << REVISAR >>
+    whatsapp: '5491154759059',
     // Cómo se muestra el teléfono en pantalla
-    telefonoVisible: '+54 9 3544 00-0000',        // << REVISAR >>
+    telefonoVisible: '+54 9 11 5475-9059',
     email: 'balconesdelarroyo@gmail.com',         // << REVISAR >>
     instagram: '',                                 // ej: 'https://instagram.com/balconesdelarroyo'
     facebook: 'https://www.facebook.com/Balcones-del-Arroyo', // << REVISAR >>
