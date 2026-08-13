@@ -245,6 +245,7 @@ la elección queda guardada en el navegador.
 
 | Sección | Variantes | Por defecto |
 |---|---|---|
+| **Cómo se paga** (`checkout.html`) | `a` directo a WhatsApp · `b` Mercado Pago (Payment Brick) | `a` |
 | **Reservas en el inicio** | `a` sin panel · `b` con panel | `a` |
 | **Cómo se alquila** | `a` unidades + precios por temporada · `b` bandas con foto y "desde" | `a` |
 | **Reservas** | `c` modal en pasos · `b` panel lateral, fechas primero · `a` panel lateral, unidad primero | `c` |
@@ -296,6 +297,38 @@ reservar) y las plazas se dicen una vez:
 
 El `desde` sale de `precioDesde()` en `js/app.js`: el mínimo de esa unidad
 entre todas las temporadas de `config.js`, no un número escrito a mano.
+
+### Cómo se paga
+
+En `checkout.html`, después de "Tus datos". Es la variante que decide **si
+esta reserva pasa por Mercado Pago o no** (ver §6 para el detalle técnico del
+pago en sí):
+
+- **`a` — WhatsApp (la que queda activa).** Al tocar "Confirmar por
+  WhatsApp" se abre un mensaje con toda la reserva (unidad, fechas, noches,
+  total, seña, datos de contacto) y la seña se coordina a mano, como se venía
+  haciendo antes de meter Mercado Pago. No se cobra nada desde el sitio.
+- **`b` — Mercado Pago.** El Payment Brick de siempre: tarjeta ahí mismo,
+  seña acreditada al toque, fecha bloqueada sola en la base.
+
+El pedido de bajar el cobro online por ahora (14/08/2026, después de que la
+familia viera la demo) fue explícito: no borrar nada, dejarlo listo para
+prender cuando decidan cobrar de verdad. Por eso quedó como variante y no
+como una rama de código aparte — es exactamente el mecanismo que ya existía
+para comparar dos formas de hacer algo, tenía sentido reusarlo acá en vez de
+inventar un interruptor nuevo. Se elige desde el mismo panel "⚙ Variantes" de
+la home (aunque el efecto sólo se ve en `checkout.html`) y queda guardado en
+el navegador.
+
+**Pendiente, todavía no se construyó:** con la variante `a` activa, ninguna
+reserva bloquea la fecha en ningún lado — ni en `disponibilidad.js` ni en la
+base. Se decidió que el bloqueo pase a ocurrir al mandar el WhatsApp (no al
+elegir la fecha: un hold temporal se descartó por agregar complejidad —
+expiración, limpieza — para un problema de choque de fechas que con el
+volumen de esta casa es rarísimo). Falta: un endpoint que bloquee la fecha en
+el momento del envío (reciclando `precios.js` y `lib/reservas.js`, sin pasar
+por Mercado Pago) y una vista en `admin.html` para que Naty vea esas reservas
+"pendientes de WhatsApp" y las dé de baja si no le llega la seña.
 
 ### Reservas
 

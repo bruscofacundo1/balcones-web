@@ -10,6 +10,14 @@
    ============================================================================ */
 
 const VARIANTES_DEF = {
+  pago: {
+    nombre: 'Cómo se paga',
+    porDefecto: 'a',
+    opciones: [
+      { id: 'a', nombre: 'WhatsApp',     detalle: 'Se manda todo por WhatsApp y se coordina la seña a mano' },
+      { id: 'b', nombre: 'Mercado Pago', detalle: 'Tarjeta ahí mismo, con el Payment Brick' }
+    ]
+  },
   panelInicio: {
     nombre: 'Reservas en el inicio',
     porDefecto: 'a',

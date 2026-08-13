@@ -267,16 +267,45 @@ function iniciarBrick(sena, datos) {
   });
 }
 
-/** Muestra el mensaje de "todavía no cobramos online" (sin Public Key, o si el Brick no arrancó). */
-function mostrarFallbackWsp(datos) {
-  document.getElementById('pago-brick-caja').hidden = true;
-  document.getElementById('pago-fallback').hidden = false;
-  const boton = document.getElementById('btn-finalizar');
-  boton.textContent = 'Confirmar reserva';
-  boton.hidden = false;
-  boton.onclick = () => {
-    window.open(enlaceWsp(mensajeCompleto(datos)), '_blank', 'noopener');
-  };
+/** Arma el mensaje y abre WhatsApp — el camino de la variante A, y también
+    el respaldo de la B cuando no hay Public Key o el Brick no arrancó. */
+function irPorWhatsapp(datos) {
+  window.open(enlaceWsp(mensajeCompleto(datos)), '_blank', 'noopener');
+
+  document.getElementById('panel-pago').innerHTML = `
+    <h2 class="panel__titulo">Coordiná la seña por WhatsApp</h2>
+    <div class="pago-exito">
+      <p>Te abrimos WhatsApp con todos los datos de tu reserva. Mandá el mensaje
+        para coordinar la seña — apenas la confirmemos, quedan tomadas las fechas.</p>
+      <a class="boton boton--wsp" id="btn-reabrir-wsp" href="#" target="_blank" rel="noopener">
+        Abrir WhatsApp de nuevo
+      </a>
+    </div>`;
+  document.getElementById('btn-reabrir-wsp').href = enlaceWsp(mensajeCompleto(datos));
+  document.getElementById('checkout-pie').hidden = true;
+  document.querySelector('.pasos .paso--activo')?.classList.replace('paso--activo', 'paso--hecho');
+}
+
+/** Texto de la casilla de aceptar, según cuál de las dos variantes esté activa. */
+function textoAcepto(variante) {
+  return variante === 'b'
+    ? 'Entiendo que la reserva se confirma recién cuando se acredita la seña.'
+    : 'Entiendo que la reserva se confirma cuando coordinamos la seña por WhatsApp.';
+}
+
+/** Muestra el bloque de WhatsApp o el de Mercado Pago según la variante elegida. */
+function aplicarVariantePago() {
+  const v = Variantes.get('pago');
+  const a = document.getElementById('pago-a');
+  const b = document.getElementById('pago-b');
+  if (!a || !b) return; // ya se reemplazó #panel-pago por la pantalla final
+  a.hidden = v !== 'a';
+  b.hidden = v !== 'b';
+  document.getElementById('acepto-texto').textContent = textoAcepto(v);
+  document.getElementById('btn-finalizar').textContent = v === 'b' ? 'Continuar al pago' : 'Confirmar por WhatsApp';
+  document.getElementById('nota-letra-chica').textContent = v === 'b'
+    ? 'El valor es estimativo hasta que confirmemos la disponibilidad. No se cobra nada hasta que completes el pago.'
+    : 'El valor es estimativo hasta que confirmemos la disponibilidad y coordinemos la seña por WhatsApp.';
 }
 
 /* ------------------------------------------------------------ arranque -- */
@@ -293,18 +322,23 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('checkout-todo').hidden = false;
   calculo = pintarResumen(r);
 
+  aplicarVariantePago();
+  Variantes.alCambiar('pago', aplicarVariantePago);
+
   document.getElementById('btn-finalizar').addEventListener('click', () => {
     const datos = leerFormulario();
     if (!datos) return;
 
-    document.getElementById('pago-previo').hidden = true;
     document.getElementById('btn-finalizar').hidden = true;
 
-    if (!hayMercadoPagoConfigurado()) {
-      mostrarFallbackWsp(datos);
+    // 'a' es la variante activa hoy: directo a WhatsApp, sin pasar por
+    // Mercado Pago. Queda todo armado abajo para cuando se prenda la 'b'.
+    if (Variantes.get('pago') !== 'b' || !hayMercadoPagoConfigurado()) {
+      irPorWhatsapp(datos);
       return;
     }
 
+    document.getElementById('pago-b-previo').hidden = true;
     document.getElementById('pago-brick-caja').hidden = false;
     document.getElementById('pago-brick-caja').scrollIntoView({ behavior: 'smooth', block: 'center' });
 
@@ -312,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
       iniciarBrick(calculo.sena, datos);
     } catch (err) {
       console.error('No se pudo iniciar Mercado Pago:', err);
-      mostrarFallbackWsp(datos);
+      irPorWhatsapp(datos);
     }
   });
 });
