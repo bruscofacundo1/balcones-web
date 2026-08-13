@@ -17,7 +17,12 @@
 <meta property="og:image" content="img/casa-atardecer.jpg">
 <meta name="twitter:card" content="summary_large_image">
 
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23b4552f'/><path d='M20 58 L50 32 L80 58 v22 H20z' fill='%23f6f1e8'/><circle cx='50' cy='24' r='7' fill='%23d89a4a'/></svg>">
+<!-- El logo de la casa, en blanco sobre el terracota de la marca.
+     Se generan desde img/logo-icono-blanco.png; el .ico es para Windows y
+     pestañas viejas, el de 180 para cuando alguien lo guarda en el celular. -->
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="apple-touch-icon" href="img/favicon-180.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,7 +30,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=12">
+<link rel="stylesheet" href="css/estilos.css?v=24">
 
 <script type="application/ld+json">
 {
@@ -67,13 +72,16 @@
     </button>
 
     <nav class="nav__links" id="nav-links">
+      <!-- el orden sigue el de la página: tarifas pasó a estar arriba, pegada
+           a "La casa", así que acá también va antes -->
       <a href="#la-casa">La casa</a>
+      <a href="#tarifas">Tarifas</a>
       <a href="#galeria">Galería</a>
       <a href="#ubicacion">Ubicación</a>
-      <a href="#tarifas">Tarifas</a>
-      <a href="#reservas">Disponibilidad</a>
       <a href="#preguntas">Preguntas</a>
-      <a class="boton boton--fantasma" href="#reservas" data-reservar>Reservar</a>
+      <!-- "Disponibilidad" hacía lo mismo que "Reservar": los dos abrían el
+           calendario. Quedó uno solo. -->
+      <a class="boton boton--reservar" href="#reservas" data-reservar>Reservar</a>
     </nav>
   </div>
 </header>
@@ -112,18 +120,53 @@
   </div>
 </section>
 
-<!-- ======================================================= AMBIENTES ==== -->
-<section class="seccion seccion--arena" id="ambientes-sec">
+<!-- ============================================== CÓMO SE ALQUILA + PRECIOS ==== -->
+<!-- Antes eran dos secciones ("Cómo se alquila" arriba de los ambientes y
+     "Tarifas" abajo de todo) y repetían lo mismo: el nombre, las plazas y el
+     detalle de cada unidad aparecían en las dos. Ahora es una sola.
+
+     Va acá, pegada a "La casa", porque la sección que sigue tiene las pestañas
+     "Planta alta / Planta baja": esas etiquetas no significan nada hasta que se
+     explica que la casa se divide en dos plantas independientes. -->
+<section class="seccion seccion--arena" id="tarifas">
   <div class="contenedor">
-    <div class="encabezado-seccion revelar">
+    <div class="encabezado-seccion encabezado-seccion--centro revelar">
       <span class="antetitulo">Cómo se alquila</span>
       <h2>Entera o por planta</h2>
-      <p class="bajada">Cada planta tiene su cocina completa, su baño y su acceso propio.
-        Podés tomar la casa entera o solamente una de las dos, sin compartir nada.</p>
+      <p class="bajada">Cada planta tiene su cocina completa, su baño y su acceso propio: podés
+        tomar la casa entera o solamente una, sin compartir nada. El precio cambia según la
+        época del año y el calendario calcula el total exacto de tus fechas.</p>
     </div>
 
-    <div class="modalidades-grid revelar" id="modalidades-cards" style="margin-bottom:64px"></div>
+    <!-- variante A: las tres unidades una sola vez, y abajo los precios por temporada -->
+    <div id="alquiler-a">
+      <div class="unidades revelar" id="unidades-tira"></div>
+      <div class="tarifas revelar" id="tarifas-grid"></div>
+    </div>
 
+    <!-- variante B: bandas alternadas con "desde", y los precios finos plegados -->
+    <div id="alquiler-b">
+      <div class="bandas revelar" id="bandas-unidades"></div>
+
+      <div class="bandas__pie revelar">
+        <a class="boton boton--primario" href="#reservas" data-reservar>Ver fechas y precio exacto</a>
+        <details class="plegable">
+          <summary>Ver precios por temporada</summary>
+          <div class="tarifas" id="tarifas-grid-b" style="margin-top:26px"></div>
+        </details>
+      </div>
+    </div>
+
+    <div class="nota-tarifas revelar">
+      <strong>Buenos a saber</strong>
+      <ul id="notas-tarifas"></ul>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= AMBIENTES ==== -->
+<section class="seccion" id="ambientes-sec">
+  <div class="contenedor">
     <div class="encabezado-seccion revelar">
       <span class="antetitulo">Ambiente por ambiente</span>
       <h2>La casa por dentro</h2>
@@ -150,7 +193,7 @@
 </section>
 
 <!-- ========================================================= GALERÍA ==== -->
-<section class="seccion" id="galeria">
+<section class="seccion seccion--arena" id="galeria">
   <div class="contenedor">
     <div class="encabezado-seccion encabezado-seccion--centro revelar">
       <h2>La casa y el lugar</h2>
@@ -176,7 +219,7 @@
 </section>
 
 <!-- ======================================================= UBICACIÓN ==== -->
-<section class="seccion seccion--arena" id="ubicacion">
+<section class="seccion" id="ubicacion">
   <div class="contenedor">
     <div class="ubicacion__layout">
       <div class="revelar">
@@ -201,7 +244,7 @@
 </section>
 
 <!-- ===================================================== ACTIVIDADES ==== -->
-<section class="seccion" id="actividades-sec">
+<section class="seccion seccion--arena" id="actividades-sec">
   <div class="contenedor">
     <div class="encabezado-seccion encabezado-seccion--centro revelar">
       <h2>Traslasierra alrededor tuyo</h2>
@@ -218,27 +261,8 @@
   <p class="franja-foto__texto revelar">Cae la tarde y las sierras se ponen rosas.</p>
 </section>
 
-<!-- ========================================================= TARIFAS ==== -->
-<section class="seccion seccion--arena" id="tarifas">
-  <div class="contenedor">
-    <div class="encabezado-seccion encabezado-seccion--centro revelar">
-      <span class="antetitulo">Tarifas</span>
-      <h2>Precios por temporada</h2>
-      <p class="bajada">Valores por noche de la casa completa. El calendario de abajo calcula
-        el total exacto según las fechas que elijas.</p>
-    </div>
-
-    <div class="tarifas revelar" id="tarifas-grid"></div>
-
-    <div class="nota-tarifas revelar">
-      <strong>Buenos a saber</strong>
-      <ul id="notas-tarifas"></ul>
-    </div>
-  </div>
-</section>
-
 <!-- ======================================================== RESERVAS ==== -->
-<section class="seccion" id="reservas">
+<section class="seccion" id="reservas" hidden>
   <div class="contenedor">
     <div class="encabezado-seccion encabezado-seccion--centro revelar">
       <h2>Elegí tus fechas</h2>
@@ -503,10 +527,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=12"></script>
-<script src="js/disponibilidad.js?v=12"></script>
-<script src="js/variantes.js?v=12"></script>
-<script src="js/calendario.js?v=12"></script>
-<script src="js/app.js?v=12"></script>
+<script src="js/config.js?v=24"></script>
+<script src="js/disponibilidad.js?v=24"></script>
+<script src="js/precios.js?v=24"></script>
+<script src="js/variantes.js?v=24"></script>
+<script src="js/calendario.js?v=24"></script>
+<script src="js/app.js?v=24"></script>
 </body>
 </html>

@@ -15,3 +15,9 @@ const DISPONIBILIDAD = {
   alta: [],
   baja: []
 };
+
+/* Del lado del servidor esto es sólo la base: las noches que ya se pagaron
+   online se guardan aparte, en Vercel KV (ver lib/reservas.js), y se suman a
+   esta lista antes de aceptar un pago nuevo. No hace falta que admin.html
+   sepa nada de eso. */
+if (typeof module !== 'undefined' && module.exports) module.exports = { DISPONIBILIDAD };

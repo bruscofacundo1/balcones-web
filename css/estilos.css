@@ -135,6 +135,19 @@ a { color: var(--terracota); }
 .boton--linea { background: transparent; color: var(--carbon); border-color: var(--borde); }
 .boton--linea:hover { border-color: var(--terracota); color: var(--terracota); }
 
+/* El "Reservar" del menú. Va en ocre y no en terracota a propósito: la
+   terracota ya la usan todos los botones principales del sitio, así que en
+   ocre éste no se confunde con los demás. El texto va en carbón y no en
+   blanco porque sobre el ocre el blanco casi no se lee. */
+.boton--reservar {
+  background: var(--ocre); color: var(--carbon);
+  border-color: transparent; box-shadow: var(--sombra-sm);
+}
+.boton--reservar:hover {
+  background: #c9862f; color: var(--carbon); border-color: transparent;
+  box-shadow: var(--sombra);
+}
+
 .boton[disabled] { opacity: .45; cursor: not-allowed; transform: none; }
 
 /* ------------------------------------------------------------------ nav -- */
@@ -202,6 +215,22 @@ a { color: var(--terracota); }
 .nav--solida .nav__links a:hover { color: var(--terracota); }
 .nav--solida .boton--fantasma { color: var(--carbon); border-color: var(--borde); }
 .nav--solida .boton--fantasma:hover { background: var(--carbon); color: #fff; border-color: var(--carbon); }
+
+/* las reglas de color de los links del menú le ganaban al botón */
+.nav__links .boton--reservar,
+.nav--solida .nav__links .boton--reservar { color: var(--carbon); }
+
+/* Un latido corto, una sola vez, cuando el menú se vuelve sólido: es el
+   momento en que se dejó atrás el botón grande del inicio y éste pasa a ser
+   la única puerta a reservar. No parpadea todo el tiempo a propósito: un
+   botón titilando sin parar es de las cosas que hacen que un sitio se vea
+   barato, y encima deja de llamar la atención a los diez segundos. */
+@keyframes latido-reservar {
+  0%   { box-shadow: 0 0 0 0 rgba(216, 154, 74, .65); }
+  70%  { box-shadow: 0 0 0 12px rgba(216, 154, 74, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(216, 154, 74, 0); }
+}
+.nav--llamar .boton--reservar { animation: latido-reservar 1.4s ease-out .2s 2; }
 
 .nav__burger {
   display: none;
@@ -376,6 +405,11 @@ a { color: var(--terracota); }
   transform: scale(.86);
   transition: transform .45s cubic-bezier(.2,.7,.3,1), opacity .45s ease;
 }
+/* La activa es la única que va en el flujo: así el contenedor crece hasta
+   donde llega el texto. Cuando todas eran absolutas el alto quedaba fijo en
+   el min-height y el `overflow: hidden` (que está para recortar las fotos
+   vecinas a lo ancho) cortaba la descripción por abajo. */
+.carrusel__item--activo { position: relative; flex: 0 0 auto; }
 .carrusel__item img {
   width: 100%; aspect-ratio: 4/3; object-fit: cover;
   border-radius: var(--radio);
@@ -391,7 +425,9 @@ a { color: var(--terracota); }
 .carrusel__item--prev .carrusel__pie,
 .carrusel__item--next .carrusel__pie { opacity: 0; }
 
-.carrusel__pie { padding: 18px 4px 0; text-align: center; transition: opacity .3s ease; }
+/* alto mínimo para que el contenedor no salte al cambiar de foto cuando un
+   texto ocupa una línea más que el otro */
+.carrusel__pie { padding: 18px 4px 0; text-align: center; transition: opacity .3s ease; min-height: 124px; }
 .carrusel__pie h3 { font-size: 1.35rem; margin-bottom: 6px; }
 .carrusel__meta {
   font-size: .74rem; letter-spacing: .12em; text-transform: uppercase;
@@ -428,6 +464,56 @@ a { color: var(--terracota); }
 }
 .carrusel__punto--activo { background: var(--terracota); }
 
+/* ------------------------------------------ carrusel a pantalla (var. C) - */
+/* Misma mecánica que el de arriba, otra piel: la foto ocupa casi todo el alto
+   de la ventana (por eso va en vh, así se acomoda al zoom y a cada monitor) y
+   la descripción va encima de la foto, sobre un degradado. */
+.carrusel--pantalla {
+  height: min(76vh, 760px);
+  min-height: 420px;
+  align-items: center;
+  padding-bottom: 42px;
+  margin-inline: calc(50% - 50vw);   /* se sale del contenedor, a todo el ancho */
+  padding-inline: max(24px, calc(50vw - var(--ancho) / 2));
+}
+.carrusel--pantalla .carrusel__pista { height: 100%; min-height: 0; align-items: center; }
+
+/* 66% no es al azar: con el alto en 76vh, en una pantalla normal la foto cae
+   justo en 4:3, que es el formato original, así que no se recorta nada. */
+.carrusel--pantalla .carrusel__item {
+  position: absolute; top: 0; height: 100%;
+  width: min(1180px, 66%);
+}
+.carrusel--pantalla .carrusel__item img {
+  height: 100%; width: 100%; aspect-ratio: auto; object-fit: cover;
+}
+.carrusel--pantalla .carrusel__item--prev { transform: translateX(-56%) scale(.88); }
+.carrusel--pantalla .carrusel__item--next { transform: translateX(56%)  scale(.88); }
+
+.carrusel--pantalla .carrusel__pie {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  min-height: 0;
+  padding: 110px 38px 30px;
+  text-align: left;
+  border-radius: 0 0 var(--radio) var(--radio);
+  background: linear-gradient(to top,
+    rgba(43, 38, 33, .88) 0%, rgba(43, 38, 33, .55) 45%, rgba(43, 38, 33, 0) 100%);
+  /* que el clic siga llegando a la foto y abra el visor */
+  pointer-events: none;
+}
+.carrusel--pantalla .carrusel__pie h3 { color: #fff; font-size: 1.9rem; margin-bottom: 6px; }
+.carrusel--pantalla .carrusel__meta { color: var(--ocre); }
+.carrusel--pantalla .carrusel__texto {
+  color: rgba(255, 255, 255, .88); font-size: 1rem;
+  margin: 0; max-width: 56ch;
+}
+
+.carrusel--pantalla .carrusel__nav {
+  top: 50%; width: 54px; height: 54px;
+  border-radius: var(--radio-sm);
+  background: rgba(255, 255, 255, .9); border-color: transparent;
+}
+
 @media (max-width: 760px) {
   .carrusel, .carrusel__pista { min-height: 430px; }
   .carrusel__item { width: 80%; }
@@ -436,6 +522,28 @@ a { color: var(--terracota); }
   .carrusel__nav { width: 38px; height: 38px; font-size: 1.2rem; }
   .carrusel__nav--prev { left: -8px; }
   .carrusel__nav--next { right: -8px; }
+  /* en angosto los textos parten en más líneas: más colchón para que el alto
+     no salte al pasar de foto */
+  .carrusel__pie { min-height: 152px; }
+
+  /* En celular no se manda el alto por la ventana: la pantalla es angosta y
+     alta, y forzar 66vh dejaba la foto vertical, recortando los costados de
+     cada ambiente. Acá manda el formato original de la foto. */
+  .carrusel--pantalla { height: auto; min-height: 0; padding-inline: 16px; }
+  .carrusel--pantalla .carrusel__pista { height: auto; }
+  .carrusel--pantalla .carrusel__item { height: auto; width: 88%; }
+  .carrusel--pantalla .carrusel__item--activo { position: relative; }
+  .carrusel--pantalla .carrusel__item img { height: auto; aspect-ratio: 4 / 3; }
+  .carrusel--pantalla .carrusel__item--prev { transform: translateX(-66%) scale(.86); }
+  .carrusel--pantalla .carrusel__item--next { transform: translateX(66%)  scale(.86); }
+  /* Y el texto encima tampoco va: sobre una foto de 300px de ancho el bloque
+     de descripción tapaba casi toda la imagen. En celular vuelve abajo. */
+  .carrusel--pantalla .carrusel__pie {
+    position: static; background: none; pointer-events: auto;
+    padding: 18px 4px 0; text-align: center; min-height: 152px;
+  }
+  .carrusel--pantalla .carrusel__pie h3 { color: var(--carbon); font-size: 1.35rem; }
+  .carrusel--pantalla .carrusel__texto { color: var(--piedra); font-size: .94rem; }
 }
 
 /* ---------------------------------------------------- panel de variantes - */
@@ -811,6 +919,24 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 }
 .acepto input { margin-top: 3px; accent-color: var(--terracota); flex: 0 0 auto; }
 
+.pago-ayuda { font-size: .92rem; color: var(--carbon-suave); margin-bottom: 16px; }
+
+/* El Payment Brick dibuja su propio formulario adentro de #pago-brick; acá
+   sólo se le da aire alrededor, sin pisarle el estilo. */
+#pago-brick-caja { margin-top: 4px; }
+.pago-estado {
+  min-height: 1.2em; margin: 10px 0 0;
+  font-size: .88rem; color: var(--piedra);
+}
+.pago-estado--error { color: var(--terracota-osc); font-weight: 600; }
+.pago-estado--aviso { color: var(--ocre); font-weight: 600; }
+
+.pago-exito {
+  padding: 22px 4px 4px; text-align: center;
+}
+.pago-exito h3 { font-family: var(--display); font-size: 1.4rem; color: var(--carbon); margin-bottom: 10px; }
+.pago-exito p { font-size: .95rem; color: var(--carbon-suave); max-width: 46ch; margin: 0 auto 20px; }
+
 .checkout__pie {
   display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
   padding: 18px 22px; margin-top: 8px;
@@ -940,23 +1066,64 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 }
 .todas-fotos__grilla {
   flex: 1 1 auto; overflow-y: auto;
-  padding: 18px 22px 28px;
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 10px;
+  /* en pantallas anchas se frena: sin tope quedaban nueve columnas de fotos
+     diminutas, más parecido a una planilla de contactos que a una galería */
+  padding: 18px max(22px, calc((100vw - 1320px) / 2)) 34px;
+  /* Cantidad de columnas fija por tamaño de pantalla, no `auto-fill`: acá lo
+     que importa es que la foto se vea grande, y bajar scrolleando no molesta
+     porque esta vista es justamente para mirar fotos. Con `auto-fill` el alto
+     de la foto cambiaba solo según el ancho de la ventana. */
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
   align-content: start;
+  /* Sin esto las fotos se pisaban unas con otras. La grilla es un `flex: 1 1
+     auto` dentro de la ventana completa, así que el navegador le achicaba el
+     alto para que entrara: las filas quedaban de 34px con fotos de 238px
+     encima. Con `max-content` cada fila mide lo que mide su foto y la grilla
+     se desplaza hacia abajo, que es lo que corresponde acá. */
+  grid-auto-rows: max-content;
+  /* rellena el hueco que deja una panorámica cuando no entra al final de una
+     fila, para que no queden agujeros */
+  grid-auto-flow: dense;
 }
+@media (max-width: 1100px) { .todas-fotos__grilla { grid-template-columns: repeat(3, 1fr); } }
 .tf__item {
+  position: relative;
   margin: 0; aspect-ratio: 4/3; overflow: hidden;
   border-radius: var(--radio-sm); cursor: zoom-in;
   background: var(--arena-osc);
 }
+/* Ocupa dos columnas, así la panorámica se ve casi entera en vez de recortada
+   al cuadro de las demás. El 2.72 es lo que mide una ficha de dos columnas
+   más el espacio del medio, comparado con el alto de las 4:3 de al lado: con
+   ese número la fila queda pareja. Se mantiene casi igual con cualquier ancho
+   de columna, porque el gap pesa poco al lado de la foto. */
+.tf__item--ancha { grid-column: span 2; aspect-ratio: 2.72 / 1; }
+
 .tf__item img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
 .tf__item:hover img { transform: scale(1.06); }
 
+.tf__pie {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 26px 12px 9px;
+  font-size: .78rem; color: #fff; line-height: 1.35;
+  background: linear-gradient(to top, rgba(43, 38, 33, .8), rgba(43, 38, 33, 0));
+  opacity: 0; transition: opacity .25s ease;
+  pointer-events: none;
+}
+.tf__item:hover .tf__pie, .tf__item:focus-within .tf__pie { opacity: 1; }
+
 @media (max-width: 760px) {
-  .todas-fotos__grilla { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); padding: 14px; }
+  .todas-fotos__grilla {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 14px; gap: 8px;
+  }
   .todas-fotos__cab { padding: 12px 14px; }
   .todas-fotos__filtros { padding: 12px 14px 0; }
+  /* en celular entran dos columnas justas: si la panorámica se lleva las dos,
+     queda una foto sola por fila y el listado se hace larguísimo */
+  .tf__item--ancha { grid-column: span 1; aspect-ratio: 4/3; }
+  .tf__pie { display: none; }
 }
 
 /* -------------------------------------------------------------- lightbox - */
@@ -1082,20 +1249,70 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 .tarifa__precios li:first-child strong { color: var(--terracota); font-size: 1.6rem; }
 .tarifa__unidad { font-size: .85rem; color: var(--piedra); margin-bottom: 20px; }
 
-/* ---------------------------------------------------------- modalidades - */
-.modalidades-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-.modalidad {
-  background: var(--crema); border: 1px solid var(--borde); border-radius: var(--radio);
-  padding: 28px 26px; display: flex; flex-direction: column;
+/* ------------------------------------------------- unidades (variante A) - */
+/* La casa completa ocupa más que las plantas a propósito: es lo que más se
+   alquila y no quedan tres columnas iguales. */
+.unidades {
+  display: grid; grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 22px; margin-bottom: 54px; align-items: start;
 }
-.modalidad__plazas {
-  font-family: var(--display); font-size: 2.6rem; color: var(--ocre);
-  line-height: 1; margin-bottom: 6px;
+.unidad { display: flex; flex-direction: column; }
+.unidad__foto {
+  width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
+  border-radius: var(--radio-sm); margin-bottom: 16px;
 }
-.modalidad__plazas small { font-family: var(--texto); font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--piedra); display: block; margin-top: 6px; }
-.modalidad h3 { font-size: 1.25rem; margin-bottom: 6px; }
-.modalidad__detalle { font-size: .8rem; letter-spacing: .04em; color: var(--terracota); font-weight: 600; margin-bottom: 12px; }
-.modalidad p { font-size: .92rem; color: var(--piedra); margin: 0; }
+.unidad--principal .unidad__foto { aspect-ratio: 16 / 10; }
+.unidad__cuerpo h3 { font-size: 1.2rem; margin-bottom: 4px; }
+.unidad--principal .unidad__cuerpo h3 { font-size: 1.5rem; }
+.unidad__meta {
+  font-size: .8rem; letter-spacing: .03em; color: var(--terracota);
+  font-weight: 600; margin-bottom: 10px;
+}
+.unidad__texto { font-size: .92rem; color: var(--piedra); margin: 0; }
+
+/* ---------------------------------------------------- bandas (variante B) - */
+/* Una fila por unidad, la foto cambia de lado en la del medio para que no
+   quede una columna prolija. */
+.bandas { display: flex; flex-direction: column; }
+.banda {
+  display: flex; align-items: center; gap: 38px;
+  padding: 34px 0; border-top: 1px solid var(--borde);
+}
+.banda:first-child { border-top: 0; padding-top: 0; }
+.banda:nth-child(even) { flex-direction: row-reverse; }
+.banda__foto {
+  width: 300px; flex-shrink: 0; aspect-ratio: 3 / 2;
+  object-fit: cover; border-radius: var(--radio-sm);
+}
+.banda--principal .banda__foto { width: 400px; aspect-ratio: 16 / 10; }
+.banda__cuerpo { flex: 1; }
+.banda__cuerpo h3 { font-size: 1.35rem; margin-bottom: 4px; }
+.banda--principal .banda__cuerpo h3 { font-size: 1.85rem; }
+.banda__meta {
+  font-size: .8rem; letter-spacing: .03em; color: var(--terracota);
+  font-weight: 600; margin-bottom: 10px;
+}
+.banda__texto { font-size: .95rem; color: var(--piedra); margin: 0 0 16px; }
+.banda__desde { font-size: .9rem; color: var(--piedra); margin: 0; }
+.banda__desde strong {
+  font-family: var(--display); font-size: 1.6rem; color: var(--terracota);
+  font-weight: 600; margin: 0 4px;
+}
+
+.bandas__pie {
+  border-top: 1px solid var(--borde); padding-top: 30px; margin-top: 8px;
+  text-align: center;
+}
+.plegable { margin-top: 20px; }
+.plegable summary {
+  cursor: pointer; list-style: none; display: inline-block;
+  font-size: .9rem; color: var(--carbon-suave);
+  border-bottom: 1px solid var(--borde); padding-bottom: 3px;
+}
+.plegable summary::-webkit-details-marker { display: none; }
+.plegable summary:hover { color: var(--terracota); border-color: var(--terracota); }
+.plegable summary::after { content: ' +'; color: var(--terracota); }
+.plegable[open] summary::after { content: ' −'; }
 
 #modalidades { margin-bottom: 22px; }
 #modalidades .tab small { font-weight: 500; opacity: .75; }
@@ -1521,6 +1738,12 @@ html.anim .revelar.visible { opacity: 1; transform: none; }
   .resumen { position: static; }
   .galeria { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 180px; }
   .cal__meses { grid-template-columns: 1fr; }
+  /* la casa completa arriba a lo ancho y las dos plantas debajo */
+  .unidades { grid-template-columns: 1fr 1fr; }
+  .unidad--principal { grid-column: 1 / -1; }
+  .unidad--principal .unidad__foto { aspect-ratio: 21 / 9; }
+  .banda__foto, .banda--principal .banda__foto { width: 240px; }
+  .banda { gap: 26px; }
 }
 
 @media (max-width: 760px) {
@@ -1539,6 +1762,11 @@ html.anim .revelar.visible { opacity: 1; transform: none; }
   .nav__links .boton { margin-top: 14px; justify-content: center; }
   .nav__burger { display: block; }
   .ambientes { grid-template-columns: 1fr; }
+  .unidades { grid-template-columns: 1fr; gap: 30px; }
+  .unidad--principal .unidad__foto { aspect-ratio: 16 / 10; }
+  /* en celular la foto va siempre arriba, alternar los lados no se nota */
+  .banda, .banda:nth-child(even) { flex-direction: column; align-items: stretch; gap: 16px; }
+  .banda__foto, .banda--principal .banda__foto { width: 100%; aspect-ratio: 16 / 10; }
   /* en celular la grilla se aplana: todas iguales, una al lado de la otra */
   .galeria { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 130px; gap: 10px; }
   .galeria__item:nth-child(8n+1),

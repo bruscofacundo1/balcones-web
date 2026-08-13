@@ -38,11 +38,32 @@ El repo ya viene listo. En [vercel.com](https://vercel.com):
    framework en *Other* y los campos de build vacíos.
 3. **Deploy**.
 
-No hace falta configurar nada más: no hay build, ni variables de entorno, ni
-dependencias. Cada `git push` a `main` publica automáticamente.
+El sitio en sí no necesita nada más: no hay build. Cada `git push` a `main`
+publica automáticamente.
 
 El `vercel.json` ya deja resuelto el caché (las fotos se guardan un año, el
 HTML y el código se revalidan siempre) y las URLs sin `.html`.
+
+### Para que funcione el cobro de la seña (Mercado Pago)
+
+Esto sí necesita configurarse una vez, después del primer deploy:
+
+1. **Storage → Create Database → "Redis"** (el reemplazo de la vieja
+   "Vercel KV") y conectarla al proyecto. Ahí quedan la disponibilidad "en
+   vivo" y las reservas pagadas online.
+2. **Settings → Environment Variables**, agregar:
+   - `MP_ACCESS_TOKEN` — el Access Token de
+     [mercadopago.com.ar/developers/panel](https://www.mercadopago.com.ar/developers/panel)
+     (empezá con el de prueba, `TEST-...`).
+   - `MP_WEBHOOK_SECRET` — opcional, la clave que da Mercado Pago al
+     configurar el webhook.
+3. En el panel de Mercado Pago, configurar el webhook apuntando a
+   `https://tu-dominio/api/webhook-mercadopago`, evento `payments`.
+4. En `js/config.js`, `CONFIG.mercadoPago.publicKey` con la Public Key (no es
+   secreta, así que va directo en el código).
+
+El detalle completo — cómo está armado, qué pasa si algo falla a mitad de
+camino, cómo probarlo — está en la sección 6 de `CONTEXTO.md`.
 
 ### Dominio propio
 

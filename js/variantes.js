@@ -10,6 +10,22 @@
    ============================================================================ */
 
 const VARIANTES_DEF = {
+  panelInicio: {
+    nombre: 'Reservas en el inicio',
+    porDefecto: 'a',
+    opciones: [
+      { id: 'a', nombre: 'Sin panel',  detalle: 'No se muestra el calendario en el inicio; se reserva con los botones "Reservar"' },
+      { id: 'b', nombre: 'Con panel',  detalle: 'Calendario y resumen completos, como antes' }
+    ]
+  },
+  alquiler: {
+    nombre: 'Cómo se alquila',
+    porDefecto: 'a',
+    opciones: [
+      { id: 'a', nombre: 'Unidades + precios', detalle: 'Las tres unidades una vez, y debajo los precios por temporada' },
+      { id: 'b', nombre: 'Bandas con foto',    detalle: 'Una banda por unidad con "desde $X"; los precios finos, plegados' }
+    ]
+  },
   reservas: {
     nombre: 'Reservas',
     porDefecto: 'c',
@@ -23,8 +39,9 @@ const VARIANTES_DEF = {
     nombre: 'La casa por dentro',
     porDefecto: 'a',
     opciones: [
-      { id: 'a', nombre: 'Carrusel', detalle: 'Una foto grande por vez' },
-      { id: 'b', nombre: 'Grilla',   detalle: 'Todas las fichas juntas' }
+      { id: 'a', nombre: 'Carrusel',  detalle: 'Una foto grande por vez, con el texto abajo' },
+      { id: 'c', nombre: 'Pantalla',  detalle: 'Casi toda la pantalla, con el texto sobre la foto' },
+      { id: 'b', nombre: 'Grilla',    detalle: 'Todas las fichas juntas' }
     ]
   },
   galeria: {

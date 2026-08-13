@@ -1,9 +1,15 @@
 /* ============================================================================
    Balcones del Arroyo — calendario de disponibilidad y cotizador
-   Depende de: config.js, disponibilidad.js
+   Depende de: config.js, disponibilidad.js, precios.js
 
    La casa se alquila entera o por planta. La disponibilidad se lleva por
    planta ('alta' y 'baja'); la casa completa necesita las dos libres.
+
+   Las cuentas de fechas y precios (aIso, cotizar, hayOcupadasEntre, etc.) no
+   están acá: viven en precios.js, que también usa el servidor para calcular
+   el pago. Este archivo las envuelve con los mismos nombres de siempre (y sin
+   tener que repetir CONFIG/OCUPADAS/estado.huespedes en cada llamado) para no
+   tener que tocar el resto del código que ya las usa.
    ============================================================================ */
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio',
@@ -12,28 +18,10 @@ const DIAS_CORTOS = ['Lu','Ma','Mi','Ju','Vi','Sá','Do'];
 
 /* ------------------------------------------------------------- utilidades */
 
-/** Fecha -> 'AAAA-MM-DD' usando la hora local (nunca UTC). */
-function aIso(fecha) {
-  const m = String(fecha.getMonth() + 1).padStart(2, '0');
-  const d = String(fecha.getDate()).padStart(2, '0');
-  return `${fecha.getFullYear()}-${m}-${d}`;
-}
-
-/** 'AAAA-MM-DD' -> Date local a medianoche. */
-function deIso(texto) {
-  const [a, m, d] = texto.split('-').map(Number);
-  return new Date(a, m - 1, d);
-}
-
-function sumarDias(fecha, n) {
-  const f = new Date(fecha);
-  f.setDate(f.getDate() + n);
-  return f;
-}
-
-function nochesEntre(desde, hasta) {
-  return Math.round((deIso(hasta) - deIso(desde)) / 86400000);
-}
+const aIso = Precios.aIso;
+const deIso = Precios.deIso;
+const sumarDias = Precios.sumarDias;
+const nochesEntre = Precios.nochesEntre;
 
 function formatoFechaLarga(iso) {
   const f = deIso(iso);
@@ -60,32 +48,21 @@ function tinte(hex, fuerza) {
 
 /* ------------------------------------------------------- disponibilidad -- */
 
-/**
- * Índice de noches ocupadas por planta.
- * Acepta también el formato viejo (una sola lista `ocupadas`), que se
- * interpreta como la casa entera ocupada.
- */
-const OCUPADAS = (() => {
-  const d = DISPONIBILIDAD || {};
-  if (Array.isArray(d.ocupadas)) {
-    const todas = new Set(d.ocupadas);
-    return { alta: todas, baja: new Set(todas) };
-  }
-  return { alta: new Set(d.alta || []), baja: new Set(d.baja || []) };
-})();
+/** Índice de noches ocupadas por planta, armado desde disponibilidad.js. */
+const OCUPADAS = Precios.construirOcupadas(DISPONIBILIDAD);
 
 function modalidadPorId(id) {
-  return CONFIG.modalidades.find(m => m.id === id) || CONFIG.modalidades[0];
+  return Precios.modalidadPorId(id, CONFIG) || CONFIG.modalidades[0];
 }
 
 /** ¿La modalidad elegida está libre esa noche? */
 function libre(iso, modalidad) {
-  return modalidad.ocupa.every(planta => !OCUPADAS[planta].has(iso));
+  return Precios.libre(iso, modalidad, OCUPADAS);
 }
 
 /** ¿Queda algo para alquilar esa noche, aunque sea una sola planta? */
 function libreAlguna(iso) {
-  return CONFIG.modalidades.some(m => libre(iso, m));
+  return Precios.libreAlguna(iso, CONFIG, OCUPADAS);
 }
 
 /**
@@ -117,28 +94,13 @@ function estadoDia(iso, modalidad, union) {
 
 /* ---------------------------------------------------------- temporadas -- */
 
-/**
- * Devuelve la temporada que corresponde a una fecha ISO.
- * Los rangos se definen como 'MM-DD' y se repiten todos los años; si el rango
- * termina antes de empezar (12-20 -> 02-28) se entiende que cruza el año.
- */
 function temporadaDe(iso) {
-  const md = iso.slice(5); // 'MM-DD'
-  for (const t of CONFIG.temporadas) {
-    for (const r of t.rangos) {
-      const cruzaAnio = r.hasta < r.desde;
-      const dentro = cruzaAnio
-        ? (md >= r.desde || md <= r.hasta)
-        : (md >= r.desde && md <= r.hasta);
-      if (dentro) return t;
-    }
-  }
-  return null;
+  return Precios.temporadaDe(iso, CONFIG);
 }
 
 /** Temporada por defecto cuando una fecha no cae en ningún rango. */
 function temporadaFallback() {
-  return CONFIG.temporadas.find(t => t.id === 'media') || CONFIG.temporadas[0];
+  return Precios.temporadaFallback(CONFIG);
 }
 
 /* --------------------------------------------------------------- estado -- */
@@ -318,13 +280,7 @@ function dibujarCalendario() {
 /* ----------------------------------------------------------- interacción */
 
 function hayOcupadasEntre(desde, hasta, modalidad = estado.modalidad) {
-  let f = deIso(desde);
-  const fin = deIso(hasta);
-  while (f < fin) {
-    if (!libre(aIso(f), modalidad)) return true;
-    f = sumarDias(f, 1);
-  }
-  return false;
+  return Precios.hayOcupadasEntre(desde, hasta, modalidad, OCUPADAS);
 }
 
 function elegirFecha(iso, union = false) {
@@ -412,8 +368,7 @@ function llenarHuespedes() {
 
 /** Precio por noche de una temporada para la modalidad elegida. */
 function precioNoche(temporada, modalidad) {
-  const base = temporada.precios[modalidad.id];
-  return CONFIG.reglas.precioPorUnidad ? base : base * estado.huespedes;
+  return Precios.precioNoche(temporada, modalidad, CONFIG, estado.huespedes);
 }
 
 /**
@@ -421,32 +376,7 @@ function precioNoche(temporada, modalidad) {
  * Devuelve { noches, tramos: [{temporada, noches, subtotal}], total, minNoches }
  */
 function cotizar(entrada, salida, modalidad = estado.modalidad) {
-  const tramos = new Map();
-  let total = 0;
-  let minNoches = CONFIG.reglas.minNochesGeneral;
-
-  let f = deIso(entrada);
-  const fin = deIso(salida);
-  while (f < fin) {
-    const t = temporadaDe(aIso(f)) || temporadaFallback();
-    const precio = precioNoche(t, modalidad);
-
-    const acc = tramos.get(t.id) || { temporada: t, noches: 0, subtotal: 0 };
-    acc.noches += 1;
-    acc.subtotal += precio;
-    tramos.set(t.id, acc);
-
-    total += precio;
-    minNoches = Math.max(minNoches, t.minNoches || 0);
-    f = sumarDias(f, 1);
-  }
-
-  return {
-    noches: nochesEntre(entrada, salida),
-    tramos: [...tramos.values()],
-    total,
-    minNoches
-  };
+  return Precios.cotizar(entrada, salida, modalidad, CONFIG, estado.huespedes);
 }
 
 /* --------------------------------------------------------------- resumen */
@@ -884,12 +814,22 @@ function iniciarDrawer() {
   aplicarVariante();
 }
 
+/** Muestra u oculta la sección completa de reservas del inicio (variante). */
+function aplicarPanelInicio() {
+  const sec = document.getElementById('reservas');
+  if (!sec) return;
+  sec.hidden = Variantes.get('panelInicio') !== 'b';
+}
+
 function iniciarReservas() {
   pintarModalidades();
   llenarHuespedes();
   pintarReferenciasTemporada();
   iniciarDrawer();
   iniciarModalReserva();
+
+  aplicarPanelInicio();
+  Variantes.alCambiar('panelInicio', aplicarPanelInicio);
 
   if (document.getElementById('cal-meses')) {
     document.getElementById('cal-prev').addEventListener('click', () => {

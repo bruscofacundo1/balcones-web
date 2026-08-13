@@ -207,8 +207,23 @@ const CONFIG = {
     { lugar: 'Las Calles / Los Hornillos', km: '15 km' }, // << REVISAR >>
     { lugar: 'Villa Dolores', km: '45 km' },              // << REVISAR >>
     { lugar: 'Córdoba capital (por Altas Cumbres)', km: '180 km' }
-  ]
+  ],
+
+  /* ----------------------------------------------------------- mercado pago
+     La clave pública (Public Key) va acá porque no es secreta: viaja igual
+     al navegador de cualquier visitante. El Access Token, que sí es secreto
+     y es el que puede cobrar de verdad, NUNCA va en este archivo — vive sólo
+     en Vercel, como variable de entorno del lado del servidor.             */
+  mercadoPago: {
+    publicKey: 'TEST-4324afda-d432-41be-b11d-3a1e1e3be4a2'   // clave de PRUEBA — cambiar por la real antes de publicar
+  }
 };
+
+/* Esto sólo corre del lado del servidor (api/*.js con require), nunca en el
+   navegador: ahí `module` no existe y esta línea no hace nada. Así el mismo
+   config.js es la única fuente de precios tanto para lo que ve el visitante
+   como para lo que valida el servidor antes de cobrar. */
+if (typeof module !== 'undefined' && module.exports) module.exports = { CONFIG };
 
 /* ============================================================================
    AMBIENTES — se muestran en la sección "La casa por dentro"

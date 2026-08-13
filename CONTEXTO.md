@@ -22,9 +22,21 @@ y entrar a `http://localhost:5173`.
 > Con `file://` el navegador bloquea la navegación entre páginas y el flujo de
 > reserva se corta al pasar a `reserva.html`.
 
-**Caché:** los `<script>` y el CSS se cargan con `?v=6`. Cuando publiques un
-cambio, **subí ese número** en `index.html` y `reserva.html` o los visitantes
-van a seguir viendo la versión vieja.
+**Caché:** los `<script>` y el CSS se cargan con `?v=24`. Cuando publiques un
+cambio, **subí ese número** en `index.html`, `reserva.html` y `checkout.html`
+o los visitantes van a seguir viendo la versión vieja.
+
+**Funciones serverless (`api/`):** necesitan sus dependencias instaladas una
+vez:
+
+```bash
+npm install
+```
+
+Eso sólo afecta a `api/` y `lib/` — el sitio en sí sigue sin build. Para
+probar el pago de verdad en tu compu hace falta además `vercel dev` (que lee
+las variables de un `.env.local`, ver §6) en vez del `python -m http.server`
+de arriba, porque ese servidor no sabe correr las funciones de `api/`.
 
 ## 1.b Publicación (Vercel)
 
@@ -40,9 +52,10 @@ dependencias. Los pasos están en el `README.md`.
   Los links del código siguen apuntando a `reserva.html` a propósito, para que
   también funcionen abriendo los archivos localmente; Vercel redirige solo.
 
-Cuando entre el pago (§6), las funciones serverless van en una carpeta `api/`
-en la raíz y Vercel las toma automáticamente — no hace falta cambiar el
-`vercel.json`.
+Las funciones serverless del pago (§6) viven en `api/` y Vercel las toma
+automáticamente por estar ahí — no hace falta tocar `vercel.json` para eso.
+Lo que sí hay que hacer a mano en el panel de Vercel: cargar las variables de
+entorno y conectar la base de Redis (los dos pasos están detallados en §6).
 
 ---
 
@@ -55,13 +68,19 @@ en la raíz y Vercel las toma automáticamente — no hace falta cambiar el
 | `checkout.html` | Paso 3: detalle, datos y (más adelante) el pago |
 | `admin.html` | Panel para cargar la disponibilidad. Genera el texto de `disponibilidad.js` |
 | `css/estilos.css` | Todos los estilos |
-| `js/config.js` | **Los datos del negocio**: precios, temporadas, textos, contacto, FAQ |
-| `js/disponibilidad.js` | Qué noches están ocupadas, por planta |
+| `js/config.js` | **Los datos del negocio**: precios, temporadas, textos, contacto, FAQ, Public Key de Mercado Pago |
+| `js/disponibilidad.js` | Qué noches están ocupadas, por planta (la base cargada a mano) |
+| `js/precios.js` | Fechas, disponibilidad y cotización — funciones puras, sin DOM. Las usa tanto el navegador como el servidor (ver §6) |
 | `js/variantes.js` | Sistema de variantes (provisorio, ver §5) |
-| `js/calendario.js` | Calendario, precios, drawer y modal de reserva |
+| `js/calendario.js` | Calendario, drawer y modal de reserva (usa `precios.js` para las cuentas) |
 | `js/app.js` | Arma el resto de la página: galería, carrusel, ambientes, FAQ… |
 | `js/reserva-pagina.js` | Lógica de `reserva.html` |
-| `js/checkout.js` | Lógica de `checkout.html` |
+| `js/checkout.js` | Lógica de `checkout.html`: datos, Payment Brick y pago |
+| `lib/mercadopago.js` | Cliente de Mercado Pago del lado del servidor |
+| `lib/reservas.js` | Disponibilidad "en vivo" en Redis: lo que ya se pagó online |
+| `api/crear-pago.js` | Cobra la seña (recalcula todo del lado del servidor) |
+| `api/webhook-mercadopago.js` | Recibe los avisos de Mercado Pago cuando cambia el estado de un pago |
+| `package.json` | Dependencias de `api/` y `lib/` (no hay build del sitio) |
 
 **Todo lo que se toca seguido está en `js/config.js`.** Precios, temporadas,
 comodidades, preguntas frecuentes, teléfono, mail. Los lugares marcados con
@@ -178,6 +197,46 @@ se cobra nada online todavía (ver §6).
 
 ---
 
+### El botón "Reservar" del menú
+
+Va en **ocre** (`--ocre`) y no en terracota: la terracota ya la usan todos los
+botones principales del sitio, así que en ocre éste no se confunde con los
+demás y se ve como *el* botón. El texto va en carbón y no en blanco porque
+sobre el ocre el blanco casi no se lee (con carbón el contraste da 6.16, de
+sobra).
+
+Late **una sola vez**, la primera vez que se pasa el inicio y el menú se
+vuelve sólido: justo cuando desaparece de la vista el botón grande del hero y
+éste pasa a ser la única puerta a reservar. La marca la pone `nav--llamar`
+desde `iniciarNav()` en `js/app.js`, con una bandera para que no se repita al
+seguir scrolleando.
+
+No parpadea todo el tiempo a propósito, y conviene que siga así: un botón
+titilando sin parar es de las cosas que hacen que un sitio se vea barato —
+justo lo que veníamos sacando de encima— y encima deja de llamar la atención a
+los diez segundos, porque el ojo lo aprende y lo ignora. La regla global de
+`prefers-reduced-motion` ya apaga la animación para quien tenga configurado
+que no quiere movimiento.
+
+Del menú se sacó **"Disponibilidad"**: tenía el mismo `data-reservar` que
+"Reservar", así que los dos abrían el mismo calendario.
+
+### Favicon
+
+Es el logo de la casa en blanco sobre el terracota de la marca (`#b4552f`, el
+mismo del `theme-color`), con las esquinas redondeadas. Se genera a partir de
+`img/logo-icono-blanco.png`, recortándole el transparente que traía de sobra
+al borde y componiendo a 512px para después bajar de tamaño, así no queda
+dentado. Salen tres archivos: `favicon.ico` (16/32/48, para Windows y
+pestañas viejas), `img/favicon-32.png` y `img/favicon-180.png` (para cuando
+alguien guarda el sitio en la pantalla del celular).
+
+**Ojo:** el logo es un dibujo de línea fina y bastante apaisado (2.13:1). En
+180px se ve perfecto, pero **a 16 o 32px se empasta y no se reconoce la
+casa** — es una limitación del dibujo, no del archivo. Si en algún momento
+molesta, la salida es un logo simplificado para tamaño chico (por ejemplo sólo
+el techo, o una inicial), no seguir peleando con el escalado.
+
 ## 5. Las variantes
 
 Varias secciones están hechas de más de una forma para poder compararlas antes
@@ -186,9 +245,57 @@ la elección queda guardada en el navegador.
 
 | Sección | Variantes | Por defecto |
 |---|---|---|
+| **Reservas en el inicio** | `a` sin panel · `b` con panel | `a` |
+| **Cómo se alquila** | `a` unidades + precios por temporada · `b` bandas con foto y "desde" | `a` |
 | **Reservas** | `c` modal en pasos · `b` panel lateral, fechas primero · `a` panel lateral, unidad primero | `c` |
-| **La casa por dentro** | `a` carrusel · `b` grilla | `a` |
+| **La casa por dentro** | `a` carrusel · `c` carrusel a pantalla · `b` grilla | `a` |
 | **La casa y el lugar** | `a` mosaico en 3 niveles · `b` grilla completa | `a` |
+
+### Reservas en el inicio
+
+La home tenía una sección `#reservas` con el calendario de dos meses y el panel
+de resumen al costado. Con el modal (flujo `c`) esa sección quedó duplicando lo
+mismo y alargando muchísimo el inicio, así que por defecto **no se muestra**:
+todos los botones "Reservar" / "Ver disponibilidad" / "Disponibilidad" abren el
+modal. La variante `b` la vuelve a mostrar tal cual estaba, para comparar.
+
+La sección sigue existiendo en `index.html` con el atributo `hidden`; la
+enciende `aplicarPanelInicio()` en `js/calendario.js`.
+
+### Cómo se alquila
+
+**Dónde va.** Justo después de "La casa", antes de "La casa por dentro". El
+motivo no es estético: la sección siguiente tiene las pestañas "Planta alta /
+Planta baja", y esas etiquetas no significan nada hasta que se explicó que la
+casa se divide en dos plantas independientes que se alquilan por separado.
+Antes esa explicación llegaba cinco secciones más tarde. De paso, el que quiere
+ir rápido hace casa → qué alquilás y cuánto → Reservar, sin pasar por 56 fotos.
+
+Al moverla se corrieron los fondos de las secciones que siguen
+(`seccion--arena` sale de ambientes y ubicación, y entra en galería y
+actividades) para que sigan alternando claro/arena y no queden dos pegadas.
+
+Antes eran **dos secciones** que decían lo mismo: "Cómo se alquila" (cards con
+las plazas y la descripción de cada unidad) y "Tarifas" (cards por temporada
+que volvían a listar `Casa completa · 9 plazas`, y así con las tres, una vez
+por temporada). El nombre, las plazas y el detalle aparecían cuatro veces.
+
+Ahora es **una sola sección** (`#tarifas`, donde estaba Tarifas, justo antes de
+reservar) y las plazas se dicen una vez:
+
+- **`a` — unidades + precios.** Arriba las tres unidades presentadas una sola
+  vez (foto, nombre, plazas, detalle), con la casa completa más ancha que las
+  plantas para que no queden tres columnas iguales. Abajo, las cards por
+  temporada como estaban, pero ya sin repetir las plazas: sólo nombre y precio.
+- **`b` — bandas con foto.** Una banda por unidad, alternando el lado de la
+  foto (la casa completa más grande), con `desde $X la noche` en vez del cuadro
+  completo. El detalle por temporada queda plegado en "Ver precios por
+  temporada". Es la que menos hace leer: la idea es que el que quiere reservar
+  rápido vea unidad, foto y precio de referencia, y el número exacto salga del
+  calendario.
+
+El `desde` sale de `precioDesde()` en `js/app.js`: el mínimo de esa unidad
+entre todas las temporadas de `config.js`, no un número escrito a mano.
 
 ### Reservas
 
@@ -212,7 +319,35 @@ alternativa queda escondida.
 - **`a` carrusel:** una foto grande por vez, con las vecinas asomando a los
   lados, flechas, puntitos y teclas ←/→. El título y la descripción van
   **abajo** de la foto, no encima, para que se lean siempre.
+- **`c` carrusel a pantalla:** el mismo carrusel con otra piel. La foto ocupa
+  casi todo el alto de la ventana (`76vh`, así se acomoda solo al zoom y a
+  cada monitor, no a una medida fija), se sale del contenedor a todo el ancho,
+  y la descripción va **encima** de la foto sobre un degradado oscuro.
 - **`b` grilla:** todas las fichas juntas (lo que había antes).
+
+`a` y `c` **comparten toda la lógica**: es un solo carrusel y la variante sólo
+cambia una clase CSS (`.carrusel--pantalla`) y qué foto se carga — en `c` se
+usa la original en vez de la miniatura de 760px, que a ese tamaño se vería
+borrosa. No hay código duplicado que mantener al par.
+
+Dos cosas que se resolvieron distinto en celular para `c`, porque la pantalla
+angosta y alta rompía las dos ideas que la definen:
+
+- El alto deja de ir en `vh` y lo manda el formato de la foto. Con `66vh` la
+  imagen quedaba vertical (260×421 sobre un original 4:3) y recortaba los
+  costados de cada ambiente.
+- El texto vuelve abajo de la foto. Encima de una imagen de 300px de ancho, el
+  bloque de descripción tapaba el 97% de la foto.
+
+**Bug que apareció de paso:** en la variante `a` la descripción estaba escrita
+pero no se veía. Todas las fotos del carrusel eran `position: absolute`, así
+que el contenedor no tenía alto propio y se quedaba en su `min-height`; el
+`overflow: hidden` (que está para recortar a lo ancho las fotos vecinas, que
+se salen a propósito) cortaba el texto por abajo. Se arregló dejando **sólo la
+foto activa en el flujo** (`.carrusel__item--activo { position: relative }`),
+así el contenedor crece hasta donde llega el texto. El `min-height` del pie
+está para que el alto no salte al pasar de una foto a otra cuando un texto
+ocupa una línea más.
 
 El carrusel ocupa muchísimo menos alto, que era el problema: con 15 ambientes
 la grilla se hacía eterna, sobre todo en celular.
@@ -226,6 +361,45 @@ Tres niveles, como Booking o Airbnb:
 2. **Todas las fotos** en chiquito, a pantalla completa y con filtros.
 3. **Visor** de una por una, con tira de miniaturas abajo y contador `12 / 56`.
 
+**Cualquier** foto del mosaico abre el nivel 2, no la foto sola. El mosaico es
+la vidriera: el que hace clic en una de las ocho quiere ver el resto, no esa
+foto en grande. La foto sola se abre desde el nivel 2, que es donde ya elegiste.
+
+Dos cosas del nivel 2 que se ajustaron mirando cómo quedaba de verdad:
+
+- **Las fotos se pisaban unas con otras.** Éste era el problema de fondo, y
+  no se veía leyendo el CSS: la grilla es un `flex: 1 1 auto` dentro de la
+  ventana completa, así que el navegador le achicaba el alto para que entrara
+  y dejaba las filas en 34px con fotos de 238px encima. Se arregla con
+  `grid-auto-rows: max-content`: cada fila mide lo que mide su foto y la
+  grilla se desplaza hacia abajo, que es lo que corresponde en una vista que
+  existe para mirar fotos.
+- **La grilla tiene tope de ancho y cantidad fija de columnas** (4 · 3 · 2
+  según la pantalla), en vez de `auto-fill`. Sin tope, en un monitor grande
+  entraban nueve columnas de fotos diminutas: parecía una planilla de
+  contactos. Y con `auto-fill` el tamaño de la foto cambiaba solo según el
+  ancho de la ventana. Bajar scrolleando acá no molesta.
+- **`grid-auto-flow: dense`** para que la panorámica que no entra al final de
+  una fila no deje un hueco: se rellena con la foto siguiente.
+- **Las panorámicas ocupan dos columnas.** De las 56 fotos, 43 son 4:3 y sólo
+  4 son panorámicas de 2.22:1. Metidas en el mismo cuadrito que las demás
+  perdían un 40% del ancho, justo el paisaje que hace que valga la pena la
+  foto. Con el doble de ancho entran casi enteras (se recorta algo de cielo y
+  de piso, que no molesta) y de paso la grilla deja de ser un damero perfecto.
+  El corte está en 2.0 y no más abajo a propósito: a las 16:9 les conviene
+  quedarse en el cuadro chico, porque en el ancho perdían más alto del que
+  ganaban de paisaje. La marca la pone `marcarPanoramica()` en `js/app.js`
+  midiendo la foto cuando carga, no con una lista escrita a mano.
+
+  El `aspect-ratio: 2.72/1` de la ficha ancha no es un número al azar: es lo
+  que mide una ficha de dos columnas más el espacio del medio, comparado con
+  el alto de las 4:3 de al lado. Con eso las filas quedan parejas. (Dejarlo en
+  `auto` esperando que `stretch` le diera el alto no funciona: la ficha se
+  desplomaba a 24px.)
+
+  En celular la panorámica vuelve al cuadro normal: entran dos columnas
+  justas, y si una se llevaba las dos quedaba una foto sola por fila.
+
 Con 56 fotos, mostrarlas todas de una hacía la home larguísima.
 
 ### Cuando decidan
@@ -236,28 +410,122 @@ Está todo marcado con comentarios.
 
 ---
 
-## 6. Lo que falta
+## 6. Cobrar la seña (Mercado Pago)
 
-### Cobrar la seña (decidido: Mercado Pago con backend serverless)
+Ya está armado de punta a punta: `checkout.html` muestra el formulario de
+tarjeta de Mercado Pago (Payment Brick), y al pagar la seña la fecha queda
+bloqueada sola, sin que nadie tenga que actualizar `admin.html` a mano.
 
-Hoy no se cobra nada. El plan acordado:
+### Cómo está armado
 
-1. Una función serverless (Netlify Functions o Cloudflare Workers, gratis en el
-   tier básico) que genera la preferencia de pago con el monto real.
-2. **No se puede hacer sólo desde el navegador**: habría que poner el access
-   token de Mercado Pago en el front y cualquiera podría leerlo y emitir cobros
-   a nombre del dueño.
-3. `checkout.html` **ya recalcula los precios** con `config.js` en vez de
-   confiar en el total que le llega, y revalida la disponibilidad. Eso es a
-   propósito: es la base para que el monto no se pueda manipular desde el
-   navegador. El handler de "Confirmar reserva" en `js/checkout.js` es el punto
-   donde se enchufa la llamada a la función serverless.
+```
+navegador (checkout.js)                    servidor (api/, lib/)
+────────────────────────                   ──────────────────────
+Payment Brick arma un token    ──POST──▶   api/crear-pago.js
+de la tarjeta (no ve el número                │
+real: es un iframe de MP)                     │ 1. busca la modalidad en config.js
+                                               │ 2. junta disponibilidad.js (la base,
+                                               │    cargada a mano) con lo que ya se
+                                               │    pagó online (Redis)
+                                               │ 3. si la fecha sigue libre, cotiza con
+                                               │    precios.js — el mismo cálculo que
+                                               │    usa el navegador, no una copia
+                                               │ 4. le pide a Mercado Pago que cobre la
+                                               │    seña (nunca un monto que mandó el
+                                               │    navegador)
+                                               │ 5. si se aprobó, marca esas noches
+                                               │    ocupadas en Redis
+                                               ▼
+                                          responde {status, sena}
+```
 
-**Importante:** cobrar online obliga a resolver la disponibilidad automática.
-Hoy las fechas ocupadas se cargan a mano en `admin.html`; si alguien paga por
-fechas que todavía no se marcaron, hay sobreventa. Hace falta que la reserva
-pagada bloquee las fechas sola, o sea una base de datos chica (Supabase o
-Netlify Blobs alcanzan).
+`js/precios.js` es la pieza clave de ese diseño: son las cuentas de fechas y
+plata (antes vivían sólo en `calendario.js`) sacadas a un archivo sin nada de
+DOM, que corre igual con `<script>` en el navegador que con `require()` en
+Node. Así el servidor no tiene una copia de la lógica de precios que se pueda
+desincronizar de la que ve el visitante — es la misma cuenta.
+
+**El navegador nunca decide el precio.** `checkout.js` manda el token de la
+tarjeta y la reserva elegida (modalidad, fechas, huéspedes); el monto que se
+cobra lo calcula `api/crear-pago.js` desde cero. Aunque alguien manipulara
+`checkout.js` en su propio navegador, lo único que lograría es que el
+servidor le cobre el precio real igual, o rechace la fecha si ya no está
+libre.
+
+### Disponibilidad: dos capas
+
+- **`disponibilidad.js`** sigue siendo la base, cargada a mano con
+  `admin.html`, para reservas que se coordinan por WhatsApp/transferencia.
+- **Redis** (ver más abajo) guarda aparte las noches que se pagaron online.
+  `api/crear-pago.js` junta las dos antes de aceptar un pago nuevo
+  (`Precios.unirOcupadas`), así una reserva pagada bloquea la fecha al
+  instante sin depender de que alguien actualice el archivo.
+
+No hace falta migrar `admin.html` a la base: las dos conviven. Si algún día
+se quiere ver todo en un solo lugar, el siguiente paso sería que `admin.html`
+también lea las reservas de Redis (`reservas:lista` en `lib/reservas.js`
+tiene el índice) — no es necesario para que esto funcione hoy.
+
+### Qué hace falta cargar (una sola vez)
+
+1. **Conectar Redis al proyecto en Vercel.** Storage → Create Database →
+   buscar **"Redis"** (la vieja "Vercel KV" quedó discontinuada; el
+   reemplazo del Marketplace usa Upstash por debajo, pero el código no le
+   pide nada raro: `@upstash/redis` con las variables `KV_REST_API_URL` /
+   `KV_REST_API_TOKEN` que la integración carga sola). Un clic, sin cuenta
+   aparte.
+2. **`MP_ACCESS_TOKEN`**, como variable de entorno del proyecto en Vercel
+   (Project Settings → Environment Variables). Es el Access Token de
+   [mercadopago.com.ar/developers/panel](https://www.mercadopago.com.ar/developers/panel).
+   Usar el de **prueba** (`TEST-...`) hasta haber probado un pago de punta a
+   punta; recién después cambiar al de producción (`APP_USR-...`).
+3. **`MP_WEBHOOK_SECRET`** (opcional pero recomendado): la "Clave secreta"
+   que Mercado Pago muestra al configurar el webhook. Sin ella el webhook
+   sigue funcionando — valida cada pago llamando directo a la API de
+   Mercado Pago con el Access Token — pero no puede confirmar de entrada que
+   la notificación vino realmente de ellos.
+4. **La URL del webhook** en el panel de Mercado Pago (Tu aplicación →
+   Webhooks): `https://tu-dominio/api/webhook-mercadopago`, evento `payments`.
+5. **`CONFIG.mercadoPago.publicKey`** en `js/config.js` — la Public Key (no
+   es secreta, viaja al navegador). Ya tiene cargada la de prueba.
+
+`.env.example` en la raíz lista estas mismas variables para probar en la
+computadora con `vercel dev` (copiarlo a `.env.local`, que queda fuera de
+Git).
+
+### Qué pasa si algo falla a mitad de camino
+
+- **Sin Public Key o si el Brick no carga** (`js/checkout.js`,
+  `mostrarFallbackWsp`): el pago con tarjeta desaparece y vuelve el mensaje
+  de "todavía no cobramos online, te escribimos por WhatsApp" que había
+  antes. El sitio nunca queda con un botón de pagar roto.
+- **Mercado Pago aprueba el pago pero guardar en Redis falla** (por ejemplo,
+  si todavía no se conectó la base): esto se probó a propósito con un test
+  que simulaba la falla, y **no se puede convertir en un error 500** — el
+  huésped ya pagó, eso no se puede deshacer. `api/crear-pago.js` separa esa
+  parte en su propio `try/catch`: igual responde que el pago salió bien, pero
+  con un aviso para que confirme por WhatsApp con el comprobante, y deja un
+  `console.error` bien explícito en los logs de Vercel para revisar la
+  reserva a mano. El webhook, además, reintenta guardarla solo cuando llegue
+  la notificación.
+- **Dos personas pagan la misma fecha casi al mismo tiempo:** la segunda
+  reserva la rechaza `api/crear-pago.js` con 409 antes de cobrarle nada
+  (revalida disponibilidad justo antes de llamar a Mercado Pago). No elimina
+  el margen de una carrera perfectamente simultánea — para eso haría falta un
+  lock atómico en Redis — pero para el volumen de esta casa (una reserva
+  online cada tanto, no un sitio con miles de visitas por minuto) es
+  suficiente.
+
+### Cómo probar
+
+1. `npm install`.
+2. Cargar `.env.local` con `MP_ACCESS_TOKEN` de prueba.
+3. En Mercado Pago, [las tarjetas de test](https://www.mercadopago.com.ar/developers/es/docs/checkout-api/additional-content/your-integrations/test/cards)
+   simulan aprobado/rechazado según el nombre del titular que se cargue.
+4. Con `vercel dev` (no alcanza el `python -m http.server` de §1, porque ese
+   no corre las funciones de `api/`), probar una reserva completa en
+   `checkout.html` y confirmar que la fecha queda ocupada en el calendario
+   después.
 
 ### Contenido (lo que más falta)
 

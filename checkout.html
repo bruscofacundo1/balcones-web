@@ -9,13 +9,18 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#b4552f">
 
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23b4552f'/><path d='M20 58 L50 32 L80 58 v22 H20z' fill='%23f6f1e8'/><circle cx='50' cy='24' r='7' fill='%23d89a4a'/></svg>">
+<!-- El logo de la casa, en blanco sobre el terracota de la marca.
+     Se generan desde img/logo-icono-blanco.png; el .ico es para Windows y
+     pestañas viejas, el de 180 para cuando alguien lo guarda en el celular. -->
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="apple-touch-icon" href="img/favicon-180.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="css/estilos.css?v=12">
+<link rel="stylesheet" href="css/estilos.css?v=24">
 </head>
 <body class="pagina-reserva">
 
@@ -111,36 +116,48 @@
       </section>
 
       <!-- ------------------------------------------------------- el pago -->
-      <section class="panel">
+      <section class="panel" id="panel-pago">
         <h2 class="panel__titulo">Cómo se paga</h2>
 
-        <div class="pago-nota">
-          <p><strong>Todavía no estamos cobrando online.</strong> Al confirmar te
+        <!-- estado 1: todavía no se completaron los datos -->
+        <div id="pago-previo">
+          <p class="pago-ayuda">Pagás la seña ahora con tarjeta, de forma segura a
+            través de Mercado Pago. El resto se abona al llegar.</p>
+          <label class="acepto">
+            <input type="checkbox" id="f-acepto">
+            <span>Entiendo que la reserva se confirma recién cuando se acredita la seña.</span>
+          </label>
+        </div>
+
+        <!-- estado 2: formulario de tarjeta de Mercado Pago -->
+        <div id="pago-brick-caja" hidden>
+          <div id="pago-brick"></div>
+          <p class="pago-estado" id="pago-estado" role="status"></p>
+        </div>
+
+        <!-- si todavía no hay Public Key cargada, o el Brick no pudo iniciar -->
+        <div class="pago-nota" id="pago-fallback" hidden>
+          <p><strong>Todavía no podemos cobrar online acá.</strong> Al confirmar te
             escribimos por WhatsApp con los datos para transferir la seña, y con eso
             te quedan tomadas las fechas.</p>
           <p style="margin-bottom:0">El resto se abona al llegar.</p>
         </div>
 
-        <label class="acepto">
-          <input type="checkbox" id="f-acepto">
-          <span>Entiendo que la reserva se confirma recién cuando pago la seña.</span>
-        </label>
-
         <div class="aviso" id="form-aviso"></div>
       </section>
 
       <!-- ------------------------------------------------------ acciones -->
-      <div class="checkout__pie">
+      <div class="checkout__pie" id="checkout-pie">
         <a class="checkout__volver" href="reserva.html">&#8592; Volver</a>
         <div class="checkout__total">
           <span>Seña a pagar</span>
           <strong id="ck-total-pie"></strong>
         </div>
-        <button class="boton boton--primario" id="btn-finalizar">Confirmar reserva</button>
+        <button class="boton boton--primario" id="btn-finalizar">Continuar al pago</button>
       </div>
 
       <p class="letra-chica">El valor es estimativo hasta que confirmemos la
-        disponibilidad. No se cobra nada en este paso.</p>
+        disponibilidad. No se cobra nada hasta que completes el pago.</p>
     </div>
   </div>
 </main>
@@ -151,10 +168,16 @@
   </div>
 </footer>
 
-<script src="js/config.js?v=12"></script>
-<script src="js/disponibilidad.js?v=12"></script>
-<script src="js/variantes.js?v=12"></script>
-<script src="js/calendario.js?v=12"></script>
-<script src="js/checkout.js?v=12"></script>
+<!-- SDK de Mercado Pago: dibuja el formulario de tarjeta (Payment Brick).
+     El propio campo de tarjeta es un iframe de Mercado Pago: ese dato nunca
+     lo tocan ni este sitio ni checkout.js. -->
+<script src="https://sdk.mercadopago.com/js/v2"></script>
+
+<script src="js/config.js?v=24"></script>
+<script src="js/disponibilidad.js?v=24"></script>
+<script src="js/precios.js?v=24"></script>
+<script src="js/variantes.js?v=24"></script>
+<script src="js/calendario.js?v=24"></script>
+<script src="js/checkout.js?v=24"></script>
 </body>
 </html>

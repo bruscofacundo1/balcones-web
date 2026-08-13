@@ -8,3 +8,13 @@ desktop.ini
 *.zip
 *.mp4
 *.MOV
+
+# claves: el Access Token de Mercado Pago vive acá para probar en la compu.
+# NUNCA se sube — en Vercel se carga aparte, como variable de entorno.
+.env
+.env.local
+.env*.local
+
+# dependencias de las funciones serverless (api/) y carpeta de Vercel
+node_modules/
+.vercel/

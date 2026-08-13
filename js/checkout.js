@@ -1,14 +1,18 @@
 /* ============================================================================
    Balcones del Arroyo — paso 3: datos y pago
-   Depende de: config.js, disponibilidad.js, variantes.js, calendario.js
+   Depende de: config.js, disponibilidad.js, precios.js, variantes.js,
+   calendario.js, y del SDK de Mercado Pago (window.MercadoPago).
 
    Llega con las fechas y la unidad ya elegidas. Vuelve a validar las dos cosas
    (que el tramo siga libre y que la unidad sirva) y recalcula el precio con
-   config.js, sin confiar en nada que venga del navegador.
+   config.js, sin confiar en nada que venga del navegador. El monto que se
+   cobra tampoco sale de acá: /api/crear-pago lo vuelve a calcular del lado
+   del servidor con la misma cuenta (precios.js), así que aunque alguien
+   manipulara este archivo en su propio navegador no podría pagar de menos.
 
-   Hoy termina armando el mensaje de WhatsApp. Cuando entre Mercado Pago, el
-   handler de "Confirmar reserva" llama a la función serverless que crea el
-   pago de la seña — el resto de la página no cambia.
+   El campo de tarjeta es el Payment Brick de Mercado Pago: un iframe de ellos
+   incrustado en la página. El número de tarjeta nunca pasa por este código ni
+   por nuestro servidor — el Brick nos da sólo un token de un solo uso.
    ============================================================================ */
 
 let calculo = null;
@@ -133,6 +137,148 @@ function mensajeCompleto(datos) {
   return l.join('\n');
 }
 
+/* ----------------------------------------------------------------- pago -- */
+
+/** true si hay una Public Key cargada en config.js (aunque sea la de prueba). */
+function hayMercadoPagoConfigurado() {
+  return Boolean(CONFIG.mercadoPago && CONFIG.mercadoPago.publicKey);
+}
+
+function estadoPago(texto, tipo) {
+  const el = document.getElementById('pago-estado');
+  el.className = `pago-estado${tipo ? ` pago-estado--${tipo}` : ''}`;
+  el.textContent = texto || '';
+}
+
+/**
+ * Manda el pago recién creado por el Brick a nuestro servidor. El servidor
+ * es quien de verdad cobra: acá sólo se le pasan el token de la tarjeta y los
+ * datos de la reserva, nunca un monto — eso lo vuelve a calcular él.
+ */
+function confirmarPago(formData, datos) {
+  return fetch('/api/crear-pago', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ...formData,
+      reserva: {
+        modalidad: estado.modalidad.id,
+        entrada: estado.entrada,
+        salida: estado.salida,
+        huespedes: estado.huespedes
+      },
+      datos
+    })
+  }).then(async r => {
+    const cuerpo = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(cuerpo.error || 'No pudimos procesar el pago.');
+    return cuerpo;
+  });
+}
+
+function pintarExito(datos, resultado) {
+  // Si el pago se acreditó pero el servidor no pudo guardar la reserva (ver
+  // el comentario en api/crear-pago.js), el huésped ya pagó igual: hay que
+  // decírselo tal cual y empujarlo fuerte hacia el WhatsApp, no esconderlo.
+  const conProblema = Boolean(resultado.avisoGuardado);
+
+  const caja = document.getElementById('pago-brick-caja');
+  caja.innerHTML = `
+    <div class="pago-exito">
+      <h3>${conProblema ? 'Se acreditó el pago' : '¡Listo, quedaste reservado!'}</h3>
+      <p>Pagaste la seña de ${pesos(resultado.sena)}.
+        ${conProblema
+          ? resultado.avisoGuardado
+          : 'Las fechas ya están tomadas a tu nombre. Te va a llegar la confirmación de Mercado Pago por email.'}</p>
+      <a class="boton boton--wsp" id="btn-avisar-wsp" href="#" target="_blank" rel="noopener">
+        ${conProblema ? 'Avisar por WhatsApp' : 'Avisar por WhatsApp igual'}
+      </a>
+    </div>`;
+  document.getElementById('btn-avisar-wsp').href =
+    enlaceWsp(`¡Ya pagué la seña con Mercado Pago!\n\n${mensajeCompleto(datos)}`);
+  document.getElementById('checkout-pie').hidden = true;
+  document.getElementById('panel-pago').querySelector('.panel__titulo').textContent =
+    conProblema ? 'Confirmá por WhatsApp' : 'Reserva confirmada';
+  document.querySelector('.pasos .paso--activo')?.classList.replace('paso--activo', 'paso--hecho');
+}
+
+const MENSAJES_RECHAZO = {
+  cc_rejected_insufficient_amount: 'La tarjeta no tiene fondos suficientes.',
+  cc_rejected_bad_filled_security_code: 'El código de seguridad está mal escrito.',
+  cc_rejected_bad_filled_date: 'La fecha de vencimiento está mal escrita.',
+  cc_rejected_bad_filled_card_number: 'El número de tarjeta está mal escrito.',
+  cc_rejected_call_for_authorize: 'El banco pide autorizar el pago antes. Llamalo o probá con otra tarjeta.',
+  cc_rejected_card_disabled: 'Esa tarjeta está deshabilitada. Probá con otra o llamá al banco.',
+  cc_rejected_high_risk: 'El pago fue rechazado por seguridad. Probá con otro medio de pago.'
+};
+
+/** Arma el Payment Brick dentro de #pago-brick, para cobrar `sena`. */
+function iniciarBrick(sena, datos) {
+  const mp = new MercadoPago(CONFIG.mercadoPago.publicKey, { locale: 'es-AR' });
+
+  return mp.bricks().create('payment', 'pago-brick', {
+    initialization: {
+      amount: sena,
+      payer: { email: datos.email, entityType: 'individual' }
+    },
+    customization: {
+      // Para sacar un medio de pago no se pone 'none': directamente no se
+      // incluye la clave. 'none' rompía la inicialización del Brick porque
+      // lo interpretaba como un método de "ticket" llamado "none".
+      paymentMethods: {
+        creditCard: 'all',
+        debitCard: 'all',
+        mercadoPago: 'all'
+      }
+    },
+    callbacks: {
+      onReady: () => estadoPago(''),
+      onError: err => {
+        console.error('Payment Brick:', err);
+        estadoPago('No se pudo cargar el formulario de pago. Recargá la página o escribinos por WhatsApp.', 'error');
+      },
+      onSubmit: ({ formData }) => new Promise((resolve, reject) => {
+        estadoPago('Procesando el pago…');
+        confirmarPago(formData, datos)
+          .then(resultado => {
+            if (resultado.status === 'approved') {
+              pintarExito(datos, resultado);
+              resolve();
+              return;
+            }
+            if (resultado.status === 'in_process' || resultado.status === 'pending') {
+              estadoPago('Tu pago está en revisión. Te confirmamos apenas se acredite.', 'aviso');
+              resolve();
+              return;
+            }
+            estadoPago(
+              MENSAJES_RECHAZO[resultado.status_detail] ||
+              'El pago fue rechazado. Podés probar de nuevo con otra tarjeta.',
+              'error'
+            );
+            reject();
+          })
+          .catch(err => {
+            estadoPago(err.message || 'No pudimos procesar el pago. Probá de nuevo.', 'error');
+            reject();
+          });
+      })
+    }
+  });
+}
+
+/** Muestra el mensaje de "todavía no cobramos online" (sin Public Key, o si el Brick no arrancó). */
+function mostrarFallbackWsp(datos) {
+  document.getElementById('pago-brick-caja').hidden = true;
+  document.getElementById('pago-fallback').hidden = false;
+  const boton = document.getElementById('btn-finalizar');
+  boton.textContent = 'Confirmar reserva';
+  boton.hidden = false;
+  boton.onclick = () => {
+    window.open(enlaceWsp(mensajeCompleto(datos)), '_blank', 'noopener');
+  };
+}
+
 /* ------------------------------------------------------------ arranque -- */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -150,6 +296,23 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-finalizar').addEventListener('click', () => {
     const datos = leerFormulario();
     if (!datos) return;
-    window.open(enlaceWsp(mensajeCompleto(datos)), '_blank', 'noopener');
+
+    document.getElementById('pago-previo').hidden = true;
+    document.getElementById('btn-finalizar').hidden = true;
+
+    if (!hayMercadoPagoConfigurado()) {
+      mostrarFallbackWsp(datos);
+      return;
+    }
+
+    document.getElementById('pago-brick-caja').hidden = false;
+    document.getElementById('pago-brick-caja').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    try {
+      iniciarBrick(calculo.sena, datos);
+    } catch (err) {
+      console.error('No se pudo iniciar Mercado Pago:', err);
+      mostrarFallbackWsp(datos);
+    }
   });
 });

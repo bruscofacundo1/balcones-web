@@ -12,7 +12,18 @@ function iniciarNav() {
   const burger = document.getElementById('nav-burger');
   const links = document.getElementById('nav-links');
 
-  const alScrollear = () => nav.classList.toggle('nav--solida', window.scrollY > 60);
+  // El "Reservar" del menú late una sola vez, la primera vez que se deja
+  // atrás el inicio: ahí desaparece de la vista el botón grande del hero y
+  // éste pasa a ser la única puerta a reservar. Después no molesta más.
+  let yaLlamo = false;
+  const alScrollear = () => {
+    const solida = window.scrollY > 60;
+    nav.classList.toggle('nav--solida', solida);
+    if (solida && !yaLlamo) {
+      yaLlamo = true;
+      nav.classList.add('nav--llamar');
+    }
+  };
   alScrollear();
   window.addEventListener('scroll', alScrollear, { passive: true });
 
@@ -135,9 +146,13 @@ function pintarCarruselAmbientes(planta = 'todas') {
   carrLista = planta === 'todas' ? AMBIENTES : AMBIENTES.filter(a => a.planta === planta);
   carrIndice = 0;
 
+  // La variante 'c' muestra la foto casi a pantalla completa: con la miniatura
+  // (760px de ancho) se vería borrosa, así que ahí va la foto grande.
+  const src = Variantes.get('ambientes') === 'c' ? IMG : THUMB;
+
   pista.innerHTML = carrLista.map((a, i) => `
     <figure class="carrusel__item" data-i="${i}">
-      <img src="${THUMB(a.foto)}" alt="${a.titulo}" loading="lazy"
+      <img src="${src(a.foto)}" alt="${a.titulo}" loading="lazy"
            data-foto="${a.foto}" data-titulo="${a.titulo}">
       <figcaption class="carrusel__pie">
         <p class="carrusel__meta">${a.meta}</p>
@@ -193,7 +208,7 @@ function iniciarCarruselAmbientes() {
   // flechas del teclado cuando el carrusel está a la vista
   document.addEventListener('keydown', e => {
     if (document.getElementById('lightbox').classList.contains('abierto')) return;
-    if (Variantes.get('ambientes') !== 'a') return;
+    if (Variantes.get('ambientes') === 'b') return;   // la grilla no se navega
     const caja = document.getElementById('ambientes-carrusel');
     const r = caja.getBoundingClientRect();
     if (r.top > window.innerHeight || r.bottom < 0) return;
@@ -202,14 +217,21 @@ function iniciarCarruselAmbientes() {
   });
 }
 
-/** Muestra la grilla o el carrusel según la variante elegida. */
+/**
+ * Muestra la grilla o el carrusel según la variante elegida.
+ * 'a' y 'c' son el mismo carrusel con distinta piel: cambia sólo el CSS
+ * (y la foto que se carga), así que la lógica de navegación es una sola.
+ */
 function aplicarVarianteAmbientes(v = Variantes.get('ambientes')) {
   const carr = document.getElementById('ambientes-carrusel');
   const grilla = document.getElementById('ambientes');
   if (!carr || !grilla) return;
-  carr.hidden = v !== 'a';
+
+  carr.hidden = v === 'b';
   grilla.hidden = v !== 'b';
-  if (v === 'a') pintarCarruselAmbientes(plantaAmbientes);
+  carr.classList.toggle('carrusel--pantalla', v === 'c');
+
+  if (v !== 'b') pintarCarruselAmbientes(plantaAmbientes);
 }
 
 /* ---------------------------------------------------------- actividades -- */
@@ -281,13 +303,12 @@ function pintarMosaico() {
         ? `<figcaption class="mosaico__mas">+${restantes} fotos</figcaption>` : ''}
     </figure>`).join('');
 
+  // Cualquier foto del mosaico abre el listado completo, no la foto sola.
+  // El mosaico es la vidriera: mostrás ocho, y el que se engancha con
+  // cualquiera de ellas quiere ver el resto, no esa foto en grande. Desde el
+  // listado sí se abre una por una.
   cont.querySelectorAll('.mosaico__item').forEach(el => {
-    el.addEventListener('click', () => {
-      const i = Number(el.dataset.i);
-      // la última abre el listado completo; las otras, la foto grande
-      if (i === destacadas.length - 1 && restantes > 0) abrirTodasLasFotos();
-      else abrirLightbox(destacadas.map(f => ({ f: f.f, t: f.t })), i);
-    });
+    el.addEventListener('click', abrirTodasLasFotos);
   });
 
   const pie = document.createElement('button');
@@ -307,11 +328,37 @@ function pintarTodasLasFotos(categoria = 'todas') {
   document.getElementById('tf-grilla').innerHTML = lista.map((foto, i) => `
     <figure class="tf__item" data-i="${i}">
       <img src="${THUMB(foto.f)}" alt="${foto.t}" loading="lazy">
+      <figcaption class="tf__pie">${foto.t}</figcaption>
     </figure>`).join('');
 
   document.querySelectorAll('#tf-grilla .tf__item').forEach(el => {
     el.addEventListener('click', () => abrirLightbox(lista, Number(el.dataset.i)));
+    marcarPanoramica(el.querySelector('img'));
   });
+}
+
+/**
+ * Las fotos bien apaisadas ocupan dos columnas.
+ *
+ * De las 56, la mayoría son 4:3, pero hay unas pocas panorámicas (2.22:1).
+ * En el mismo cuadrito que las demás perdían un 40% del ancho: justo el
+ * paisaje que hace que valga la pena la foto. Con el doble de ancho entran
+ * casi enteras (se recorta un poco de cielo y de piso, que no molesta) y, de
+ * paso, la grilla deja de ser un damero perfecto.
+ *
+ * El corte va en 2.0 y no más abajo a propósito: a las 16:9 les convenía
+ * quedarse en el cuadro chico, porque en el ancho perdían más de alto del que
+ * ganaban de paisaje.
+ */
+function marcarPanoramica(img) {
+  const medir = () => {
+    if (!img.naturalWidth) return;
+    if (img.naturalWidth / img.naturalHeight >= 2) {
+      img.closest('.tf__item').classList.add('tf__item--ancha');
+    }
+  };
+  if (img.complete) medir();
+  else img.addEventListener('load', medir, { once: true });
 }
 
 function abrirTodasLasFotos() {
@@ -450,15 +497,31 @@ function iniciarLightbox() {
 }
 
 /* --------------------------------------------------------------- tarifas */
-function pintarTarifas() {
-  document.getElementById('tarifas-grid').innerHTML = CONFIG.temporadas.map(t => `
+/* --------------------------------------------- cómo se alquila + precios */
+/* Las dos variantes cuentan lo mismo con distinto peso: la 'a' presenta las
+   unidades y después el cuadro de temporadas; la 'b' deja mandar a las fotos
+   y muestra un "desde", con el detalle por temporada plegado. En las dos, las
+   plazas y el detalle de cada unidad se dicen una sola vez. */
+
+/** El valor más barato de una unidad en todo el año, para el "desde". */
+function precioDesde(idModalidad) {
+  return Math.min(...CONFIG.temporadas.map(t => t.precios[idModalidad]));
+}
+
+/** Cuadro de precios por temporada. Va en las dos variantes, así que recibe
+    dónde dibujarse. Ya no repite las plazas: eso se dice una vez arriba. */
+function pintarTarifas(idContenedor) {
+  const cont = document.getElementById(idContenedor);
+  if (!cont) return;
+
+  cont.innerHTML = CONFIG.temporadas.map(t => `
     <article class="tarifa ${t.destacada ? 'tarifa--destacada' : ''}">
       <h3 class="tarifa__nombre">${t.nombre}</h3>
       <p class="tarifa__periodo">${t.periodo}</p>
       <ul class="tarifa__precios">
         ${CONFIG.modalidades.map(m => `
           <li>
-            <span>${m.nombre} · ${m.plazas} plazas</span>
+            <span>${m.nombre}</span>
             <strong>${pesos(t.precios[m.id])}</strong>
           </li>`).join('')}
       </ul>
@@ -468,20 +531,61 @@ function pintarTarifas() {
       </ul>
       <a class="boton boton--linea" href="#reservas" data-reservar>Ver disponibilidad</a>
     </article>`).join('');
+}
+
+/** Variante A: las tres unidades, la casa completa más ancha que las plantas. */
+function pintarUnidades() {
+  const cont = document.getElementById('unidades-tira');
+  if (!cont) return;
+
+  cont.innerHTML = CONFIG.modalidades.map((m, i) => `
+    <article class="unidad${i === 0 ? ' unidad--principal' : ''}">
+      <img class="unidad__foto" src="${FOTO_UNIDAD[m.id]}" alt="" loading="lazy">
+      <div class="unidad__cuerpo">
+        <h3>${m.nombre}</h3>
+        <p class="unidad__meta">${m.plazas} plazas · ${m.detalle}</p>
+        <p class="unidad__texto">${m.texto}</p>
+      </div>
+    </article>`).join('');
+}
+
+/** Variante B: una banda por unidad, alternando el lado de la foto. */
+function pintarBandas() {
+  const cont = document.getElementById('bandas-unidades');
+  if (!cont) return;
+
+  cont.innerHTML = CONFIG.modalidades.map((m, i) => `
+    <article class="banda${i === 0 ? ' banda--principal' : ''}">
+      <img class="banda__foto" src="${FOTO_UNIDAD[m.id]}" alt="${m.nombre}" loading="lazy">
+      <div class="banda__cuerpo">
+        <h3>${m.nombre}</h3>
+        <p class="banda__meta">${m.plazas} plazas · ${m.detalle}</p>
+        <p class="banda__texto">${m.texto}</p>
+        <p class="banda__desde">desde <strong>${pesos(precioDesde(m.id))}</strong> la noche</p>
+      </div>
+    </article>`).join('');
+}
+
+function aplicarVarianteAlquiler() {
+  const v = Variantes.get('alquiler');
+  const a = document.getElementById('alquiler-a');
+  const b = document.getElementById('alquiler-b');
+  if (!a || !b) return;
+  a.hidden = v !== 'a';
+  b.hidden = v !== 'b';
+}
+
+function pintarAlquiler() {
+  pintarUnidades();
+  pintarBandas();
+  pintarTarifas('tarifas-grid');
+  pintarTarifas('tarifas-grid-b');
 
   document.getElementById('notas-tarifas').innerHTML =
     CONFIG.notasTarifas.map(n => `<li>${n}</li>`).join('');
-}
 
-/* ----------------------------------------------------------- modalidades */
-function pintarModalidadesCards() {
-  document.getElementById('modalidades-cards').innerHTML = CONFIG.modalidades.map(m => `
-    <article class="modalidad">
-      <p class="modalidad__plazas">${m.plazas}<small>plazas</small></p>
-      <h3>${m.nombre}</h3>
-      <p class="modalidad__detalle">${m.detalle}</p>
-      <p>${m.texto}</p>
-    </article>`).join('');
+  aplicarVarianteAlquiler();
+  Variantes.alCambiar('alquiler', aplicarVarianteAlquiler);
 }
 
 /* ------------------------------------------------------------------ faq -- */
@@ -539,7 +643,6 @@ document.addEventListener('DOMContentLoaded', () => {
   iniciarCarruselAmbientes();
   aplicarVarianteAmbientes();
   Variantes.alCambiar('ambientes', aplicarVarianteAmbientes);
-  pintarModalidadesCards();
   pintarFaq();
   pintarGaleria('todas');
   iniciarFiltros();
@@ -548,7 +651,7 @@ document.addEventListener('DOMContentLoaded', () => {
   Variantes.alCambiar('galeria', aplicarVarianteGaleria);
   pintarActividades();
   pintarDistancias();
-  pintarTarifas();
+  pintarAlquiler();
   pintarContacto();
   iniciarLightbox();
   iniciarNav();
