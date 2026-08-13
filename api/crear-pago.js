@@ -154,7 +154,16 @@ module.exports = async (req, res) => {
     console.error('crear-pago:', err);
     const mensajeMp = err && err.cause && err.cause[0] && err.cause[0].description;
     res.status(500).json({
-      error: mensajeMp || 'No pudimos procesar el pago. Probá de nuevo en un momento.'
+      error: mensajeMp || 'No pudimos procesar el pago. Probá de nuevo en un momento.',
+      // TODO: sacar este campo apenas quede resuelto el problema que estamos
+      // diagnosticando — es sólo para ver el motivo real sin depender de los
+      // Runtime Logs de Vercel. No va más una vez que esto ande bien.
+      debug: {
+        nombre: err && err.name,
+        mensaje: err && err.message,
+        cause: err && err.cause,
+        stack: err && err.stack && err.stack.split('\n').slice(0, 5)
+      }
     });
   }
 };
