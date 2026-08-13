@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tus datos — Balcones del Arroyo</title>
+
+<meta name="description" content="Completá tus datos para confirmar la reserva en Balcones del Arroyo.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#b4552f">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23b4552f'/><path d='M20 58 L50 32 L80 58 v22 H20z' fill='%23f6f1e8'/><circle cx='50' cy='24' r='7' fill='%23d89a4a'/></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/estilos.css?v=12">
+</head>
+<body class="pagina-reserva">
+
+<!-- ====================================================== NAVEGACIÓN ==== -->
+<header class="nav nav--solida nav--estatica">
+  <div class="nav__interior">
+    <a class="nav__marca" href="index.html">
+      <img class="nav__logo nav__logo--oscura" src="img/logo-icono-oscuro.png" alt="" aria-hidden="true" style="display:block">
+      <span class="nav__marca-texto">
+        Balcones del Arroyo
+        <span>Traslasierra · Córdoba</span>
+      </span>
+    </a>
+    <a class="boton boton--linea" href="index.html">Volver al sitio</a>
+  </div>
+</header>
+
+<main class="reserva-pagina">
+  <div class="contenedor contenedor--angosto">
+
+    <!-- si alguien entra directo -->
+    <div class="sin-reserva" id="sin-reserva" hidden>
+      <h1>Falta elegir la estadía</h1>
+      <p class="bajada">Volvé a elegir las fechas y qué querés alquilar.</p>
+      <p><a class="boton boton--primario" href="index.html">Empezar de nuevo</a></p>
+    </div>
+
+    <div id="checkout-todo" hidden>
+      <ol class="pasos" aria-label="Pasos de la reserva">
+        <li class="paso paso--hecho"><span>1</span> Fechas</li>
+        <li class="paso paso--hecho"><span>2</span> Qué alquilás</li>
+        <li class="paso paso--activo"><span>3</span> Tus datos</li>
+      </ol>
+
+      <!-- ------------------------------------------- detalle de la reserva -->
+      <section class="panel resumen-chico">
+        <div class="resumen-chico__unidad">
+          <img id="ck-foto" src="img/casa-atardecer.jpg" alt="" loading="lazy">
+          <div>
+            <h2 id="ck-unidad"></h2>
+            <p class="detalle__meta" id="ck-fechas"></p>
+          </div>
+          <a class="resumen-chico__cambiar" href="reserva.html">Cambiar</a>
+        </div>
+
+        <div class="desglose" id="ck-desglose"></div>
+
+        <div class="sena">
+          <div class="sena__fila">
+            <span>Seña para confirmar (<span id="ck-sena-pct"></span>%)</span>
+            <strong id="ck-sena"></strong>
+          </div>
+          <div class="sena__fila sena__fila--resto">
+            <span>Resto al llegar</span>
+            <span id="ck-resto"></span>
+          </div>
+        </div>
+
+        <p class="detalle__horarios" style="margin-bottom:0">
+          Ingreso desde las <strong id="ck-checkin"></strong> ·
+          salida hasta las <strong id="ck-checkout"></strong>
+        </p>
+      </section>
+
+      <!-- ---------------------------------------------------- tus datos -->
+      <section class="panel">
+        <h2 class="panel__titulo">Tus datos</h2>
+        <form id="form-reserva" novalidate>
+          <div class="campos">
+            <div class="campo">
+              <label for="f-nombre">Nombre y apellido *</label>
+              <input id="f-nombre" name="nombre" type="text" autocomplete="name" required>
+            </div>
+            <div class="campo">
+              <label for="f-tel">Teléfono *</label>
+              <input id="f-tel" name="telefono" type="tel" autocomplete="tel" required>
+            </div>
+            <div class="campo">
+              <label for="f-email">Email *</label>
+              <input id="f-email" name="email" type="email" autocomplete="email" required>
+            </div>
+            <div class="campo">
+              <label for="f-localidad">¿De dónde venís?</label>
+              <input id="f-localidad" name="localidad" type="text" autocomplete="address-level2">
+            </div>
+            <div class="campo campo--ancho">
+              <label for="f-mensaje">Algo que quieras contarnos</label>
+              <textarea id="f-mensaje" name="mensaje" rows="3"
+                placeholder="Si venís con mascota, si llegás de noche, si festejás algo..."></textarea>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- ------------------------------------------------------- el pago -->
+      <section class="panel">
+        <h2 class="panel__titulo">Cómo se paga</h2>
+
+        <div class="pago-nota">
+          <p><strong>Todavía no estamos cobrando online.</strong> Al confirmar te
+            escribimos por WhatsApp con los datos para transferir la seña, y con eso
+            te quedan tomadas las fechas.</p>
+          <p style="margin-bottom:0">El resto se abona al llegar.</p>
+        </div>
+
+        <label class="acepto">
+          <input type="checkbox" id="f-acepto">
+          <span>Entiendo que la reserva se confirma recién cuando pago la seña.</span>
+        </label>
+
+        <div class="aviso" id="form-aviso"></div>
+      </section>
+
+      <!-- ------------------------------------------------------ acciones -->
+      <div class="checkout__pie">
+        <a class="checkout__volver" href="reserva.html">&#8592; Volver</a>
+        <div class="checkout__total">
+          <span>Seña a pagar</span>
+          <strong id="ck-total-pie"></strong>
+        </div>
+        <button class="boton boton--primario" id="btn-finalizar">Confirmar reserva</button>
+      </div>
+
+      <p class="letra-chica">El valor es estimativo hasta que confirmemos la
+        disponibilidad. No se cobra nada en este paso.</p>
+    </div>
+  </div>
+</main>
+
+<footer class="pie">
+  <div class="contenedor pie__interior">
+    <p style="margin:0">© <span id="anio"></span> Balcones del Arroyo · Arroyo de los Patos, Traslasierra, Córdoba</p>
+  </div>
+</footer>
+
+<script src="js/config.js?v=12"></script>
+<script src="js/disponibilidad.js?v=12"></script>
+<script src="js/variantes.js?v=12"></script>
+<script src="js/calendario.js?v=12"></script>
+<script src="js/checkout.js?v=12"></script>
+</body>
+</html>

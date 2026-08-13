@@ -51,7 +51,8 @@ en la raíz y Vercel las toma automáticamente — no hace falta cambiar el
 | Archivo | Qué hace |
 |---|---|
 | `index.html` | La home entera |
-| `reserva.html` | Paso 2 del flujo: detalle, datos y (más adelante) el pago |
+| `reserva.html` | Paso 2: qué se alquila, con el precio de cada opción |
+| `checkout.html` | Paso 3: detalle, datos y (más adelante) el pago |
 | `admin.html` | Panel para cargar la disponibilidad. Genera el texto de `disponibilidad.js` |
 | `css/estilos.css` | Todos los estilos |
 | `js/config.js` | **Los datos del negocio**: precios, temporadas, textos, contacto, FAQ |
@@ -60,6 +61,7 @@ en la raíz y Vercel las toma automáticamente — no hace falta cambiar el
 | `js/calendario.js` | Calendario, precios, drawer y modal de reserva |
 | `js/app.js` | Arma el resto de la página: galería, carrusel, ambientes, FAQ… |
 | `js/reserva-pagina.js` | Lógica de `reserva.html` |
+| `js/checkout.js` | Lógica de `checkout.html` |
 
 **Todo lo que se toca seguido está en `js/config.js`.** Precios, temporadas,
 comodidades, preguntas frecuentes, teléfono, mail. Los lugares marcados con
@@ -155,6 +157,20 @@ Son dos informaciones distintas y por eso van en lugares distintos. La leyenda
 de abajo muestra el precio por noche de cada temporada y **se actualiza sola**
 al cambiar de modalidad.
 
+### Las tres pantallas
+
+1. **Modal** (en la home): sólo el calendario. Nada de precios ni opciones.
+2. **`reserva.html`**: la barra con las fechas buscadas arriba, y las tres
+   modalidades con su precio para ese tramo, marcando las que no están libres.
+   Al elegir una aparece abajo una barra con el total y el botón *Reservar*.
+3. **`checkout.html`**: el detalle de lo elegido, los datos y el pago.
+
+Cada pantalla **revalida** lo que le llega en vez de confiar en el paso
+anterior: `checkout.html` vuelve a chequear que el tramo siga libre para esa
+unidad y recalcula el precio con `config.js`. Si alguien edita el
+`sessionStorage` a mano o vuelve con el botón "atrás" después de que esas
+fechas se ocuparon, la página lo rechaza.
+
 ### Dónde termina
 
 Hoy el flujo termina **armando un mensaje de WhatsApp** con todo el detalle. No
@@ -231,9 +247,11 @@ Hoy no se cobra nada. El plan acordado:
 2. **No se puede hacer sólo desde el navegador**: habría que poner el access
    token de Mercado Pago en el front y cualquiera podría leerlo y emitir cobros
    a nombre del dueño.
-3. `reserva.html` **ya recalcula los precios** con `config.js` en vez de confiar
-   en el total que le llega. Eso es a propósito: es la base para que el monto no
-   se pueda manipular desde el navegador.
+3. `checkout.html` **ya recalcula los precios** con `config.js` en vez de
+   confiar en el total que le llega, y revalida la disponibilidad. Eso es a
+   propósito: es la base para que el monto no se pueda manipular desde el
+   navegador. El handler de "Confirmar reserva" en `js/checkout.js` es el punto
+   donde se enchufa la llamada a la función serverless.
 
 **Importante:** cobrar online obliga a resolver la disponibilidad automática.
 Hoy las fechas ocupadas se cargan a mano en `admin.html`; si alguien paga por

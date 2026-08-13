@@ -729,17 +729,108 @@ a { color: var(--terracota); }
 }
 
 /* en la página de reserva las opciones son el contenido principal */
-.opciones--pagina { gap: 14px; }
-.opciones--pagina .opcion { padding: 16px; gap: 20px; }
-.opciones--pagina .opcion__img { width: 190px; }
-.opciones--pagina .opcion__info strong { font-size: 1.2rem; font-family: var(--display); }
-.opciones--pagina .opcion__info small { font-size: .86rem; }
-.opciones--pagina .opcion__precio strong { font-size: 1.5rem; }
+.opciones--pagina { gap: 10px; }
+.opciones--pagina .opcion { padding: 10px; gap: 16px; }
+.opciones--pagina .opcion__img { width: 128px; }
+.opciones--pagina .opcion__info strong { font-size: 1.05rem; font-family: var(--display); }
+.opciones--pagina .opcion__info small { font-size: .8rem; }
+.opciones--pagina .opcion__precio strong { font-size: 1.2rem; }
 
 @media (max-width: 700px) {
   .opciones--pagina .opcion { flex-wrap: wrap; }
   .opciones--pagina .opcion__img { width: 100%; aspect-ratio: 16/9; }
   .opciones--pagina .opcion__precio { text-align: left; }
+}
+
+/* ------------------------------------------ barra de confirmación ------- */
+/* Aparece pegada abajo al elegir una opción, con el total y el botón. */
+.confirmar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 100;
+  background: var(--crema);
+  border-top: 1px solid var(--borde);
+  box-shadow: 0 -6px 24px rgba(43,38,33,.10);
+  padding: 12px 0;
+}
+.confirmar__interior {
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+}
+.confirmar__datos { display: flex; flex-direction: column; gap: 2px; }
+.confirmar__datos strong { font-family: var(--display); font-size: 1.1rem; color: var(--carbon); }
+.confirmar__datos span { font-size: .82rem; color: var(--piedra); }
+
+.confirmar__precio { margin-left: auto; text-align: right; }
+.confirmar__precio strong {
+  display: block; font-family: var(--display);
+  font-size: 1.3rem; color: var(--carbon);
+}
+.confirmar__precio span { font-size: .78rem; color: var(--piedra); }
+.confirmar .boton { padding: 14px 34px; }
+
+/* para que la barra no tape el final de la página */
+body.con-barra .reserva-pagina { padding-bottom: 130px; }
+.pie--reserva { padding-bottom: 90px; }
+
+@media (max-width: 640px) {
+  .confirmar__interior { gap: 10px; }
+  .confirmar__datos { flex: 1 1 100%; }
+  .confirmar__precio { margin-left: 0; text-align: left; flex: 1; }
+  .confirmar .boton { flex: 0 0 auto; padding: 13px 26px; }
+}
+
+/* ------------------------------------------------ checkout (paso 3) ----- */
+.contenedor--angosto { max-width: 780px; }
+
+.resumen-chico { margin-bottom: 20px; }
+.resumen-chico__unidad {
+  display: flex; align-items: center; gap: 14px;
+  padding-bottom: 16px; margin-bottom: 16px;
+  border-bottom: 1px solid var(--borde);
+}
+.resumen-chico__unidad img {
+  width: 88px; aspect-ratio: 4/3; object-fit: cover;
+  border-radius: var(--radio-sm); flex: 0 0 auto;
+}
+.resumen-chico__unidad h2 { font-size: 1.2rem; margin-bottom: 3px; }
+.resumen-chico__cambiar {
+  margin-left: auto; flex: 0 0 auto;
+  font-size: .84rem; font-weight: 600; color: var(--terracota);
+  text-decoration: underline; text-underline-offset: 3px;
+}
+
+.pago-nota {
+  padding: 16px 18px; margin-bottom: 18px;
+  background: var(--arena); border-left: 3px solid var(--ocre);
+  border-radius: var(--radio-sm);
+  font-size: .92rem; color: var(--carbon-suave);
+}
+.pago-nota p:last-child { margin-bottom: 0; }
+
+.acepto {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: .9rem; color: var(--carbon-suave); cursor: pointer;
+}
+.acepto input { margin-top: 3px; accent-color: var(--terracota); flex: 0 0 auto; }
+
+.checkout__pie {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  padding: 18px 22px; margin-top: 8px;
+  background: var(--crema);
+  border: 1px solid var(--borde); border-radius: var(--radio);
+}
+.checkout__volver { font-size: .9rem; font-weight: 600; color: var(--carbon); text-decoration: none; }
+.checkout__volver:hover { color: var(--terracota); }
+.checkout__total { margin-left: auto; text-align: right; }
+.checkout__total span {
+  display: block; font-size: .68rem; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--piedra);
+}
+.checkout__total strong { font-family: var(--display); font-size: 1.4rem; color: var(--terracota); }
+.checkout__pie .boton { padding: 14px 30px; }
+
+@media (max-width: 560px) {
+  .checkout__pie { gap: 12px; }
+  .checkout__total { margin-left: 0; text-align: left; flex: 1; }
+  .checkout__pie .boton { flex: 1 1 100%; justify-content: center; }
 }
 
 .opcion__precio { text-align: right; flex: 0 0 auto; }
