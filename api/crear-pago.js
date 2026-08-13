@@ -21,7 +21,7 @@ const { CONFIG } = require('../js/config.js');
 const { DISPONIBILIDAD } = require('../js/disponibilidad.js');
 const Precios = require('../js/precios.js');
 const { clientePago } = require('../lib/mercadopago.js');
-const { nochesPagadas, marcarPagada } = require('../lib/reservas.js');
+const { nochesPagadas, marcarPagada, diagnostico } = require('../lib/reservas.js');
 
 function origenDe(req) {
   const proto = req.headers['x-forwarded-proto'] || 'https';
@@ -117,6 +117,7 @@ module.exports = async (req, res) => {
     // salió bien. Queda como advertencia en los logs para revisar a mano; el
     // webhook además vuelve a intentar guardarlo apenas llegue la notificación.
     let avisoGuardado = null;
+    let debugGuardado = null; // TODO: sacar junto con el otro campo debug
     if (resultado.status === 'approved') {
       try {
         const noches = Precios.nochesLista(reserva.entrada, reserva.salida);
@@ -140,6 +141,12 @@ module.exports = async (req, res) => {
         );
         avisoGuardado = 'Se acreditó el pago, pero hubo un problema técnico al registrar la ' +
           'reserva. Avisanos por WhatsApp con tu comprobante para confirmarla a mano.';
+        // TODO: sacar junto con el otro campo debug, es sólo para diagnosticar.
+        debugGuardado = {
+          nombre: errGuardado && errGuardado.name,
+          mensaje: errGuardado && errGuardado.message,
+          variables: diagnostico()
+        };
       }
     }
 
@@ -148,7 +155,8 @@ module.exports = async (req, res) => {
       status_detail: resultado.status_detail,
       id: resultado.id,
       sena,
-      avisoGuardado
+      avisoGuardado,
+      debugGuardado
     });
   } catch (err) {
     console.error('crear-pago:', err);
