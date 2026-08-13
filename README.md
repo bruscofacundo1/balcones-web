@@ -48,15 +48,20 @@ HTML y el código se revalidan siempre) y las URLs sin `.html`.
 
 Esto sí necesita configurarse una vez, después del primer deploy:
 
-1. **Storage → Create Database → "Redis"** (el reemplazo de la vieja
-   "Vercel KV") y conectarla al proyecto. Ahí quedan la disponibilidad "en
-   vivo" y las reservas pagadas online.
+1. Crear una base en [Neon](https://neon.tech) (gratis) y copiar el
+   connection string — ahí quedan la disponibilidad "en vivo" y las reservas
+   pagadas online.
 2. **Settings → Environment Variables**, agregar:
+   - `DATABASE_URL` — el connection string de Neon.
    - `MP_ACCESS_TOKEN` — el Access Token de
      [mercadopago.com.ar/developers/panel](https://www.mercadopago.com.ar/developers/panel)
      (empezá con el de prueba, `TEST-...`).
    - `MP_WEBHOOK_SECRET` — opcional, la clave que da Mercado Pago al
      configurar el webhook.
+
+   **Importante:** después de cargar o corregir una variable hace falta un
+   deployment nuevo para que la función la vea — guardarla sola no alcanza.
+   Un *Redeploy* del último deployment, o un `git push` cualquiera, sirven.
 3. En el panel de Mercado Pago, configurar el webhook apuntando a
    `https://tu-dominio/api/webhook-mercadopago`, evento `payments`.
 4. En `js/config.js`, `CONFIG.mercadoPago.publicKey` con la Public Key (no es

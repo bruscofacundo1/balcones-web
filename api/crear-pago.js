@@ -21,7 +21,7 @@ const { CONFIG } = require('../js/config.js');
 const { DISPONIBILIDAD } = require('../js/disponibilidad.js');
 const Precios = require('../js/precios.js');
 const { clientePago } = require('../lib/mercadopago.js');
-const { nochesPagadas, marcarPagada, diagnostico } = require('../lib/reservas.js');
+const { nochesPagadas, marcarPagada } = require('../lib/reservas.js');
 
 function origenDe(req) {
   const proto = req.headers['x-forwarded-proto'] || 'https';
@@ -117,7 +117,6 @@ module.exports = async (req, res) => {
     // salió bien. Queda como advertencia en los logs para revisar a mano; el
     // webhook además vuelve a intentar guardarlo apenas llegue la notificación.
     let avisoGuardado = null;
-    let debugGuardado = null; // TODO: sacar junto con el otro campo debug
     if (resultado.status === 'approved') {
       try {
         const noches = Precios.nochesLista(reserva.entrada, reserva.salida);
@@ -141,12 +140,6 @@ module.exports = async (req, res) => {
         );
         avisoGuardado = 'Se acreditó el pago, pero hubo un problema técnico al registrar la ' +
           'reserva. Avisanos por WhatsApp con tu comprobante para confirmarla a mano.';
-        // TODO: sacar junto con el otro campo debug, es sólo para diagnosticar.
-        debugGuardado = {
-          nombre: errGuardado && errGuardado.name,
-          mensaje: errGuardado && errGuardado.message,
-          variables: diagnostico()
-        };
       }
     }
 
@@ -155,23 +148,19 @@ module.exports = async (req, res) => {
       status_detail: resultado.status_detail,
       id: resultado.id,
       sena,
-      avisoGuardado,
-      debugGuardado
+      avisoGuardado
     });
   } catch (err) {
     console.error('crear-pago:', err);
-    const mensajeMp = err && err.cause && err.cause[0] && err.cause[0].description;
+    // Los errores propios del SDK de Mercado Pago (MPBadRequestError y
+    // similares, todos con nombre que arranca "MP") traen el motivo en
+    // `message` ("Invalid card_token_id", etc.) y son seguros de mostrar tal
+    // cual. Cualquier otro error (de nuestro código, de la base) se queda
+    // con el mensaje genérico: podría tener detalles internos que no
+    // corresponde mostrarle a quien está pagando.
+    const mensajeMp = err && err.name && err.name.startsWith('MP') && err.message;
     res.status(500).json({
-      error: mensajeMp || 'No pudimos procesar el pago. Probá de nuevo en un momento.',
-      // TODO: sacar este campo apenas quede resuelto el problema que estamos
-      // diagnosticando — es sólo para ver el motivo real sin depender de los
-      // Runtime Logs de Vercel. No va más una vez que esto ande bien.
-      debug: {
-        nombre: err && err.name,
-        mensaje: err && err.message,
-        cause: err && err.cause,
-        stack: err && err.stack && err.stack.split('\n').slice(0, 5)
-      }
+      error: mensajeMp || 'No pudimos procesar el pago. Probá de nuevo en un momento.'
     });
   }
 };

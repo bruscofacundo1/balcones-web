@@ -55,7 +55,7 @@ dependencias. Los pasos están en el `README.md`.
 Las funciones serverless del pago (§6) viven en `api/` y Vercel las toma
 automáticamente por estar ahí — no hace falta tocar `vercel.json` para eso.
 Lo que sí hay que hacer a mano en el panel de Vercel: cargar las variables de
-entorno y conectar la base de Redis (los dos pasos están detallados en §6).
+entorno y conectar la base de Neon (los dos pasos están detallados en §6).
 
 ---
 
@@ -77,7 +77,7 @@ entorno y conectar la base de Redis (los dos pasos están detallados en §6).
 | `js/reserva-pagina.js` | Lógica de `reserva.html` |
 | `js/checkout.js` | Lógica de `checkout.html`: datos, Payment Brick y pago |
 | `lib/mercadopago.js` | Cliente de Mercado Pago del lado del servidor |
-| `lib/reservas.js` | Disponibilidad "en vivo" en Redis: lo que ya se pagó online |
+| `lib/reservas.js` | Disponibilidad "en vivo" en Postgres (Neon): lo que ya se pagó online |
 | `api/crear-pago.js` | Cobra la seña (recalcula todo del lado del servidor) |
 | `api/webhook-mercadopago.js` | Recibe los avisos de Mercado Pago cuando cambia el estado de un pago |
 | `package.json` | Dependencias de `api/` y `lib/` (no hay build del sitio) |
@@ -426,7 +426,7 @@ de la tarjeta (no ve el número                │
 real: es un iframe de MP)                     │ 1. busca la modalidad en config.js
                                                │ 2. junta disponibilidad.js (la base,
                                                │    cargada a mano) con lo que ya se
-                                               │    pagó online (Redis)
+                                               │    pagó online (Postgres/Neon)
                                                │ 3. si la fecha sigue libre, cotiza con
                                                │    precios.js — el mismo cálculo que
                                                │    usa el navegador, no una copia
@@ -434,7 +434,7 @@ real: es un iframe de MP)                     │ 1. busca la modalidad en confi
                                                │    seña (nunca un monto que mandó el
                                                │    navegador)
                                                │ 5. si se aprobó, marca esas noches
-                                               │    ocupadas en Redis
+                                               │    ocupadas en la base
                                                ▼
                                           responde {status, sena}
 ```
@@ -456,42 +456,70 @@ libre.
 
 - **`disponibilidad.js`** sigue siendo la base, cargada a mano con
   `admin.html`, para reservas que se coordinan por WhatsApp/transferencia.
-- **Redis** (ver más abajo) guarda aparte las noches que se pagaron online.
+- **Postgres (Neon)** guarda aparte las noches que se pagaron online.
   `api/crear-pago.js` junta las dos antes de aceptar un pago nuevo
   (`Precios.unirOcupadas`), así una reserva pagada bloquea la fecha al
   instante sin depender de que alguien actualice el archivo.
 
 No hace falta migrar `admin.html` a la base: las dos conviven. Si algún día
 se quiere ver todo en un solo lugar, el siguiente paso sería que `admin.html`
-también lea las reservas de Redis (`reservas:lista` en `lib/reservas.js`
-tiene el índice) — no es necesario para que esto funcione hoy.
+también lea la tabla `reservas` — no es necesario para que esto funcione hoy.
+
+`lib/reservas.js` usa `@neondatabase/serverless`, que habla por HTTP en vez
+de mantener una conexión TCP abierta — lo que conviene en una función
+serverless, donde cada invocación es corta. Las tres tablas (`ocupadas`,
+`reservas`, `pagos_vistos`) se crean solas la primera vez que hace falta
+(`asegurarTablas`); no hay que correr ninguna migración a mano.
+
+(Se probó primero con Redis — la integración "Redis" del Marketplace de
+Vercel, reemplazo de la vieja "Vercel KV" — pero nunca se pudo confirmar que
+las variables llegaran bien al proyecto, así que se cambió a Neon con el
+mismo contrato en `lib/reservas.js`. Si en algún momento conviene volver a
+algo tipo Redis, `hayBaseDatos`/`nochesPagadas`/`marcarPagada`/
+`pagoYaProcesado`/`marcarPagoProcesado` es toda la superficie que hay que
+reimplementar — `api/crear-pago.js` y `api/webhook-mercadopago.js` no se
+tocan.)
 
 ### Qué hace falta cargar (una sola vez)
 
-1. **Conectar Redis al proyecto en Vercel.** Storage → Create Database →
-   buscar **"Redis"** (la vieja "Vercel KV" quedó discontinuada; el
-   reemplazo del Marketplace usa Upstash por debajo, pero el código no le
-   pide nada raro: `@upstash/redis` con las variables `KV_REST_API_URL` /
-   `KV_REST_API_TOKEN` que la integración carga sola). Un clic, sin cuenta
-   aparte.
-2. **`MP_ACCESS_TOKEN`**, como variable de entorno del proyecto en Vercel
-   (Project Settings → Environment Variables). Es el Access Token de
+1. **Crear la base en Neon** ([neon.tech](https://neon.tech), gratis) y
+   copiar el connection string (Dashboard → Connect). Se puede crear directo
+   ahí, o conectarla desde Vercel (Storage → Connect Store → Neon), que la
+   carga sola en el proyecto.
+2. **`DATABASE_URL`**, como variable de entorno del proyecto en Vercel
+   (Project Settings → Environment Variables), con ese connection string.
+3. **`MP_ACCESS_TOKEN`**, como variable de entorno del proyecto en Vercel.
+   Es el Access Token de
    [mercadopago.com.ar/developers/panel](https://www.mercadopago.com.ar/developers/panel).
    Usar el de **prueba** (`TEST-...`) hasta haber probado un pago de punta a
    punta; recién después cambiar al de producción (`APP_USR-...`).
-3. **`MP_WEBHOOK_SECRET`** (opcional pero recomendado): la "Clave secreta"
+4. **`MP_WEBHOOK_SECRET`** (opcional pero recomendado): la "Clave secreta"
    que Mercado Pago muestra al configurar el webhook. Sin ella el webhook
    sigue funcionando — valida cada pago llamando directo a la API de
    Mercado Pago con el Access Token — pero no puede confirmar de entrada que
    la notificación vino realmente de ellos.
-4. **La URL del webhook** en el panel de Mercado Pago (Tu aplicación →
+5. **La URL del webhook** en el panel de Mercado Pago (Tu aplicación →
    Webhooks): `https://tu-dominio/api/webhook-mercadopago`, evento `payments`.
-5. **`CONFIG.mercadoPago.publicKey`** en `js/config.js` — la Public Key (no
+6. **`CONFIG.mercadoPago.publicKey`** en `js/config.js` — la Public Key (no
    es secreta, viaja al navegador). Ya tiene cargada la de prueba.
 
 `.env.example` en la raíz lista estas mismas variables para probar en la
 computadora con `vercel dev` (copiarlo a `.env.local`, que queda fuera de
 Git).
+
+**Después de cargar o corregir cualquier variable en Vercel hace falta un
+deployment nuevo para que la función la vea** — guardarla sola no alcanza.
+Esto costó bastante tiempo de diagnóstico: `MP_ACCESS_TOKEN` quedó bien a la
+primera porque se guardó y se hizo *Redeploy* enseguida; con `DATABASE_URL`
+pasaron dos cosas separadas — primero un typo en el nombre (`DABASE_URL`, sin
+la T) y, ya con el nombre corregido, tres intentos de `git push` (que sí
+generan un deployment nuevo) que igual no la veían. Se destrabó recién
+volviendo a guardar la variable *y después* haciendo el commit — o sea, el
+guardado en sí no había quedado firme la primera vez. Si algo parecido vuelve
+a pasar: agregar temporalmente a la función un campo de diagnóstico que liste
+`Object.keys(process.env)` filtrado por el nombre esperado (así se ve el
+nombre exacto tal como lo ve el servidor, espacios invisibles incluidos) es
+mucho más rápido que adivinar desde los Runtime Logs.
 
 ### Qué pasa si algo falla a mitad de camino
 
@@ -499,20 +527,21 @@ Git).
   `mostrarFallbackWsp`): el pago con tarjeta desaparece y vuelve el mensaje
   de "todavía no cobramos online, te escribimos por WhatsApp" que había
   antes. El sitio nunca queda con un botón de pagar roto.
-- **Mercado Pago aprueba el pago pero guardar en Redis falla** (por ejemplo,
-  si todavía no se conectó la base): esto se probó a propósito con un test
-  que simulaba la falla, y **no se puede convertir en un error 500** — el
-  huésped ya pagó, eso no se puede deshacer. `api/crear-pago.js` separa esa
-  parte en su propio `try/catch`: igual responde que el pago salió bien, pero
-  con un aviso para que confirme por WhatsApp con el comprobante, y deja un
-  `console.error` bien explícito en los logs de Vercel para revisar la
-  reserva a mano. El webhook, además, reintenta guardarla solo cuando llegue
-  la notificación.
+- **Mercado Pago aprueba el pago pero guardar en la base falla** (por
+  ejemplo, si `DATABASE_URL` no está bien cargada — es exactamente lo que
+  pasó probando esto en producción, ver más arriba): esto se probó a
+  propósito con un test que simulaba la falla, y **no se puede convertir en
+  un error 500** — el huésped ya pagó, eso no se puede deshacer.
+  `api/crear-pago.js` separa esa parte en su propio `try/catch`: igual
+  responde que el pago salió bien, pero con un aviso para que confirme por
+  WhatsApp con el comprobante, y deja un `console.error` bien explícito en
+  los logs de Vercel para revisar la reserva a mano. El webhook, además,
+  reintenta guardarla solo cuando llegue la notificación.
 - **Dos personas pagan la misma fecha casi al mismo tiempo:** la segunda
   reserva la rechaza `api/crear-pago.js` con 409 antes de cobrarle nada
   (revalida disponibilidad justo antes de llamar a Mercado Pago). No elimina
   el margen de una carrera perfectamente simultánea — para eso haría falta un
-  lock atómico en Redis — pero para el volumen de esta casa (una reserva
+  lock atómico en la base — pero para el volumen de esta casa (una reserva
   online cada tanto, no un sitio con miles de visitas por minuto) es
   suficiente.
 
