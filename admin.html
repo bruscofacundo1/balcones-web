@@ -28,6 +28,42 @@
   .dia--parcial { background: #f6efe2; color: var(--piedra); }
   .ref__caja--parcial { background: #f6efe2; }
 
+  /* Fecha bloqueada por una reserva online (pagada o pendiente de WhatsApp)
+     que este archivo todavía no tiene marcada — se dibuja aparte de
+     dia--ocupado/dia--parcial, que vienen sólo del archivo local. */
+  .dia--online { box-shadow: inset 0 -4px 0 var(--terracota); }
+  .ref__caja--online { box-shadow: inset 0 -4px 0 var(--terracota); background: var(--crema); }
+
+  .reservas-online { list-style: none; padding: 0; margin: 0; font-size: .86rem; }
+  .reservas-online li {
+    padding: 12px 0; border-bottom: 1px solid var(--borde);
+  }
+  .reservas-online li:last-child { border-bottom: 0; }
+  .ro__cab { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+  .ro__unidad { font-weight: 600; color: var(--carbon); }
+  .ro__badge {
+    font-size: .68rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 20px; white-space: nowrap;
+  }
+  .ro__badge--pendiente { background: #f6efe2; color: var(--terracota-osc); }
+  .ro__badge--confirmada { background: #e7f0e2; color: var(--oliva); }
+  .ro__badge--mercadopago { background: var(--arena-osc); color: var(--piedra); }
+  .ro__badge--whatsapp { background: var(--arena-osc); color: var(--piedra); }
+  .ro__datos { color: var(--piedra); margin: 0 0 8px; }
+  .ro__acciones { display: flex; gap: 8px; }
+  .ro__acciones button {
+    border: 1px solid var(--borde); background: var(--crema); border-radius: var(--radio-sm);
+    padding: 6px 12px; font-size: .78rem; font-family: var(--texto); cursor: pointer;
+  }
+  .ro__acciones button:hover { border-color: var(--terracota); color: var(--terracota); }
+  .ro__acciones .ro__cancelar:hover { border-color: #b23b3b; color: #b23b3b; }
+
+  .admin-clave { display: flex; gap: 8px; margin-bottom: 14px; }
+  .admin-clave input {
+    flex: 1; padding: 9px 12px; border: 1px solid var(--borde); border-radius: var(--radio-sm);
+    font-family: var(--texto); font-size: .85rem;
+  }
+
   .caja-json {
     width: 100%; min-height: 150px; font-family: ui-monospace, Consolas, monospace;
     font-size: .78rem; border: 1px solid var(--borde); border-radius: var(--radio-sm);
@@ -103,11 +139,32 @@
         <span class="ref"><span class="ref__caja ref__caja--libre"></span> Libre</span>
         <span class="ref"><span class="ref__caja ref__caja--ocupado"></span> Ocupado (la unidad elegida)</span>
         <span class="ref"><span class="ref__caja ref__caja--parcial"></span> Ocupada la otra planta</span>
+        <span class="ref"><span class="ref__caja ref__caja--online"></span> Reserva online (ver al lado →)</span>
       </div>
     </div>
 
     <!-- lateral -->
     <div style="display:grid;gap:22px">
+
+      <!-- Reservas hechas desde el sitio (WhatsApp o Mercado Pago): viven en
+           la base, no en este archivo. Esta caja habla con api/admin/reservas.js. -->
+      <div class="panel">
+        <h3 style="font-size:1.15rem;margin-bottom:6px">Reservas del sitio</h3>
+        <p style="font-size:.82rem;color:var(--piedra);margin-bottom:14px">
+          Las que se hicieron desde la web (por WhatsApp o pagadas con Mercado Pago).
+          Bloquean la fecha solas, aparte de este archivo — se ven en el calendario
+          con una rayita debajo del número.
+        </p>
+
+        <div class="admin-clave">
+          <input type="password" id="ad-clave" placeholder="Clave de administración">
+          <button class="boton boton--linea" id="ad-clave-guardar" style="padding:9px 16px;font-size:.85rem">Entrar</button>
+        </div>
+        <p class="aviso" id="ad-online-error"></p>
+
+        <p style="font-size:.85rem;color:var(--piedra);margin-bottom:10px" id="ad-online-total"></p>
+        <ul class="reservas-online" id="ad-online-lista"></ul>
+      </div>
 
       <div class="panel">
         <h3 style="font-size:1.15rem;margin-bottom:14px">Cómo guardar los cambios</h3>
@@ -186,6 +243,11 @@ let modo = 'ocupar';
 let unidad = 'completa';          // qué se alquiló: completa | alta | baja
 let inicioRango = null;
 
+/* reservas del sitio (WhatsApp / Mercado Pago) — viven en la base, se
+   cargan aparte con la clave de administración. */
+let reservasOnline = [];
+let ocupadasOnline = { alta: new Set(), baja: new Set() };
+
 /** Plantas que afecta la unidad elegida. */
 function plantasDe(id) {
   const m = CONFIG.modalidades.find(x => x.id === id);
@@ -234,6 +296,9 @@ function mesAd(a, m) {
 
     if (propias === plantas.length) b.classList.add('dia--ocupado');
     else if (propias > 0 || otras > 0) b.classList.add('dia--parcial');
+
+    // reserva online que este archivo todavía no tiene marcada
+    if (plantas.some(p => ocupadasOnline[p].has(t))) b.classList.add('dia--online');
 
     if (t === hoy) b.classList.add('dia--hoy');
     if (t === inicioRango) b.classList.add('dia--pinta');
@@ -432,8 +497,136 @@ document.getElementById('ad-reset').addEventListener('click', () => {
   dibujar();
 });
 
+/* --------------------------------------- reservas del sitio (online) -- */
+
+const CLAVE_ADMIN = 'bda-admin-token';
+let claveAdmin = localStorage.getItem(CLAVE_ADMIN) || '';
+
+const ROTULO_ORIGEN = { whatsapp: 'WhatsApp', mercadopago: 'Mercado Pago' };
+const ROTULO_ESTADO = { pendiente: 'Pendiente', confirmada: 'Confirmada' };
+
+function pesosAd(n) {
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n);
+}
+
+function avisoOnline(texto) {
+  const el = document.getElementById('ad-online-error');
+  if (!texto) { el.className = 'aviso'; el.textContent = ''; return; }
+  el.className = 'aviso aviso--error';
+  el.textContent = texto;
+}
+
+/** Reconstruye el índice de noches ocupadas por reservas online, para el
+    calendario (dia--online) — sólo con las que siguen activas. */
+function recalcularOcupadasOnline() {
+  ocupadasOnline = { alta: new Set(), baja: new Set() };
+  reservasOnline.forEach(r => {
+    const m = CONFIG.modalidades.find(x => x.id === r.modalidad);
+    if (!m) return;
+    let f = deIso(r.entrada);
+    const fin = deIso(r.salida);
+    while (f < fin) {
+      m.ocupa.forEach(p => ocupadasOnline[p].add(iso(f)));
+      f = masDias(f, 1);
+    }
+  });
+}
+
+async function cargarReservasOnline() {
+  if (!claveAdmin) { pintarReservasOnline(); return; }
+  try {
+    const r = await fetch('/api/admin/reservas', { headers: { 'x-admin-token': claveAdmin } });
+    if (r.status === 401) throw new Error('Esa clave no es correcta.');
+    if (!r.ok) throw new Error('No se pudo conectar con el servidor.');
+    const cuerpo = await r.json();
+    reservasOnline = cuerpo.reservas;
+    avisoOnline('');
+    recalcularOcupadasOnline();
+    pintarReservasOnline();
+    dibujar(); // repinta el calendario para que se vean las rayitas
+  } catch (e) {
+    avisoOnline(e.message);
+  }
+}
+
+function pintarReservasOnline() {
+  const ul = document.getElementById('ad-online-lista');
+  const totalTxt = document.getElementById('ad-online-total');
+
+  if (!claveAdmin) {
+    totalTxt.textContent = 'Poné la clave para ver las reservas hechas desde el sitio.';
+    ul.innerHTML = '';
+    return;
+  }
+
+  const pendientes = reservasOnline.filter(r => r.estado === 'pendiente').length;
+  totalTxt.textContent = reservasOnline.length
+    ? `${reservasOnline.length} ${reservasOnline.length === 1 ? 'reserva' : 'reservas'}` +
+      (pendientes ? ` · ${pendientes} pendiente${pendientes === 1 ? '' : 's'} de confirmar` : '')
+    : 'Todavía no hay reservas hechas desde el sitio.';
+
+  ul.innerHTML = reservasOnline.map(r => {
+    const m = CONFIG.modalidades.find(x => x.id === r.modalidad);
+    const datos = r.datos || {};
+    return `
+      <li>
+        <div class="ro__cab">
+          <span class="ro__unidad">${m ? m.nombre : r.modalidad}</span>
+          <span class="ro__badge ro__badge--${r.estado}">${ROTULO_ESTADO[r.estado] || r.estado}</span>
+        </div>
+        <p class="ro__datos" style="margin-bottom:2px">
+          ${fechaLarga(r.entrada)} → ${fechaLarga(r.salida)} ·
+          <span class="ro__badge ro__badge--${r.origen}">${ROTULO_ORIGEN[r.origen] || r.origen}</span>
+        </p>
+        <p class="ro__datos">
+          ${datos.nombre || 'Sin nombre'}${datos.telefono ? ' · ' + datos.telefono : ''} ·
+          seña ${pesosAd(r.sena)}
+        </p>
+        <div class="ro__acciones">
+          ${r.estado === 'pendiente' ? `<button class="ro__confirmar" data-id="${r.id}">Marcar pagada</button>` : ''}
+          <button class="ro__cancelar" data-id="${r.id}">Dar de baja</button>
+        </div>
+      </li>`;
+  }).join('');
+
+  ul.querySelectorAll('.ro__cancelar').forEach(btn => {
+    btn.addEventListener('click', () => accionReservaOnline('cancelar', btn.dataset.id, btn));
+  });
+  ul.querySelectorAll('.ro__confirmar').forEach(btn => {
+    btn.addEventListener('click', () => accionReservaOnline('confirmar', btn.dataset.id, btn));
+  });
+}
+
+async function accionReservaOnline(accion, id, boton) {
+  if (accion === 'cancelar' && !confirm('¿Dar de baja esta reserva? La fecha vuelve a quedar libre.')) return;
+
+  boton.disabled = true;
+  try {
+    const r = await fetch('/api/admin/reservas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': claveAdmin },
+      body: JSON.stringify({ accion, id })
+    });
+    if (r.status === 401) throw new Error('Esa clave no es correcta.');
+    const cuerpo = await r.json();
+    if (!cuerpo.ok) throw new Error('No se pudo completar la acción.');
+    await cargarReservasOnline();
+  } catch (e) {
+    avisoOnline(e.message);
+    boton.disabled = false;
+  }
+}
+
+document.getElementById('ad-clave').value = claveAdmin;
+document.getElementById('ad-clave-guardar').addEventListener('click', () => {
+  claveAdmin = document.getElementById('ad-clave').value.trim();
+  localStorage.setItem(CLAVE_ADMIN, claveAdmin);
+  cargarReservasOnline();
+});
+
 pintarUnidades();
 dibujar();
+cargarReservasOnline();
 </script>
 </body>
 </html>

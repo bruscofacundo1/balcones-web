@@ -80,6 +80,8 @@ entorno y conectar la base de Neon (los dos pasos están detallados en §6).
 | `lib/reservas.js` | Disponibilidad "en vivo" en Postgres (Neon): lo que ya se pagó online |
 | `api/crear-pago.js` | Cobra la seña (recalcula todo del lado del servidor) |
 | `api/webhook-mercadopago.js` | Recibe los avisos de Mercado Pago cuando cambia el estado de un pago |
+| `api/reservar.js` | Bloquea la fecha sin cobrar (variante WhatsApp de "Cómo se paga") |
+| `api/admin/reservas.js` | Lista, confirma y cancela reservas — lo usa el panel nuevo de `admin.html` |
 | `package.json` | Dependencias de `api/` y `lib/` (no hay build del sitio) |
 
 **Todo lo que se toca seguido está en `js/config.js`.** Precios, temporadas,
@@ -305,9 +307,11 @@ esta reserva pasa por Mercado Pago o no** (ver §6 para el detalle técnico del
 pago en sí):
 
 - **`a` — WhatsApp (la que queda activa).** Al tocar "Confirmar por
-  WhatsApp" se abre un mensaje con toda la reserva (unidad, fechas, noches,
-  total, seña, datos de contacto) y la seña se coordina a mano, como se venía
-  haciendo antes de meter Mercado Pago. No se cobra nada desde el sitio.
+  WhatsApp" primero se bloquea la fecha en el servidor (`api/reservar.js`) y
+  recién si eso sale bien se abre el mensaje con toda la reserva (unidad,
+  fechas, noches, total, seña, datos de contacto). La seña se coordina a
+  mano, como se venía haciendo antes de meter Mercado Pago — no se cobra
+  nada desde el sitio.
 - **`b` — Mercado Pago.** El Payment Brick de siempre: tarjeta ahí mismo,
   seña acreditada al toque, fecha bloqueada sola en la base.
 
@@ -320,15 +324,38 @@ inventar un interruptor nuevo. Se elige desde el mismo panel "⚙ Variantes" de
 la home (aunque el efecto sólo se ve en `checkout.html`) y queda guardado en
 el navegador.
 
-**Pendiente, todavía no se construyó:** con la variante `a` activa, ninguna
-reserva bloquea la fecha en ningún lado — ni en `disponibilidad.js` ni en la
-base. Se decidió que el bloqueo pase a ocurrir al mandar el WhatsApp (no al
-elegir la fecha: un hold temporal se descartó por agregar complejidad —
-expiración, limpieza — para un problema de choque de fechas que con el
-volumen de esta casa es rarísimo). Falta: un endpoint que bloquee la fecha en
-el momento del envío (reciclando `precios.js` y `lib/reservas.js`, sin pasar
-por Mercado Pago) y una vista en `admin.html` para que Naty vea esas reservas
-"pendientes de WhatsApp" y las dé de baja si no le llega la seña.
+### El bloqueo sin pago (`api/reservar.js`)
+
+Es el hermano de `api/crear-pago.js` sin Mercado Pago: misma revalidación
+(modalidad, disponibilidad cruzando `disponibilidad.js` con la base, mínimo
+de noches), pero en vez de cobrar guarda la reserva con `estado: 'pendiente'`
+y `origen: 'whatsapp'` (columnas nuevas en la tabla `reservas`; ver
+`lib/reservas.js`: `marcarPendienteWhatsapp`, y `marcarPagada` ahora guarda
+`origen: 'mercadopago'`, `estado: 'confirmada'`).
+
+**Por qué el bloqueo va al mandar el mensaje y no al elegir la fecha:** un
+hold temporal (bloquear apenas se elige la fecha, liberar solo si nadie
+termina el formulario) se descartó a propósito — agrega expiración y
+limpieza para un problema de choque de fechas que con el volumen de esta
+casa es rarísimo. En cambio, `checkout.js` (`irPorWhatsapp`) llama a
+`api/reservar.js` **antes** de abrir WhatsApp: si la fecha se acaba de
+ocupar (409), avisa y manda de vuelta a `reserva.html` sin abrir un mensaje
+para una fecha que ya no está; si el problema es técnico (la base caída, sin
+red), deja pasar igual — no le tapa el WhatsApp a alguien que sólo quiere
+preguntar, es la misma degradación elegante que ya tenía el Payment Brick.
+
+**Cómo se libera o confirma una reserva pendiente:** `admin.html` tiene un
+panel nuevo, "Reservas del sitio", que habla con `api/admin/reservas.js`
+(protegido con la variable `ADMIN_TOKEN` — sin esa clave cargada en Vercel,
+el panel no funciona, falla cerrado y no abierto). Ahí Naty ve todas las
+reservas activas (pendientes y confirmadas, de WhatsApp o Mercado Pago), con
+nombre y teléfono del huésped, y dos botones: **"Marcar pagada"** (pasa de
+`pendiente` a `confirmada`, sólo tiene sentido para las de WhatsApp) y **"Dar
+de baja"** (libera esas noches en `ocupadas` y marca la reserva `cancelada`
+— la fecha vuelve a estar libre de inmediato). El calendario del panel
+principal de `admin.html` también muestra estas fechas con una rayita debajo
+del número (`.dia--online`), aunque el archivo `disponibilidad.js` todavía no
+las tenga marcadas — así no hay que adivinar mirando dos listas separadas.
 
 ### Reservas
 
@@ -535,6 +562,9 @@ tocan.)
    Webhooks): `https://tu-dominio/api/webhook-mercadopago`, evento `payments`.
 6. **`CONFIG.mercadoPago.publicKey`** en `js/config.js` — la Public Key (no
    es secreta, viaja al navegador). Ya tiene cargada la de prueba.
+7. **`ADMIN_TOKEN`**, como variable de entorno del proyecto en Vercel —
+   cualquier texto largo, es la clave del panel "Reservas del sitio" de
+   `admin.html`. Sin esto cargado ese panel no funciona.
 
 `.env.example` en la raíz lista estas mismas variables para probar en la
 computadora con `vercel dev` (copiarlo a `.env.local`, que queda fuera de

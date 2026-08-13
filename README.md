@@ -44,18 +44,25 @@ publica automáticamente.
 El `vercel.json` ya deja resuelto el caché (las fotos se guardan un año, el
 HTML y el código se revalidan siempre) y las URLs sin `.html`.
 
-### Para que funcione el cobro de la seña (Mercado Pago)
+### Para que funcione el bloqueo de fechas y el cobro de la seña
 
-Esto sí necesita configurarse una vez, después del primer deploy:
+Esto sí necesita configurarse una vez, después del primer deploy — la parte
+de Neon y `ADMIN_TOKEN` hace falta siempre (el sitio hoy manda todo por
+WhatsApp); la de Mercado Pago sólo si van a activar la variante de cobro
+online:
 
 1. Crear una base en [Neon](https://neon.tech) (gratis) y copiar el
    connection string — ahí quedan la disponibilidad "en vivo" y las reservas
-   pagadas online.
+   (pagadas online o pendientes de WhatsApp).
 2. **Settings → Environment Variables**, agregar:
    - `DATABASE_URL` — el connection string de Neon.
+   - `ADMIN_TOKEN` — cualquier texto largo que inventes. Es la clave del
+     panel "Reservas del sitio" de `admin.html`, donde se confirman o dan de
+     baja las reservas.
    - `MP_ACCESS_TOKEN` — el Access Token de
      [mercadopago.com.ar/developers/panel](https://www.mercadopago.com.ar/developers/panel)
-     (empezá con el de prueba, `TEST-...`).
+     (empezá con el de prueba, `TEST-...`). Sólo hace falta si van a prender
+     la variante "Mercado Pago" de "Cómo se paga" en `checkout.html`.
    - `MP_WEBHOOK_SECRET` — opcional, la clave que da Mercado Pago al
      configurar el webhook.
 

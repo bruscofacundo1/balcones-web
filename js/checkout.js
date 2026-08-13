@@ -269,7 +269,49 @@ function iniciarBrick(sena, datos) {
 
 /** Arma el mensaje y abre WhatsApp — el camino de la variante A, y también
     el respaldo de la B cuando no hay Public Key o el Brick no arrancó. */
-function irPorWhatsapp(datos) {
+/**
+ * Bloquea la fecha en el servidor (mismo chequeo que si fuera a cobrar, sin
+ * cobrar nada) y recién si sale bien abre WhatsApp. Si justo se ocupó un
+ * segundo antes, no llega a abrir un mensaje para una fecha que ya no está
+ * — avisa y listo. Si el problema es técnico (la base, la red), no le
+ * bloquea el paso a alguien que sólo quiere preguntar: deja pasar igual,
+ * como siempre fue antes de que existiera este bloqueo.
+ */
+function reservarEnServidor(datos) {
+  return fetch('/api/reservar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      reserva: {
+        modalidad: estado.modalidad.id,
+        entrada: estado.entrada,
+        salida: estado.salida,
+        huespedes: estado.huespedes
+      },
+      datos
+    })
+  }).then(async r => {
+    const cuerpo = await r.json().catch(() => ({}));
+    if (r.status === 409) return { ocupada: true };
+    if (!r.ok) throw new Error(cuerpo.error || 'no se pudo bloquear');
+    return { ocupada: false };
+  }).catch(err => {
+    console.error('reservarEnServidor:', err);
+    return { ocupada: false }; // fallo técnico: no le tapamos el WhatsApp a nadie
+  });
+}
+
+async function irPorWhatsapp(datos) {
+  const boton = document.getElementById('btn-finalizar');
+  const { ocupada } = await reservarEnServidor(datos);
+
+  if (ocupada) {
+    avisoForm('Uy, justo se ocupó una de esas fechas mientras completabas los datos. Elegí otras.', 'error');
+    boton.hidden = false;
+    setTimeout(() => { window.location.href = 'reserva.html'; }, 2600);
+    return;
+  }
+
   window.open(enlaceWsp(mensajeCompleto(datos)), '_blank', 'noopener');
 
   document.getElementById('panel-pago').innerHTML = `
