@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tu reserva — Balcones del Arroyo</title>
 
-<meta name="description" content="Confirmá los datos de tu estadía en Balcones del Arroyo, Traslasierra.">
+<meta name="description" content="Elegí qué alquilar y confirmá los datos de tu estadía en Balcones del Arroyo, Traslasierra.">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#b4552f">
 
@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="css/estilos.css?v=10">
+<link rel="stylesheet" href="css/estilos.css?v=11">
 </head>
 <body class="pagina-reserva">
 
@@ -36,111 +36,130 @@
 <main class="reserva-pagina">
   <div class="contenedor">
 
-    <!-- pasos -->
-    <ol class="pasos" aria-label="Pasos de la reserva">
-      <li class="paso paso--hecho"><span>1</span> Fechas</li>
-      <li class="paso paso--activo"><span>2</span> Tus datos</li>
-      <li class="paso"><span>3</span> Seña</li>
-    </ol>
-
     <!-- si alguien entra directo, sin fechas elegidas -->
     <div class="sin-reserva" id="sin-reserva" hidden>
       <h1>Todavía no elegiste las fechas</h1>
-      <p class="bajada">Para armar la reserva necesitamos saber qué querés alquilar y qué días.</p>
-      <p><a class="boton boton--primario" href="index.html#reservas">Elegir las fechas</a></p>
+      <p class="bajada">Para armar la reserva necesitamos saber qué días venís.</p>
+      <p><a class="boton boton--primario" href="index.html">Elegir las fechas</a></p>
     </div>
 
-    <div class="reserva-layout" id="reserva-layout" hidden>
-      <!-- ------------------------------------------------------ columna -->
-      <div>
-        <h1 class="reserva-titulo">Confirmá tu estadía</h1>
-        <p class="bajada">Revisá que esté todo bien y dejanos tus datos. Después coordinamos
-          la seña y te confirmamos la reserva.</p>
+    <div id="reserva-todo" hidden>
 
-        <!-- detalle -->
-        <section class="panel panel--detalle">
-          <div class="detalle__cabecera">
+      <!-- ------------------------------------------- barra de la búsqueda -->
+      <div class="busqueda">
+        <div class="busqueda__fechas">
+          <div class="busqueda__fecha">
+            <span>Entrada</span>
+            <strong id="bq-entrada"></strong>
+          </div>
+          <span class="busqueda__flecha" aria-hidden="true">&#8594;</span>
+          <div class="busqueda__fecha">
+            <span>Salida</span>
+            <strong id="bq-salida"></strong>
+          </div>
+          <p class="busqueda__noches" id="bq-noches"></p>
+        </div>
+
+        <div class="busqueda__acciones">
+          <div class="campo">
+            <label for="rp-huespedes">Huéspedes</label>
+            <select id="rp-huespedes"></select>
+          </div>
+          <a class="boton boton--linea" href="index.html">Cambiar fechas</a>
+        </div>
+      </div>
+
+      <!-- pasos -->
+      <ol class="pasos" aria-label="Pasos de la reserva">
+        <li class="paso paso--hecho"><span>1</span> Fechas</li>
+        <li class="paso paso--activo" id="paso-2"><span>2</span> Qué alquilás</li>
+        <li class="paso" id="paso-3"><span>3</span> Tus datos</li>
+      </ol>
+
+      <!-- --------------------------------------- paso 2: qué se alquila -->
+      <section class="seccion-reserva">
+        <h1 class="reserva-titulo">Elegí qué alquilar</h1>
+        <p class="bajada" id="rp-bajada">Esto es lo que queda libre para esas fechas.</p>
+
+        <div class="aviso" id="rp-aviso"></div>
+        <div class="opciones opciones--pagina" id="rp-opciones"></div>
+      </section>
+
+      <!-- ------------------------------------------- paso 3: los datos -->
+      <div class="reserva-layout" id="reserva-layout" hidden>
+        <div>
+          <h2 class="reserva-titulo reserva-titulo--chico">Tus datos</h2>
+          <p class="bajada">Dejanos cómo contactarte y coordinamos la seña.</p>
+
+          <section class="panel">
+            <form id="form-reserva" novalidate>
+              <div class="campos">
+                <div class="campo">
+                  <label for="f-nombre">Nombre y apellido *</label>
+                  <input id="f-nombre" name="nombre" type="text" autocomplete="name" required>
+                </div>
+                <div class="campo">
+                  <label for="f-tel">Teléfono *</label>
+                  <input id="f-tel" name="telefono" type="tel" autocomplete="tel" required>
+                </div>
+                <div class="campo">
+                  <label for="f-email">Email *</label>
+                  <input id="f-email" name="email" type="email" autocomplete="email" required>
+                </div>
+                <div class="campo">
+                  <label for="f-localidad">¿De dónde venís?</label>
+                  <input id="f-localidad" name="localidad" type="text" autocomplete="address-level2">
+                </div>
+                <div class="campo campo--ancho">
+                  <label for="f-mensaje">Algo que quieras contarnos</label>
+                  <textarea id="f-mensaje" name="mensaje" rows="3"
+                    placeholder="Si venís con mascota, si llegás de noche, si festejás algo..."></textarea>
+                </div>
+              </div>
+
+              <div class="aviso" id="form-aviso"></div>
+            </form>
+          </section>
+        </div>
+
+        <!-- ---------------------------------------------------- resumen -->
+        <aside class="panel resumen resumen--reserva">
+          <h2 class="resumen__titulo">Tu estadía</h2>
+
+          <div class="detalle__cabecera detalle__cabecera--chica">
             <img id="det-foto" src="img/casa-atardecer.jpg" alt="" loading="lazy">
             <div>
-              <h2 id="det-unidad"></h2>
+              <h3 id="det-unidad"></h3>
               <p class="detalle__meta" id="det-detalle"></p>
             </div>
           </div>
 
-          <ul class="detalle__datos">
-            <li><strong>Entrada</strong><span id="det-entrada"></span></li>
-            <li><strong>Salida</strong><span id="det-salida"></span></li>
-            <li><strong>Noches</strong><span id="det-noches"></span></li>
-            <li><strong>Huéspedes</strong><span id="det-huespedes"></span></li>
-          </ul>
+          <p class="resumen__sub" id="res-fechas"></p>
+          <div class="desglose" id="det-desglose"></div>
+
+          <div class="sena">
+            <div class="sena__fila">
+              <span>Seña para confirmar (<span id="det-sena-pct"></span>%)</span>
+              <strong id="det-sena"></strong>
+            </div>
+            <div class="sena__fila sena__fila--resto">
+              <span>Resto al llegar</span>
+              <span id="det-resto"></span>
+            </div>
+          </div>
 
           <p class="detalle__horarios">
             Ingreso desde las <strong id="det-checkin"></strong> ·
             salida hasta las <strong id="det-checkout"></strong>
           </p>
 
-          <p style="margin:0">
-            <a class="boton boton--linea" href="index.html#reservas" style="padding:10px 20px;font-size:.86rem">Cambiar fechas</a>
-          </p>
-        </section>
+          <button class="boton boton--primario" id="btn-continuar" style="width:100%">Continuar</button>
+          <button class="boton boton--wsp" id="btn-wsp" style="width:100%;margin-top:8px">Prefiero consultar antes</button>
 
-        <!-- datos personales -->
-        <section class="panel">
-          <h2 class="panel__titulo">Tus datos</h2>
-          <form id="form-reserva" novalidate>
-            <div class="campos">
-              <div class="campo">
-                <label for="f-nombre">Nombre y apellido *</label>
-                <input id="f-nombre" name="nombre" type="text" autocomplete="name" required>
-              </div>
-              <div class="campo">
-                <label for="f-tel">Teléfono *</label>
-                <input id="f-tel" name="telefono" type="tel" autocomplete="tel" required>
-              </div>
-              <div class="campo">
-                <label for="f-email">Email *</label>
-                <input id="f-email" name="email" type="email" autocomplete="email" required>
-              </div>
-              <div class="campo">
-                <label for="f-localidad">¿De dónde venís?</label>
-                <input id="f-localidad" name="localidad" type="text" autocomplete="address-level2">
-              </div>
-              <div class="campo campo--ancho">
-                <label for="f-mensaje">Algo que quieras contarnos</label>
-                <textarea id="f-mensaje" name="mensaje" rows="3"
-                  placeholder="Si venís con mascota, si llegás de noche, si festejás algo..."></textarea>
-              </div>
-            </div>
-
-            <div class="aviso" id="form-aviso"></div>
-          </form>
-        </section>
+          <p class="letra-chica">El valor es estimativo hasta que confirmemos la disponibilidad.
+            No se cobra nada en este paso.</p>
+        </aside>
       </div>
-
-      <!-- ------------------------------------------------------- resumen -->
-      <aside class="panel resumen resumen--reserva">
-        <h2 class="resumen__titulo">Resumen</h2>
-        <p class="resumen__sub" id="res-fechas"></p>
-
-        <div class="desglose" id="det-desglose"></div>
-
-        <div class="sena">
-          <div class="sena__fila">
-            <span>Seña para confirmar (<span id="det-sena-pct"></span>%)</span>
-            <strong id="det-sena"></strong>
-          </div>
-          <div class="sena__fila sena__fila--resto">
-            <span>Resto al llegar</span>
-            <span id="det-resto"></span>
-          </div>
-        </div>
-
-        <button class="boton boton--primario" id="btn-continuar" style="width:100%">Continuar</button>
-        <button class="boton boton--wsp" id="btn-wsp" style="width:100%;margin-top:8px">Prefiero consultar antes</button>
-
-        <p class="letra-chica">El valor es estimativo hasta que confirmemos la disponibilidad.
-          No se cobra nada en este paso.</p>
-      </aside>
     </div>
   </div>
 </main>
@@ -151,9 +170,10 @@
   </div>
 </footer>
 
-<script src="js/config.js?v=10"></script>
-<script src="js/disponibilidad.js?v=10"></script>
-<script src="js/calendario.js?v=10"></script>
-<script src="js/reserva-pagina.js?v=10"></script>
+<script src="js/config.js?v=11"></script>
+<script src="js/disponibilidad.js?v=11"></script>
+<script src="js/variantes.js?v=11"></script>
+<script src="js/calendario.js?v=11"></script>
+<script src="js/reserva-pagina.js?v=11"></script>
 </body>
 </html>

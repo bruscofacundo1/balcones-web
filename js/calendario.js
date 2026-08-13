@@ -384,6 +384,9 @@ function cambiarModalidad(id) {
   pintarReferenciasTemporada();
   dibujarCalendario();
   actualizarResumen();
+
+  // reserva.html escucha esto para repintar el detalle
+  document.dispatchEvent(new CustomEvent('balcones:modalidad'));
 }
 
 /** El selector de huéspedes se limita a las plazas de la modalidad elegida. */
@@ -391,7 +394,7 @@ function llenarHuespedes() {
   const max = estado.modalidad.plazas;
   if (estado.huespedes > max) estado.huespedes = max;
 
-  ['res-huespedes', 'dr-huespedes', 'mr-huespedes'].forEach(id => {
+  ['res-huespedes', 'dr-huespedes', 'rp-huespedes'].forEach(id => {
     const sel = document.getElementById(id);
     if (!sel) return;
     sel.innerHTML = '';
@@ -625,7 +628,7 @@ function pintarModalidades() {
  * así se ve cuánto sale cada época sin tener que elegir fechas primero.
  */
 function pintarReferenciasTemporada() {
-  ['cal-temporadas', 'dr-temporadas', 'mr-temporadas'].forEach(id => {
+  ['cal-temporadas', 'dr-temporadas'].forEach(id => {
     const cont = document.getElementById(id);
     if (!cont) return;
     cont.innerHTML = CONFIG.temporadas.map(t => `
@@ -652,7 +655,7 @@ const FOTO_UNIDAD = {
 };
 
 function pintarOpciones() {
-  [['dr-opciones', false], ['mr-opciones', true]].forEach(([id, conFoto]) => {
+  [['dr-opciones', false], ['rp-opciones', true]].forEach(([id, conFoto]) => {
     const cont = document.getElementById(id);
     if (!cont) return;
 
@@ -740,8 +743,9 @@ const CLAVE_RESERVA = 'balcones:reserva';
  * para que nadie pueda manipularlos desde el navegador.
  */
 function irAReserva() {
-  const r = estadoReserva();
-  if (!r.listo) return;
+  // Alcanza con las fechas: qué se alquila se elige en reserva.html, donde se
+  // ve el precio de cada opción. La modalidad viaja sólo como sugerencia.
+  if (!estado.entrada || !estado.salida) return;
 
   sessionStorage.setItem(CLAVE_RESERVA, JSON.stringify({
     modalidad: estado.modalidad.id,
@@ -753,16 +757,13 @@ function irAReserva() {
   window.location.href = 'reserva.html';
 }
 
-/* ------------------------------------------- modal en pasos (flujo 'c') -- */
-/* Primero las fechas, después qué se alquila, y el detalle y el pago ya en
-   otra página. Es el flujo principal. */
-
-let pasoModal = 1;
+/* ----------------------------------------- modal de fechas (flujo 'c') -- */
+/* El modal hace una sola cosa: elegir las fechas. Qué se alquila, el detalle
+   y el pago van en reserva.html. Es el flujo principal. */
 
 function abrirModalReserva() {
   const m = document.getElementById('modal-res');
   if (!m) return;
-  pasoModal = 1;
   m.classList.add('abierto');
   m.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
@@ -779,46 +780,26 @@ function cerrarModalReserva() {
   document.body.style.overflow = '';
 }
 
-/** Muestra el paso que toca y ajusta títulos y botones. */
+/** Refresca el pie del modal según lo que haya elegido. */
 function actualizarModal() {
   const m = document.getElementById('modal-res');
   if (!m || !m.classList.contains('abierto')) return;
 
-  m.dataset.paso = pasoModal;
-
-  const r = estadoReserva();
   const hayFechas = !!(estado.entrada && estado.salida);
-
-  const set = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = txt; };
-  set('mr-paso-num', `Paso ${pasoModal} de 2`);
-  set('mr-titulo', pasoModal === 1 ? 'Elegí tus fechas' : 'Qué querés alquilar');
-
-  const atras = document.getElementById('mr-atras');
   const siguiente = document.getElementById('mr-siguiente');
   const limpiar = document.getElementById('mr-limpiar');
-  const refs = document.getElementById('mr-refs');
+  const estadoTxt = document.getElementById('mr-estado');
 
-  if (atras) atras.hidden = pasoModal === 1;
-  // la referencia de colores sólo tiene sentido mientras se ven los días
-  if (refs) refs.hidden = pasoModal !== 1;
   // limpiar aparece recién cuando hay algo que limpiar
-  if (limpiar) limpiar.hidden = pasoModal !== 1 || !estado.entrada;
+  if (limpiar) limpiar.hidden = !estado.entrada;
 
-  if (pasoModal === 1) {
-    siguiente.textContent = 'Siguiente';
-    siguiente.disabled = !hayFechas;
-    const noches = hayFechas ? nochesEntre(estado.entrada, estado.salida) : 0;
-    set('mr-estado', hayFechas
-      ? `${formatoFechaLarga(estado.entrada)} al ${formatoFechaLarga(estado.salida)} · ${noches} ${noches === 1 ? 'noche' : 'noches'}`
-      : estado.entrada ? 'Ahora elegí la fecha de salida'
-      : 'Elegí las fechas para continuar');
-  } else {
-    siguiente.textContent = 'Reservar';
-    siguiente.disabled = !r.listo;
-    set('mr-estado', r.listo
-      ? `${estado.modalidad.nombre} · ${pesos(r.cotizacion.total)}`
-      : 'Elegí una de las opciones disponibles');
-  }
+  siguiente.disabled = !hayFechas;
+
+  const noches = hayFechas ? nochesEntre(estado.entrada, estado.salida) : 0;
+  estadoTxt.textContent = hayFechas
+    ? `${formatoFechaLarga(estado.entrada)} al ${formatoFechaLarga(estado.salida)} · ${noches} ${noches === 1 ? 'noche' : 'noches'}`
+    : estado.entrada ? 'Ahora elegí la fecha de salida'
+    : 'Elegí las fechas para continuar';
 }
 
 function iniciarModalReserva() {
@@ -840,25 +821,7 @@ function iniciarModalReserva() {
     dibujarCalendario();
   });
   document.getElementById('mr-limpiar').addEventListener('click', limpiarSeleccion);
-
-  document.getElementById('mr-huespedes').addEventListener('change', e => {
-    estado.huespedes = Number(e.target.value);
-    actualizarResumen();
-  });
-
-  document.getElementById('mr-atras').addEventListener('click', () => {
-    pasoModal = 1;
-    actualizarModal();
-  });
-
-  document.getElementById('mr-siguiente').addEventListener('click', () => {
-    if (pasoModal === 1) {
-      pasoModal = 2;
-      actualizarModal();
-    } else {
-      irAReserva();
-    }
-  });
+  document.getElementById('mr-siguiente').addEventListener('click', irAReserva);
 }
 
 /* --------------------------------------------------------------- drawer -- */

@@ -1,15 +1,15 @@
 /* ============================================================================
-   Balcones del Arroyo — página de reserva (paso 2)
-   Depende de: config.js, disponibilidad.js, calendario.js
+   Balcones del Arroyo — página de reserva
+   Depende de: config.js, disponibilidad.js, variantes.js, calendario.js
 
-   Recibe del drawer sólo la selección (modalidad, fechas, huéspedes) y vuelve
-   a calcular los precios acá con config.js. Nunca confía en un total que venga
-   del navegador.
+   Del modal sólo llegan las fechas. Acá se elige qué alquilar (viendo el
+   precio de cada opción y cuáles quedan libres) y después se cargan los datos.
+
+   Los precios se vuelven a calcular con config.js: nunca se confía en un
+   total que venga del navegador.
    ============================================================================ */
 
-/* FOTO_UNIDAD se define en calendario.js, que se carga antes que este archivo. */
-
-/** Lee y valida lo que eligió el visitante. Devuelve null si no sirve. */
+/** Lee las fechas que dejó el modal. Devuelve null si no sirven. */
 function leerSeleccion() {
   let datos;
   try {
@@ -18,60 +18,86 @@ function leerSeleccion() {
     return null;
   }
   if (!datos || !datos.entrada || !datos.salida) return null;
-
-  const modalidad = CONFIG.modalidades.find(m => m.id === datos.modalidad);
-  if (!modalidad) return null;
-
-  // Las fechas tienen que seguir libres: alguien pudo dejar la pestaña abierta
-  // o volver con el botón "atrás" después de que se cargara otra reserva.
-  estado.modalidad = modalidad;
-  if (hayOcupadasEntre(datos.entrada, datos.salida)) return null;
-
-  const noches = nochesEntre(datos.entrada, datos.salida);
-  if (noches < 1) return null;
+  if (nochesEntre(datos.entrada, datos.salida) < 1) return null;
 
   estado.entrada = datos.entrada;
   estado.salida = datos.salida;
-  estado.huespedes = Math.min(Number(datos.huespedes) || 1, modalidad.plazas);
 
-  // `modalidad` va al final a propósito: en `datos` viene como id (string) y
-  // acá la queremos como objeto.
-  return { ...datos, modalidad, noches };
+  // La modalidad que viene es sólo una sugerencia: si no sirve para estas
+  // fechas, más abajo se pasa a la primera que sí.
+  const sugerida = CONFIG.modalidades.find(m => m.id === datos.modalidad);
+  if (sugerida) estado.modalidad = sugerida;
+  estado.huespedes = Math.max(1, Number(datos.huespedes) || 2);
+
+  return datos;
 }
 
-/* ------------------------------------------------------------- pintado -- */
+/** Modalidades que se pueden alquilar en las fechas elegidas. */
+function modalidadesDisponibles() {
+  return CONFIG.modalidades.filter(m => {
+    if (hayOcupadasEntre(estado.entrada, estado.salida, m)) return false;
+    const c = cotizar(estado.entrada, estado.salida, m);
+    return c.noches >= c.minNoches;
+  });
+}
 
-function pintarReserva(sel) {
+/* --------------------------------------------------------- paso 2 y 3 --- */
+
+/** Barra de arriba con las fechas elegidas. */
+function pintarBusqueda() {
+  const noches = nochesEntre(estado.entrada, estado.salida);
+  document.getElementById('bq-entrada').textContent = formatoFechaLarga(estado.entrada);
+  document.getElementById('bq-salida').textContent = formatoFechaLarga(estado.salida);
+  document.getElementById('bq-noches').textContent =
+    `${noches} ${noches === 1 ? 'noche' : 'noches'}`;
+}
+
+/**
+ * El detalle de la derecha. Sólo se muestra cuando hay una modalidad elegida
+ * que sirva para estas fechas.
+ */
+function pintarDetalle() {
+  const layout = document.getElementById('reserva-layout');
+  const sirve = !hayOcupadasEntre(estado.entrada, estado.salida) &&
+                cotizar(estado.entrada, estado.salida).noches >=
+                cotizar(estado.entrada, estado.salida).minNoches;
+
+  layout.hidden = !sirve;
+  document.getElementById('paso-3').classList.toggle('paso--activo', sirve);
+  if (!sirve) return null;
+
+  const m = estado.modalidad;
   const c = cotizar(estado.entrada, estado.salida);
   const pct = CONFIG.reglas.senaPorcentaje || 30;
   const sena = Math.round(c.total * pct / 100);
 
-  document.getElementById('det-foto').src = FOTO_UNIDAD[sel.modalidad.id] || FOTO_UNIDAD.completa;
-  document.getElementById('det-foto').alt = sel.modalidad.nombre;
-  document.getElementById('det-unidad').textContent = sel.modalidad.nombre;
-  document.getElementById('det-detalle').textContent = sel.modalidad.detalle;
-
-  document.getElementById('det-entrada').textContent = formatoFechaLarga(estado.entrada);
-  document.getElementById('det-salida').textContent = formatoFechaLarga(estado.salida);
-  document.getElementById('det-noches').textContent =
-    `${c.noches} ${c.noches === 1 ? 'noche' : 'noches'}`;
-  document.getElementById('det-huespedes').textContent =
-    `${estado.huespedes} ${estado.huespedes === 1 ? 'huésped' : 'huéspedes'}`;
-
-  document.getElementById('det-checkin').textContent = CONFIG.reglas.horaCheckIn;
-  document.getElementById('det-checkout').textContent = CONFIG.reglas.horaCheckOut;
+  const foto = document.getElementById('det-foto');
+  foto.src = FOTO_UNIDAD[m.id] || FOTO_UNIDAD.completa;
+  foto.alt = m.nombre;
+  document.getElementById('det-unidad').textContent = m.nombre;
+  document.getElementById('det-detalle').textContent = `${m.plazas} plazas · ${m.detalle}`;
 
   document.getElementById('res-fechas').textContent =
-    `${formatoFechaLarga(estado.entrada)} al ${formatoFechaLarga(estado.salida)}`;
+    `${formatoFechaLarga(estado.entrada)} al ${formatoFechaLarga(estado.salida)} · ` +
+    `${estado.huespedes} ${estado.huespedes === 1 ? 'huésped' : 'huéspedes'}`;
 
   document.getElementById('det-desglose').innerHTML = htmlDesglose(c);
-
   document.getElementById('det-sena-pct').textContent = pct;
   document.getElementById('det-sena').textContent = pesos(sena);
   document.getElementById('det-resto').textContent = pesos(c.total - sena);
+  document.getElementById('det-checkin').textContent = CONFIG.reglas.horaCheckIn;
+  document.getElementById('det-checkout').textContent = CONFIG.reglas.horaCheckOut;
 
   return { cotizacion: c, sena };
 }
+
+/** Refresca todo lo que depende de la modalidad o de los huéspedes. */
+function refrescar() {
+  pintarOpciones();
+  ultimoCalculo = pintarDetalle();
+}
+
+let ultimoCalculo = null;
 
 /* ---------------------------------------------------------- formulario -- */
 
@@ -114,17 +140,20 @@ function leerFormulario() {
 
 /* ------------------------------------------------------------- mensaje -- */
 
-function mensajeCompleto(sel, calc, datos) {
+function mensajeCompleto(datos) {
+  const calc = ultimoCalculo;
   const l = [];
   l.push('¡Hola! Quiero reservar en Balcones del Arroyo.');
   l.push('');
-  l.push(`• ${sel.modalidad.nombre}`);
+  l.push(`• ${estado.modalidad.nombre}`);
   l.push(`• Entrada: ${formatoFechaLarga(estado.entrada)}`);
   l.push(`• Salida: ${formatoFechaLarga(estado.salida)}`);
-  l.push(`• Noches: ${calc.cotizacion.noches}`);
-  l.push(`• Huéspedes: ${estado.huespedes}`);
-  l.push(`• Total estimado: ${pesos(calc.cotizacion.total)}`);
-  l.push(`• Seña (${CONFIG.reglas.senaPorcentaje || 30}%): ${pesos(calc.sena)}`);
+  if (calc) {
+    l.push(`• Noches: ${calc.cotizacion.noches}`);
+    l.push(`• Huéspedes: ${estado.huespedes}`);
+    l.push(`• Total estimado: ${pesos(calc.cotizacion.total)}`);
+    l.push(`• Seña (${CONFIG.reglas.senaPorcentaje || 30}%): ${pesos(calc.sena)}`);
+  }
   l.push('');
   l.push('Mis datos:');
   l.push(`• Nombre: ${datos.nombre}`);
@@ -140,25 +169,50 @@ function mensajeCompleto(sel, calc, datos) {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('anio').textContent = new Date().getFullYear();
 
-  const sel = leerSeleccion();
-  if (!sel) {
+  if (!leerSeleccion()) {
     document.getElementById('sin-reserva').hidden = false;
     return;
   }
 
-  document.getElementById('reserva-layout').hidden = false;
-  const calc = pintarReserva(sel);
+  document.getElementById('reserva-todo').hidden = false;
+  pintarBusqueda();
 
-  // Paso 3 (seña). Hoy termina en WhatsApp; cuando entre Mercado Pago,
-  // este handler llama a la función serverless que crea el pago.
+  // si lo que venía sugerido no sirve, pasamos a la primera opción libre
+  const libres = modalidadesDisponibles();
+  if (libres.length && !libres.some(m => m.id === estado.modalidad.id)) {
+    estado.modalidad = libres[0];
+  }
+
+  if (!libres.length) {
+    const av = document.getElementById('rp-aviso');
+    av.className = 'aviso aviso--error';
+    av.textContent = 'No queda nada libre para esas fechas. Probá con otras.';
+    document.getElementById('rp-bajada').textContent = '';
+  }
+
+  llenarHuespedes();
+  refrescar();
+
+  // al tocar una opción, calendario.js cambia la modalidad y avisa por acá
+  document.addEventListener('balcones:modalidad', () => {
+    ultimoCalculo = pintarDetalle();
+  });
+
+  document.getElementById('rp-huespedes').addEventListener('change', e => {
+    estado.huespedes = Number(e.target.value);
+    refrescar();
+  });
+
+  // Paso 3 (seña). Hoy termina en WhatsApp; cuando entre Mercado Pago, este
+  // handler llama a la función serverless que crea el pago.
   document.getElementById('btn-continuar').addEventListener('click', () => {
     const datos = leerFormulario();
     if (!datos) return;
-    window.open(enlaceWsp(mensajeCompleto(sel, calc, datos)), '_blank', 'noopener');
+    window.open(enlaceWsp(mensajeCompleto(datos)), '_blank', 'noopener');
   });
 
   // Acá no exigimos el formulario: es la salida para quien quiere preguntar antes.
   document.getElementById('btn-wsp').addEventListener('click', () => {
-    window.open(enlaceWsp(mensajeCompleto(sel, calc, datosFormulario())), '_blank', 'noopener');
+    window.open(enlaceWsp(mensajeCompleto(datosFormulario())), '_blank', 'noopener');
   });
 });

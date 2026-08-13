@@ -728,6 +728,20 @@ a { color: var(--terracota); }
   border-radius: var(--radio-sm); flex: 0 0 auto;
 }
 
+/* en la página de reserva las opciones son el contenido principal */
+.opciones--pagina { gap: 14px; }
+.opciones--pagina .opcion { padding: 16px; gap: 20px; }
+.opciones--pagina .opcion__img { width: 190px; }
+.opciones--pagina .opcion__info strong { font-size: 1.2rem; font-family: var(--display); }
+.opciones--pagina .opcion__info small { font-size: .86rem; }
+.opciones--pagina .opcion__precio strong { font-size: 1.5rem; }
+
+@media (max-width: 700px) {
+  .opciones--pagina .opcion { flex-wrap: wrap; }
+  .opciones--pagina .opcion__img { width: 100%; aspect-ratio: 16/9; }
+  .opciones--pagina .opcion__precio { text-align: left; }
+}
+
 .opcion__precio { text-align: right; flex: 0 0 auto; }
 .opcion__precio strong {
   display: block; font-family: var(--display);
@@ -1249,8 +1263,43 @@ a { color: var(--terracota); }
 .nav--estatica { position: static; }
 .pagina-reserva { background: var(--arena); }
 
-.reserva-pagina { padding: 40px 0 clamp(56px, 8vw, 90px); min-height: 70vh; }
+.reserva-pagina { padding: 32px 0 clamp(56px, 8vw, 90px); min-height: 70vh; }
 .reserva-titulo { font-size: clamp(1.8rem, 3.6vw, 2.5rem); margin-bottom: .3em; }
+.reserva-titulo--chico { font-size: clamp(1.4rem, 2.6vw, 1.8rem); }
+.seccion-reserva { margin-bottom: 40px; }
+
+/* --------------------------------------------- barra con las fechas ----- */
+/* Se ve siempre arriba: recuerda qué se buscó y deja cambiarlo sin perderse. */
+.busqueda {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 20px;
+  padding: 16px 22px; margin-bottom: 28px;
+  background: var(--crema);
+  border: 1px solid var(--borde); border-radius: var(--radio);
+  box-shadow: var(--sombra-sm);
+}
+.busqueda__fechas { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.busqueda__fecha { display: flex; flex-direction: column; gap: 2px; }
+.busqueda__fecha span {
+  font-size: .68rem; font-weight: 600; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--piedra);
+}
+.busqueda__fecha strong { font-family: var(--display); font-size: 1.15rem; color: var(--carbon); }
+.busqueda__flecha { color: var(--ocre); font-size: 1.1rem; }
+.busqueda__noches {
+  margin: 0; padding-left: 18px; border-left: 1px solid var(--borde);
+  font-size: .9rem; color: var(--terracota); font-weight: 600;
+}
+.busqueda__acciones { display: flex; align-items: flex-end; gap: 12px; }
+.busqueda__acciones .campo { min-width: 150px; }
+.busqueda__acciones .boton { padding: 12px 20px; font-size: .88rem; }
+
+@media (max-width: 700px) {
+  .busqueda { flex-direction: column; align-items: stretch; }
+  .busqueda__noches { padding-left: 0; border-left: 0; }
+  .busqueda__acciones { align-items: stretch; }
+  .busqueda__acciones .campo { flex: 1; }
+}
 
 .pasos {
   display: flex; flex-wrap: wrap; gap: 10px 28px;
@@ -1286,6 +1335,9 @@ a { color: var(--terracota); }
   width: 120px; aspect-ratio: 4/3; object-fit: cover;
   border-radius: var(--radio-sm); flex: 0 0 auto;
 }
+.detalle__cabecera--chica { gap: 12px; padding-bottom: 16px; margin-bottom: 16px; }
+.detalle__cabecera--chica img { width: 78px; }
+.detalle__cabecera--chica h3 { font-size: 1.08rem; margin-bottom: 3px; }
 .detalle__cabecera h2 { font-size: 1.3rem; margin-bottom: 4px; }
 .detalle__meta { font-size: .86rem; color: var(--piedra); margin: 0; }
 
