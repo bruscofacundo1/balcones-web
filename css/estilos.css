@@ -565,6 +565,11 @@ a { color: var(--terracota); }
   border: 1px solid var(--borde); border-radius: var(--radio);
   box-shadow: var(--sombra-lg);
   display: none;
+  /* Con seis o siete grupos ya no entraba en pantallas bajas y no había
+     forma de llegar a los últimos — el panel abre hacia arriba desde un
+     botón pegado abajo, así que se le pone un techo y scroll propio. */
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
 }
 .variantes.abierto .variantes__panel { display: block; }
 
