@@ -20,7 +20,7 @@ const VARIANTES_DEF = {
   },
   preguntas: {
     nombre: 'Preguntas frecuentes (inicio)',
-    porDefecto: 'a',
+    porDefecto: 'b',
     opciones: [
       { id: 'a', nombre: 'Algunas + botón', detalle: '4 preguntas cortas y un botón a la página completa' },
       { id: 'b', nombre: 'Sólo botón',      detalle: 'Nada de preguntas acá, un botón que lleva a verlas todas' },

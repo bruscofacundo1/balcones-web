@@ -30,7 +30,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=30">
+<link rel="stylesheet" href="css/estilos.css?v=31">
 
 <script type="application/ld+json">
 {
@@ -273,12 +273,6 @@
   </div>
 </div>
 
-<!-- ====================================================== FRANJA FOTO ==== -->
-<section class="franja-foto">
-  <img src="img/sierras-rosa.jpg" alt="Las Sierras Grandes al atardecer" loading="lazy">
-  <p class="franja-foto__texto revelar">Cae la tarde y las sierras se ponen rosas.</p>
-</section>
-
 <!-- ======================================================== RESERVAS ==== -->
 <section class="seccion" id="reservas" hidden>
   <div class="contenedor">
@@ -354,7 +348,8 @@
      + botón a preguntas.html; 'b' nada de preguntas, sólo el botón; 'c' la
      sección entera desaparece del inicio y el link "Preguntas" del menú va
      directo a preguntas.html. Por defecto 'a'. -->
-<section class="seccion seccion--arena" id="preguntas">
+<section class="seccion seccion--foto" id="preguntas">
+  <img class="seccion__fondo" src="img/sierras-rosa.jpg" alt="" aria-hidden="true" loading="lazy">
   <div class="contenedor">
     <div class="encabezado-seccion encabezado-seccion--centro revelar">
       <span class="antetitulo">Preguntas frecuentes</span>
@@ -363,7 +358,7 @@
     </div>
     <div class="faq revelar" id="faq"></div>
     <p class="preguntas__pie revelar">
-      <a class="boton boton--linea" href="preguntas.html">Ver todas las preguntas</a>
+      <a class="boton boton--fantasma" href="preguntas.html">Ver todas las preguntas</a>
     </p>
   </div>
 </section>
@@ -552,11 +547,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=30"></script>
-<script src="js/disponibilidad.js?v=30"></script>
-<script src="js/precios.js?v=30"></script>
-<script src="js/variantes.js?v=30"></script>
-<script src="js/calendario.js?v=30"></script>
-<script src="js/app.js?v=30"></script>
+<script src="js/config.js?v=31"></script>
+<script src="js/disponibilidad.js?v=31"></script>
+<script src="js/precios.js?v=31"></script>
+<script src="js/variantes.js?v=31"></script>
+<script src="js/calendario.js?v=31"></script>
+<script src="js/app.js?v=31"></script>
 </body>
 </html>

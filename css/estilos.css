@@ -280,24 +280,29 @@ a { color: var(--terracota); }
 }
 .hero__acciones { display: flex; flex-wrap: wrap; gap: 14px; }
 
-/* --------------------------------------------------------- franja-foto -- */
-.franja-foto {
-  position: relative; min-height: 44vh;
-  display: flex; align-items: center; justify-content: center;
-  overflow: hidden; text-align: center;
-}
-.franja-foto img {
+/* ------------------------------------------------ sección con foto de fondo */
+/* Reemplaza a la vieja franja-foto (una banda suelta con la foto de las
+   sierras y la frase "Cae la tarde..."). En vez de una parada más en la home,
+   esa misma foto pasa a ser el fondo de "Preguntas frecuentes": el respiro
+   visual y la sección son ahora la misma cosa. */
+.seccion--foto { position: relative; overflow: hidden; color: rgba(255,255,255,.88); }
+.seccion__fondo {
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
-  filter: blur(2px) brightness(.68) saturate(1.05);
+  filter: blur(3px) brightness(.45) saturate(1.05);
+  /* el blur despinta los bordes: se agranda un poco para que no se noten */
+  transform: scale(1.05);
 }
-.franja-foto__texto {
-  position: relative; z-index: 2;
-  font-family: var(--display); font-weight: 600;
-  font-size: clamp(1.5rem, 3.6vw, 2.5rem);
-  color: #fff; max-width: 17ch;
-  padding: 0 24px; margin: 0;
-  text-shadow: 0 2px 30px rgba(0,0,0,.4);
-}
+.seccion--foto > .contenedor { position: relative; z-index: 2; }
+.seccion--foto h2 { color: #fff; }
+.seccion--foto .antetitulo { color: var(--ocre); }
+.seccion--foto .bajada { color: rgba(255, 255, 255, .82); }
+
+/* el acordeón del FAQ, cuando cae sobre la foto */
+.seccion--foto .faq details { border-bottom-color: rgba(255, 255, 255, .22); }
+.seccion--foto .faq summary { color: #fff; }
+.seccion--foto .faq summary:hover { color: var(--ocre); }
+.seccion--foto .faq summary::after { color: var(--ocre); }
+.seccion--foto .faq__respuesta { color: rgba(255, 255, 255, .82); }
 
 /* ------------------------------------------------------------- la casa --- */
 /* Layout asimétrico: el texto respeta el contenedor y la foto sangra hasta

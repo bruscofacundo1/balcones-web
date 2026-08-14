@@ -122,8 +122,13 @@ trabajó sobre eso.
   página y la foto **sangra hasta el borde derecho de la pantalla**, con una
   segunda foto chica superpuesta y desfasada. Rompe la sensación de grilla
   perfecta.
-- **Una franja de foto a todo lo ancho** entre secciones, con una frase corta.
-  Usa una foto **del entorno**, no de la casa, para no competir con el hero.
+- **Una franja de foto a todo lo ancho** entre secciones, con una frase corta
+  ("Cae la tarde y las sierras se ponen rosas"). Usaba una foto **del
+  entorno**, no de la casa, para no competir con el hero. → *Se sacó el
+  14/08/2026: esa misma foto pasó a ser el fondo de "Preguntas frecuentes"
+  (`.seccion--foto`), así el respiro visual y la sección son la misma cosa y
+  la home tiene una parada menos. El CSS de `.franja-foto` se borró; si se
+  quiere recuperar, está en el historial de git.*
 - **Radios más chicos** (14px → 6px) en todas las tarjetas.
 - **Galería despareja**: cada tanto una foto ocupa el doble de ancho o de alto,
   en vez de la grilla pareja donde todas miden igual.
@@ -262,7 +267,7 @@ la elección queda guardada en el navegador.
 | Sección | Variantes | Por defecto |
 |---|---|---|
 | **Cómo se paga** (`checkout.html`) | `a` directo a WhatsApp · `b` Mercado Pago (Payment Brick) | `a` |
-| **Preguntas frecuentes (inicio)** | `a` 4 preguntas + botón · `b` sólo botón · `c` nada, el nav va directo a la página | `a` |
+| **Preguntas frecuentes (inicio)** | `a` 4 preguntas + botón · `b` sólo botón · `c` nada, el nav va directo a la página | `b` |
 | **Reservas en el inicio** | `a` sin panel · `b` con panel | `a` |
 | **Cómo se alquila** | `a` unidades + precios por temporada · `b` bandas con foto y "desde" | `a` |
 | **Reservas** | `c` modal en pasos · `b` panel lateral, fechas primero · `a` panel lateral, unidad primero | `c` |
@@ -275,13 +280,13 @@ la elección queda guardada en el navegador.
 mismo `<details>`/`<summary>` que ya existía, ahora en `js/preguntas-pagina.js`).
 En el inicio, la sección `#preguntas` tiene tres formas de mostrarse:
 
-- **`a` — 4 preguntas + botón (la que queda activa).** Las 4 que más pesan en
-  si alguien reserva o no: entera/por planta, ingreso y salida, cómo se paga
-  la seña, mascotas (`FAQ_DESTACADAS = [0, 3, 4, 5]` en `js/app.js`, por
-  índice — si se reordena `FAQ` en `config.js` hay que revisar esos números).
-  Debajo, "Ver todas las preguntas" a `preguntas.html`.
-- **`b` — sólo el botón.** Ni una pregunta en el inicio, sólo la bajada y el
-  botón a la página completa.
+- **`a` — 4 preguntas + botón.** Las 4 que más pesan en si alguien reserva o
+  no: entera/por planta, ingreso y salida, cómo se paga la seña, mascotas
+  (`FAQ_DESTACADAS = [0, 3, 4, 5]` en `js/app.js`, por índice — si se
+  reordena `FAQ` en `config.js` hay que revisar esos números). Debajo, "Ver
+  todas las preguntas" a `preguntas.html`.
+- **`b` — sólo el botón (la que queda activa).** Ni una pregunta en el
+  inicio, sólo el título, la bajada y el botón a la página completa.
 - **`c` — nada.** La sección `#preguntas` entera desaparece del inicio
   (`hidden`), y el link "Preguntas" del menú deja de hacer scroll-anchor y
   pasa a apuntar directo a `preguntas.html` (`aplicarVariantePreguntas()` le
@@ -292,6 +297,28 @@ sobre todo en celular — 12-13 preguntas en acordeón eran de las secciones má
 largas, incluso colapsadas. Mismo criterio que ya se usó para "Qué hacer en
 la zona" y la galería: la sección larga se recorta y el resto queda a un
 clic, no se borra nada.
+
+**La sección tiene la foto de las sierras de fondo** (`.seccion--foto`,
+`img/sierras-rosa.jpg` difuminada y bajada de brillo). Es la foto que antes
+usaba la franja suelta que había justo antes; al fusionarlas, la home perdió
+una parada entera sin perder el respiro visual. Con la variante `b` la
+sección queda ocupando ~57% de la ventana, más presencia que la franja vieja
+(44vh).
+
+Dos cosas a tener en cuenta si se toca esto:
+
+- **El texto va en blanco sobre la foto.** El `brightness(.45)` no es
+  decorativo: con esa foto da 10.1 de contraste en el promedio y 5.4 en su
+  punto más claro (el mínimo accesible es 4.5). Si se cambia la foto por una
+  más clara, hay que rehacer esa cuenta o el título deja de leerse.
+- **El fondo lleva `transform: scale(1.05)`.** Sin eso, el `blur()` despinta
+  los bordes de la imagen y se ve una franja lavada contra la sección de al
+  lado. (La `.franja-foto` vieja tenía ese defecto sin que nadie lo notara.)
+- Queda una sección oscura (foto) pegada a otra oscura (`#contacto`, carbón
+  plano). Se dejó así a propósito — la textura de la foto y el color plano se
+  distinguen, y leído de corrido funciona como un cierre que se va apagando —
+  pero si en pantalla no convence, la salida es aclarar el `brightness` de la
+  foto y pasar el texto a oscuro, o mover `#contacto` a fondo claro.
 
 ### Reservas en el inicio
 
