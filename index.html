@@ -30,7 +30,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=28">
+<link rel="stylesheet" href="css/estilos.css?v=29">
 
 <script type="application/ld+json">
 {
@@ -78,7 +78,7 @@
       <a href="#tarifas">Tarifas</a>
       <a href="#galeria">Galería</a>
       <a href="#ubicacion">Ubicación</a>
-      <a href="#preguntas">Preguntas</a>
+      <a href="#preguntas" id="nav-preguntas">Preguntas</a>
       <!-- "Disponibilidad" hacía lo mismo que "Reservar": los dos abrían el
            calendario. Quedó uno solo. -->
       <a class="boton boton--reservar" href="#reservas" data-reservar>Reservar</a>
@@ -350,14 +350,21 @@
 </section>
 
 <!-- ============================================================= FAQ ==== -->
+<!-- Tres variantes (ver js/variantes.js, grupo "preguntas"): 'a' unas pocas
+     + botón a preguntas.html; 'b' nada de preguntas, sólo el botón; 'c' la
+     sección entera desaparece del inicio y el link "Preguntas" del menú va
+     directo a preguntas.html. Por defecto 'a'. -->
 <section class="seccion seccion--arena" id="preguntas">
   <div class="contenedor">
     <div class="encabezado-seccion encabezado-seccion--centro revelar">
       <span class="antetitulo">Preguntas frecuentes</span>
       <h2>Lo que siempre nos consultan</h2>
-      <p class="bajada">Si te queda alguna duda, escribinos por WhatsApp y te la sacamos al toque.</p>
+      <p class="bajada" id="preguntas-bajada"></p>
     </div>
     <div class="faq revelar" id="faq"></div>
+    <p class="preguntas__pie revelar">
+      <a class="boton boton--linea" href="preguntas.html">Ver todas las preguntas</a>
+    </p>
   </div>
 </section>
 
@@ -545,11 +552,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=28"></script>
-<script src="js/disponibilidad.js?v=28"></script>
-<script src="js/precios.js?v=28"></script>
-<script src="js/variantes.js?v=28"></script>
-<script src="js/calendario.js?v=28"></script>
-<script src="js/app.js?v=28"></script>
+<script src="js/config.js?v=29"></script>
+<script src="js/disponibilidad.js?v=29"></script>
+<script src="js/precios.js?v=29"></script>
+<script src="js/variantes.js?v=29"></script>
+<script src="js/calendario.js?v=29"></script>
+<script src="js/app.js?v=29"></script>
 </body>
 </html>

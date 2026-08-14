@@ -18,6 +18,15 @@ const VARIANTES_DEF = {
       { id: 'b', nombre: 'Mercado Pago', detalle: 'Tarjeta ahí mismo, con el Payment Brick' }
     ]
   },
+  preguntas: {
+    nombre: 'Preguntas frecuentes (inicio)',
+    porDefecto: 'a',
+    opciones: [
+      { id: 'a', nombre: 'Algunas + botón', detalle: '4 preguntas cortas y un botón a la página completa' },
+      { id: 'b', nombre: 'Sólo botón',      detalle: 'Nada de preguntas acá, un botón que lleva a verlas todas' },
+      { id: 'c', nombre: 'Nada',            detalle: 'La sección no aparece; "Preguntas" del menú va directo a la página' }
+    ]
+  },
   panelInicio: {
     nombre: 'Reservas en el inicio',
     porDefecto: 'a',

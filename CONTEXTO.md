@@ -66,6 +66,7 @@ entorno y conectar la base de Neon (los dos pasos están detallados en §6).
 | `index.html` | La home entera |
 | `reserva.html` | Paso 2: qué se alquila, con el precio de cada opción |
 | `checkout.html` | Paso 3: detalle, datos y (más adelante) el pago |
+| `preguntas.html` | Las 13 preguntas frecuentes completas (en el inicio sólo se ven algunas, según la variante) |
 | `admin.html` | Panel para cargar la disponibilidad. Genera el texto de `disponibilidad.js` |
 | `css/estilos.css` | Todos los estilos |
 | `js/config.js` | **Los datos del negocio**: precios, temporadas, textos, contacto, FAQ, Public Key de Mercado Pago |
@@ -76,6 +77,7 @@ entorno y conectar la base de Neon (los dos pasos están detallados en §6).
 | `js/app.js` | Arma el resto de la página: galería, carrusel, ambientes, FAQ… |
 | `js/reserva-pagina.js` | Lógica de `reserva.html` |
 | `js/checkout.js` | Lógica de `checkout.html`: datos, Payment Brick y pago |
+| `js/preguntas-pagina.js` | Lógica de `preguntas.html` |
 | `lib/mercadopago.js` | Cliente de Mercado Pago del lado del servidor |
 | `lib/reservas.js` | Disponibilidad "en vivo" en Postgres (Neon): lo que ya se pagó online |
 | `api/crear-pago.js` | Cobra la seña (recalcula todo del lado del servidor) |
@@ -260,11 +262,36 @@ la elección queda guardada en el navegador.
 | Sección | Variantes | Por defecto |
 |---|---|---|
 | **Cómo se paga** (`checkout.html`) | `a` directo a WhatsApp · `b` Mercado Pago (Payment Brick) | `a` |
+| **Preguntas frecuentes (inicio)** | `a` 4 preguntas + botón · `b` sólo botón · `c` nada, el nav va directo a la página | `a` |
 | **Reservas en el inicio** | `a` sin panel · `b` con panel | `a` |
 | **Cómo se alquila** | `a` unidades + precios por temporada · `b` bandas con foto y "desde" | `a` |
 | **Reservas** | `c` modal en pasos · `b` panel lateral, fechas primero · `a` panel lateral, unidad primero | `c` |
 | **La casa por dentro** | `a` carrusel · `c` carrusel a pantalla · `b` grilla | `a` |
 | **La casa y el lugar** | `a` mosaico en 3 niveles · `b` grilla completa | `a` |
+
+### Preguntas frecuentes (inicio)
+
+`preguntas.html` es una página nueva con las 13 preguntas completas (reusa el
+mismo `<details>`/`<summary>` que ya existía, ahora en `js/preguntas-pagina.js`).
+En el inicio, la sección `#preguntas` tiene tres formas de mostrarse:
+
+- **`a` — 4 preguntas + botón (la que queda activa).** Las 4 que más pesan en
+  si alguien reserva o no: entera/por planta, ingreso y salida, cómo se paga
+  la seña, mascotas (`FAQ_DESTACADAS = [0, 3, 4, 5]` en `js/app.js`, por
+  índice — si se reordena `FAQ` en `config.js` hay que revisar esos números).
+  Debajo, "Ver todas las preguntas" a `preguntas.html`.
+- **`b` — sólo el botón.** Ni una pregunta en el inicio, sólo la bajada y el
+  botón a la página completa.
+- **`c` — nada.** La sección `#preguntas` entera desaparece del inicio
+  (`hidden`), y el link "Preguntas" del menú deja de hacer scroll-anchor y
+  pasa a apuntar directo a `preguntas.html` (`aplicarVariantePreguntas()` le
+  cambia el `href` al link con `id="nav-preguntas"` según la variante activa).
+
+Pedido explícito (14/08/2026) pensando en achicar el scroll del inicio,
+sobre todo en celular — 12-13 preguntas en acordeón eran de las secciones más
+largas, incluso colapsadas. Mismo criterio que ya se usó para "Qué hacer en
+la zona" y la galería: la sección larga se recorta y el resto queda a un
+clic, no se borra nada.
 
 ### Reservas en el inicio
 

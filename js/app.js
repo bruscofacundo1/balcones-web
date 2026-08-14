@@ -626,13 +626,37 @@ function pintarAlquiler() {
 }
 
 /* ------------------------------------------------------------------ faq -- */
-function pintarFaq() {
-  // Sólo se publica `p` y `r`. El campo `revisar` es una nota interna.
-  document.getElementById('faq').innerHTML = FAQ.map(f => `
+/* Las 4 que más deciden si alguien reserva o no: entera/por planta, entrada
+   y salida, seña, mascotas. El resto (servicios, cómo se llega, wifi...)
+   queda para el que ya decidió y quiere el detalle, en preguntas.html. */
+const FAQ_DESTACADAS = [0, 3, 4, 5];
+
+function htmlFaq(lista) {
+  return lista.map(f => `
     <details>
       <summary>${f.p}</summary>
       <div class="faq__respuesta">${f.r.split('\n').map(x => `<p>${x}</p>`).join('')}</div>
     </details>`).join('');
+}
+
+function aplicarVariantePreguntas() {
+  const v = Variantes.get('preguntas');
+  const seccion = document.getElementById('preguntas');
+  if (!seccion) return;
+
+  seccion.hidden = v === 'c';
+  document.getElementById('nav-preguntas').href = v === 'c' ? 'preguntas.html' : '#preguntas';
+
+  document.getElementById('faq').innerHTML = v === 'a' ? htmlFaq(FAQ_DESTACADAS.map(i => FAQ[i])) : '';
+  document.getElementById('preguntas-bajada').textContent = v === 'a'
+    ? 'Las que más nos preguntan. El resto, un clic más allá.'
+    : 'Reunimos todo lo que solemos responder por WhatsApp en una sola página.';
+}
+
+function pintarFaq() {
+  // Sólo se publica `p` y `r`. El campo `revisar` es una nota interna.
+  aplicarVariantePreguntas();
+  Variantes.alCambiar('preguntas', aplicarVariantePreguntas);
 
   const pendientes = FAQ.filter(f => f.revisar);
   if (pendientes.length) {
