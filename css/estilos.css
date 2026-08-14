@@ -1764,8 +1764,12 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 /* ----------------------------------------------------------------- pie --- */
 .pie { background: #201c18; color: #8a7f72; padding: 44px 0; font-size: .86rem; }
 .pie__interior { display: flex; flex-wrap: wrap; gap: 18px; justify-content: space-between; align-items: center; }
-.pie a { color: #a89e91; text-decoration: none; }
-.pie a:hover { color: var(--ocre); }
+/* :not(.boton) para no pisarle el blanco al botón de WhatsApp del pie: un
+   link (0,1,1 de especificidad) le gana a una sola clase (0,1,0) aunque
+   .boton--wsp esté declarado después, así que sin este :not() el texto del
+   botón salía en el gris apagado de los links en vez de blanco. */
+.pie a:not(.boton) { color: #a89e91; text-decoration: none; }
+.pie a:not(.boton):hover { color: var(--ocre); }
 .pie__redes { display: flex; gap: 18px; }
 
 /* El pie completo (inicio y páginas legales). Reemplazó a la sección
@@ -1783,6 +1787,12 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
   color: #a89e91; font-size: 1.02rem;
   max-width: 54ch; margin: 0 auto 26px;
 }
+
+/* Sin el bloque ".pie__cta" arriba (páginas que no lo piden: legales,
+   preguntas, arrepentimiento), .pie__cols queda de primera y necesita su
+   propio aire arriba — si no, las columnas arrancan pegadas contra el
+   borde del pie, sin respiro. Con el CTA, ese margen ya lo pone el CTA. */
+.contenedor > .pie__cols:first-child { padding-top: 56px; }
 
 .pie__cols {
   display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.1fr;
