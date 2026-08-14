@@ -235,8 +235,11 @@ function aplicarVarianteAmbientes(v = Variantes.get('ambientes')) {
 }
 
 /* ---------------------------------------------------------- actividades -- */
-function pintarActividades() {
-  document.getElementById('actividades').innerHTML = ACTIVIDADES.map(a => `
+/* Cuatro arriba, en la home; el resto sólo aparece si tocás "Ver más" —
+   ocho tarjetas de 3:4 eran la sección más larga del inicio en celular,
+   después del FAQ. */
+function tarjetasActividades(lista) {
+  return lista.map(a => `
     <article class="actividad">
       <img src="${THUMB(a.foto)}" alt="${a.titulo}" loading="lazy">
       <div class="actividad__cuerpo">
@@ -244,6 +247,40 @@ function pintarActividades() {
         <p>${a.texto}</p>
       </div>
     </article>`).join('');
+}
+
+function pintarActividades() {
+  document.getElementById('actividades').innerHTML = tarjetasActividades(ACTIVIDADES.slice(0, 4));
+  document.getElementById('todas-actividades-grid').innerHTML = tarjetasActividades(ACTIVIDADES);
+}
+
+function abrirTodasActividades() {
+  const caja = document.getElementById('todas-actividades');
+  if (!caja) return;
+  caja.classList.add('abierto');
+  caja.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('ta-cerrar').focus();
+}
+
+function cerrarTodasActividades() {
+  const caja = document.getElementById('todas-actividades');
+  if (!caja) return;
+  caja.classList.remove('abierto');
+  caja.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+function iniciarTodasActividades() {
+  const boton = document.getElementById('btn-ver-actividades');
+  if (!boton) return;
+  boton.addEventListener('click', abrirTodasActividades);
+  document.getElementById('ta-cerrar').addEventListener('click', cerrarTodasActividades);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('todas-actividades').classList.contains('abierto')) {
+      cerrarTodasActividades();
+    }
+  });
 }
 
 /* --------------------------------------------------------------- galería */
@@ -647,6 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
   pintarGaleria('todas');
   iniciarFiltros();
   iniciarTodasLasFotos();
+  iniciarTodasActividades();
   aplicarVarianteGaleria();
   Variantes.alCambiar('galeria', aplicarVarianteGaleria);
   pintarActividades();

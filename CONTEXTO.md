@@ -125,6 +125,18 @@ trabajó sobre eso.
 - **Radios más chicos** (14px → 6px) en todas las tarjetas.
 - **Galería despareja**: cada tanto una foto ocupa el doble de ancho o de alto,
   en vez de la grilla pareja donde todas miden igual.
+- **"Qué hacer en la zona" recortada a 4 tarjetas** (`#actividades`), con un
+  botón "Ver todo lo que hay para hacer" que abre las 8 completas en una capa
+  encima (`#todas-actividades`) — no navega a otra página. Mismo criterio que
+  ya usa la galería ("Ver las 56 fotos"): la sección larga se corta en el
+  inicio y el resto queda a un clic, no borrado. Pedido explícito (14/08/2026)
+  pensando sobre todo en celular, donde 8 tarjetas de aspect-ratio 3/4 eran de
+  las secciones más largas de la home. La capa nueva reusa el cabezal fijo de
+  `.todas-fotos` pero con su propio cuerpo (`.todas-actividades__cuerpo`): el
+  grid va **adentro** del contenedor que scrollea, no siendo él mismo el que
+  scrollea — si el grid fuera directamente el hijo `flex: 1 1 auto`, vuelve el
+  mismo bug que ya pasó una vez en la galería (el navegador le compacta el
+  alto a las filas). Quedó comentado en el CSS para que no se repita.
 
 ### De dónde salieron las ideas
 

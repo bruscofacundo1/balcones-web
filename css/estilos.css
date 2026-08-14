@@ -1223,6 +1223,17 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 .actividad__cuerpo h3 { color: #fff; font-size: 1.22rem; margin-bottom: 5px; }
 .actividad__cuerpo p { font-size: .88rem; color: rgba(255,255,255,.82); margin: 0; }
 
+.actividades__pie { text-align: center; margin: 30px 0 0; }
+
+/* La capa de "todas las actividades" reusa el cabezal fijo de .todas-fotos
+   (mismo componente que la galería); acá abajo sólo el cuerpo, que es un
+   .actividades normal adentro de un contenedor que scrollea aparte. Si el
+   grid estuviera directamente en el hijo flex (como pasó una vez en la
+   galería, ver CONTEXTO.md), el navegador le compacta el alto a las filas en
+   vez de dejarlo crecer; por eso el grid va DENTRO del contenedor que
+   scrollea, no siendo él mismo el que scrollea. */
+.todas-actividades__cuerpo { flex: 1 1 auto; overflow-y: auto; padding: 28px 0 40px; }
+
 /* --------------------------------------------------------------- tarifas - */
 .tarifas { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 22px; }
 .tarifa {

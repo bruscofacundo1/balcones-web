@@ -30,7 +30,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=27">
+<link rel="stylesheet" href="css/estilos.css?v=28">
 
 <script type="application/ld+json">
 {
@@ -252,8 +252,26 @@
         todo a distancia de una salida de un día.</p>
     </div>
     <div class="actividades" id="actividades"></div>
+    <p class="actividades__pie revelar">
+      <button class="boton boton--linea" id="btn-ver-actividades">Ver todo lo que hay para hacer</button>
+    </p>
   </div>
 </section>
+
+<!-- capa con todas las actividades: "Ver más" no navega a otra página, abre
+     esto encima — mismo criterio que "Ver las 56 fotos" en la galería. -->
+<div class="todas-fotos" id="todas-actividades" aria-hidden="true">
+  <div class="todas-fotos__cab">
+    <button class="todas-fotos__volver" id="ta-cerrar">&#8592; Volver</button>
+    <strong>Qué hacer en la zona</strong>
+    <span aria-hidden="true" style="width:60px"></span>
+  </div>
+  <div class="todas-actividades__cuerpo">
+    <div class="contenedor">
+      <div class="actividades" id="todas-actividades-grid"></div>
+    </div>
+  </div>
+</div>
 
 <!-- ====================================================== FRANJA FOTO ==== -->
 <section class="franja-foto">
@@ -527,11 +545,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=27"></script>
-<script src="js/disponibilidad.js?v=27"></script>
-<script src="js/precios.js?v=27"></script>
-<script src="js/variantes.js?v=27"></script>
-<script src="js/calendario.js?v=27"></script>
-<script src="js/app.js?v=27"></script>
+<script src="js/config.js?v=28"></script>
+<script src="js/disponibilidad.js?v=28"></script>
+<script src="js/precios.js?v=28"></script>
+<script src="js/variantes.js?v=28"></script>
+<script src="js/calendario.js?v=28"></script>
+<script src="js/app.js?v=28"></script>
 </body>
 </html>
