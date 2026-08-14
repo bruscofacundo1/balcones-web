@@ -669,6 +669,10 @@ function pintarFaq() {
 }
 
 /* -------------------------------------------------------------- contacto */
+/* Los datos de contacto y las redes ahora los dibuja js/pie.js, que es el
+   mismo pie para todas las páginas. Acá quedan los botones sueltos de
+   WhatsApp repartidos por la home (el flotante, el del hero…) y los horarios
+   del panel de reservas. */
 function pintarContacto() {
   const c = CONFIG.contacto;
   const mensajeBase = '¡Hola! Vi la web de Balcones del Arroyo y quiero consultar disponibilidad.';
@@ -676,20 +680,6 @@ function pintarContacto() {
 
   document.querySelectorAll('[data-wsp]').forEach(a => { a.href = url; });
 
-  document.getElementById('dato-tel').textContent = c.telefonoVisible;
-  document.getElementById('dato-tel').href = url;
-  document.getElementById('dato-mail').textContent = c.email;
-  document.getElementById('dato-mail').href = `mailto:${c.email}`;
-  document.getElementById('dato-dir').textContent = c.direccion;
-
-  const redes = document.getElementById('pie-redes');
-  const links = [];
-  if (c.instagram) links.push(`<a href="${c.instagram}" target="_blank" rel="noopener">Instagram</a>`);
-  if (c.facebook) links.push(`<a href="${c.facebook}" target="_blank" rel="noopener">Facebook</a>`);
-  links.push(`<a href="${url}" target="_blank" rel="noopener">WhatsApp</a>`);
-  redes.innerHTML = links.join('');
-
-  document.getElementById('anio').textContent = new Date().getFullYear();
   document.getElementById('check-in').textContent = CONFIG.reglas.horaCheckIn;
   document.getElementById('check-out').textContent = CONFIG.reglas.horaCheckOut;
 }
@@ -714,6 +704,7 @@ document.addEventListener('DOMContentLoaded', () => {
   pintarActividades();
   pintarDistancias();
   pintarAlquiler();
+  pintarPie({ cta: true, enInicio: true });
   pintarContacto();
   iniciarLightbox();
   iniciarNav();

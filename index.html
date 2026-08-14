@@ -30,7 +30,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=31">
+<link rel="stylesheet" href="css/estilos.css?v=32">
 
 <script type="application/ld+json">
 {
@@ -364,36 +364,13 @@
 </section>
 
 <!-- ======================================================== CONTACTO ==== -->
-<section class="seccion seccion--carbon" id="contacto">
-  <div class="contenedor">
-    <div class="contacto__layout">
-      <div class="revelar">
-        <h2>Escribinos y coordinamos</h2>
-        <p class="bajada">Contestamos por WhatsApp todos los días. Contanos las fechas, cuántos
-          son y si venís con mascota, y te pasamos la disponibilidad al toque.</p>
-        <ul class="contacto__datos">
-          <li><div><strong>WhatsApp</strong><a id="dato-tel" href="#" target="_blank" rel="noopener"></a></div></li>
-          <li><div><strong>Email</strong><a id="dato-mail" href="#"></a></div></li>
-          <li><div><strong>Dirección</strong><span id="dato-dir"></span></div></li>
-        </ul>
-        <p style="margin-top:26px">
-          <a class="boton boton--wsp" data-wsp href="#" target="_blank" rel="noopener">Consultar por WhatsApp</a>
-        </p>
-      </div>
-      <div class="contacto__foto revelar">
-        <img src="img/casa-noche.jpg" alt="La casa iluminada al anochecer" loading="lazy">
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================= PIE ==== -->
-<footer class="pie">
-  <div class="contenedor pie__interior">
-    <p style="margin:0">© <span id="anio"></span> Balcones del Arroyo · Arroyo de los Patos, Traslasierra, Córdoba</p>
-    <div class="pie__redes" id="pie-redes"></div>
-  </div>
-</footer>
+<!-- ================================================= CONTACTO Y PIE ==== -->
+<!-- Antes eran dos bloques: la sección #contacto (carbón, con una foto de la
+     casa de noche al costado) y un pie chico debajo. Quedaban tres bandas
+     oscuras seguidas contando "Preguntas frecuentes", y la foto no aportaba
+     nada que la galería no mostrara mejor. Ahora es un solo cierre.
+     El contenido lo escribe js/pie.js, que es el mismo para todo el sitio. -->
+<footer class="pie pie--completo" id="pie"></footer>
 
 <!-- ================================================ PANEL DE VARIANTES ==== -->
 <!-- Provisorio: sirve para comparar las versiones de cada sección.
@@ -547,11 +524,12 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=31"></script>
-<script src="js/disponibilidad.js?v=31"></script>
-<script src="js/precios.js?v=31"></script>
-<script src="js/variantes.js?v=31"></script>
-<script src="js/calendario.js?v=31"></script>
-<script src="js/app.js?v=31"></script>
+<script src="js/config.js?v=32"></script>
+<script src="js/disponibilidad.js?v=32"></script>
+<script src="js/precios.js?v=32"></script>
+<script src="js/variantes.js?v=32"></script>
+<script src="js/calendario.js?v=32"></script>
+<script src="js/pie.js?v=32"></script>
+<script src="js/app.js?v=32"></script>
 </body>
 </html>

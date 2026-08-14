@@ -84,6 +84,41 @@ const CONFIG = {
     senaPorcentaje: 30                            // << REVISAR >>
   },
 
+  /* ------------------------------------------------------------- legales
+     Datos del titular y condiciones que se publican en el pie y en
+     legales.html. TODO lo marcado << REVISAR >> son decisiones del negocio o
+     datos reales que hay que completar antes de publicar: no los inventes.
+
+     Ojo: esto no reemplaza el asesoramiento de un abogado. Lo que está acá
+     cubre lo que exige la normativa argentina para vender por internet
+     (Res. 424/2020 de Comercio Interior, Ley 24.240 de Defensa del
+     Consumidor y Ley 25.326 de Protección de Datos Personales), pero el
+     texto conviene que lo revise alguien del rubro.                        */
+  legales: {
+    // Quién es el responsable frente al huésped (Ley 24.240, art. 4)
+    titular: 'Balcones del Arroyo',               // << REVISAR >> nombre o razón social real
+    cuit: '',                                     // << REVISAR >> ej: '20-12345678-9'
+    domicilio: 'Arroyo de los Patos, Nono, Córdoba, Argentina',
+    // Número del Registro de alojamientos turísticos (Córdoba, Ley 6483) y/o
+    // del Registro Nacional de Viviendas de Alquiler Turístico Temporario.
+    // Si todavía no está el trámite hecho, se deja vacío y no se muestra.
+    registroTuristico: '',                        // << REVISAR >>
+
+    // Condiciones de cancelación. Son un BORRADOR razonable del rubro:
+    // cámbienlas por las que realmente van a sostener.
+    cancelacion: {
+      diasSinCargo: 30,                           // << REVISAR >> avisando con esta anticipación, se devuelve la seña
+      diasMitad: 15,                              // << REVISAR >> entre este plazo y el anterior, se devuelve la mitad
+      senaReembolsable: true,                     // << REVISAR >> false = la seña nunca se devuelve
+      diasReprogramar: 20                         // << REVISAR >> hasta cuándo se puede mover la fecha sin costo
+    },
+
+    // Plazo del botón de arrepentimiento. Los 10 días corridos los fija la
+    // ley (Res. 424/2020 y art. 1110 del Código Civil y Comercial): no es un
+    // número que se pueda bajar.
+    diasArrepentimiento: 10
+  },
+
   /* --------------------------------------------------------------- tarifas
      Cada temporada se define por rangos de fecha que se repiten todos los años
      (formato 'MM-DD'). Si 'hasta' es menor que 'desde', el rango cruza el año

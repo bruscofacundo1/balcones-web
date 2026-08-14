@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Información legal — Balcones del Arroyo</title>
+
+<meta name="description" content="Términos y condiciones, política de privacidad y política de cancelación de Balcones del Arroyo.">
+<meta name="theme-color" content="#b4552f">
+
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="apple-touch-icon" href="img/favicon-180.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/estilos.css?v=32">
+</head>
+<body class="pagina-reserva">
+
+<!-- ====================================================== NAVEGACIÓN ==== -->
+<header class="nav nav--solida nav--estatica">
+  <div class="nav__interior">
+    <a class="nav__marca" href="index.html">
+      <img class="nav__logo nav__logo--oscura" src="img/logo-icono-oscuro.png" alt="" aria-hidden="true" style="display:block">
+      <span class="nav__marca-texto">
+        Balcones del Arroyo
+        <span>Traslasierra · Córdoba</span>
+      </span>
+    </a>
+    <a class="boton boton--linea" href="index.html">Volver al sitio</a>
+  </div>
+</header>
+
+<main class="reserva-pagina">
+  <div class="contenedor">
+    <div class="legal">
+
+      <div class="encabezado-seccion encabezado-seccion--centro revelar visible" style="margin-top:20px">
+        <span class="antetitulo">Información legal</span>
+        <h1 style="font-family:var(--display);font-size:2rem;color:var(--carbon);margin:0 0 10px">Condiciones del alquiler</h1>
+      </div>
+
+      <!-- se muestra solo si en config.js quedan datos sin cargar -->
+      <p class="legal__pendiente" id="aviso-pendiente" hidden></p>
+
+      <ul class="legal__indice">
+        <li><a href="#terminos">Términos y condiciones</a></li>
+        <li><a href="#privacidad">Política de privacidad</a></li>
+        <li><a href="#cancelacion">Política de cancelación</a></li>
+        <li><a href="arrepentimiento.html">Botón de arrepentimiento</a></li>
+      </ul>
+
+      <!-- ------------------------------------------------------ términos -->
+      <section class="legal__bloque" id="terminos">
+        <h2>Términos y condiciones</h2>
+        <p class="legal__fecha">Última actualización: <span data-legal="hoy"></span></p>
+
+        <h3>Quién presta el servicio</h3>
+        <p>El alojamiento lo ofrece <strong data-legal="titular"></strong><span data-legal="cuit-frase"></span>,
+          con domicilio en <span data-legal="domicilio"></span>. Podés contactarnos por
+          WhatsApp al <a data-legal="tel-link" href="#"></a> o por correo a
+          <a data-legal="mail-link" href="#"></a>.</p>
+
+        <h3>Qué se alquila</h3>
+        <p>Balcones del Arroyo es una casa de campo de dos plantas independientes. Se alquila
+          entera o por planta, según disponibilidad. Cada planta cuenta con cocina, baño
+          completo y acceso propio. Las fotos publicadas corresponden a la propiedad real.</p>
+
+        <h3>Cómo se reserva</h3>
+        <ul>
+          <li>Elegís las fechas y la unidad en el sitio, y nos enviás la solicitud.</li>
+          <li>La reserva queda <strong>confirmada recién cuando se acredita la seña</strong>,
+            equivalente al <span data-legal="sena-pct"></span>% del total de la estadía.</li>
+          <li>El saldo se abona al ingresar, salvo que acordemos otra cosa por escrito.</li>
+          <li>Mientras la seña no esté acreditada, las fechas pueden ser tomadas por otro huésped.</li>
+        </ul>
+
+        <h3>Precios</h3>
+        <p>Los precios publicados están expresados en pesos argentinos, son por noche y por
+          unidad (no por persona), e incluyen los servicios de luz, gas, agua y wifi. El
+          valor puede variar según la temporada; el que rige es el vigente al momento de
+          confirmar la reserva, y una vez confirmada no se modifica.</p>
+
+        <h3>Ingreso y salida</h3>
+        <p>El ingreso es a partir de las <span data-legal="checkin"></span> y la salida hasta
+          las <span data-legal="checkout"></span>. Otros horarios se pueden coordinar según
+          disponibilidad.</p>
+
+        <h3>Uso de la casa</h3>
+        <ul>
+          <li>La cantidad de huéspedes no puede superar las plazas de la unidad reservada.</li>
+          <li>Se admiten mascotas avisando al momento de reservar.</li>
+          <li>El huésped es responsable de los daños que se ocasionen durante la estadía.</li>
+          <li>No están permitidas las fiestas o eventos sin autorización previa.</li>
+        </ul>
+
+        <h3>Defensa del consumidor</h3>
+        <p>Esta relación se rige por la Ley 24.240 de Defensa del Consumidor. Ante cualquier
+          reclamo podés escribirnos directamente, y también acudir a la autoridad de
+          aplicación a través de
+          <a href="https://autogestion.produccion.gob.ar/consumidores" target="_blank" rel="noopener">Ventanilla Única Federal de Defensa del Consumidor</a>.</p>
+      </section>
+
+      <!-- ---------------------------------------------------- privacidad -->
+      <section class="legal__bloque" id="privacidad">
+        <h2>Política de privacidad</h2>
+        <p class="legal__fecha">Última actualización: <span data-legal="hoy"></span></p>
+
+        <p>Tratamos tus datos personales de acuerdo con la Ley 25.326 de Protección de Datos
+          Personales.</p>
+
+        <h3>Qué datos pedimos</h3>
+        <p>Al reservar te pedimos <strong>nombre y apellido, teléfono, correo electrónico</strong>
+          y, opcionalmente, tu localidad y un mensaje. No pedimos ni almacenamos datos de
+          tarjetas: si en algún momento se habilita el pago con tarjeta, esos datos los
+          procesa directamente la pasarela de pagos y nunca pasan por este sitio.</p>
+
+        <h3>Para qué los usamos</h3>
+        <ul>
+          <li>Gestionar y confirmar tu reserva.</li>
+          <li>Comunicarnos con vos sobre la estadía.</li>
+          <li>Cumplir con las obligaciones legales y fiscales que correspondan.</li>
+        </ul>
+        <p>No vendemos ni cedemos tus datos a terceros con fines comerciales.</p>
+
+        <h3>Cuánto los guardamos</h3>
+        <p>Conservamos los datos mientras dure la relación y el tiempo que exijan las
+          obligaciones legales. Después se eliminan.</p>
+
+        <h3>Tus derechos</h3>
+        <p>Podés pedirnos en cualquier momento acceder a tus datos, corregirlos o eliminarlos,
+          escribiendo a <a data-legal="mail-link" href="#"></a>. El titular de los datos tiene
+          derecho a solicitar y obtener información de sus datos personales de forma gratuita
+          a intervalos no menores a seis meses, salvo que acredite un interés legítimo
+          (art. 14, inc. 3 de la Ley 25.326).</p>
+        <p>La <strong>Agencia de Acceso a la Información Pública</strong>, órgano de control de
+          la Ley 25.326, tiene la atribución de atender las denuncias y reclamos que
+          presenten quienes resulten afectados en sus derechos por incumplimiento de las
+          normas vigentes en materia de protección de datos personales.</p>
+
+        <h3>Cookies</h3>
+        <p>Este sitio no usa cookies de publicidad ni de seguimiento. Sólo guarda información
+          en tu navegador para recordar la reserva que estás armando mientras completás los
+          pasos.</p>
+      </section>
+
+      <!-- --------------------------------------------------- cancelación -->
+      <section class="legal__bloque" id="cancelacion">
+        <h2>Política de cancelación</h2>
+        <p class="legal__fecha">Última actualización: <span data-legal="hoy"></span></p>
+
+        <h3>Si cancelás vos</h3>
+        <ul>
+          <li>Con más de <strong><span data-legal="dias-sin-cargo"></span> días</strong> de
+            anticipación a la fecha de ingreso: <span data-legal="texto-sin-cargo"></span></li>
+          <li>Entre <span data-legal="dias-mitad"></span> y
+            <span data-legal="dias-sin-cargo"></span> días antes:
+            se reintegra el 50% de la seña.</li>
+          <li>Con menos de <span data-legal="dias-mitad"></span> días: la seña no se
+            reintegra, porque a esa altura es muy difícil volver a alquilar esas fechas.</li>
+        </ul>
+
+        <h3>Reprogramar en lugar de cancelar</h3>
+        <p>Avisando con al menos <span data-legal="dias-reprogramar"></span> días, podés mover
+          la reserva a otra fecha del mismo año sin costo, sujeto a disponibilidad. Si la
+          nueva fecha corresponde a una temporada más cara, se abona la diferencia.</p>
+
+        <h3>Si cancelamos nosotros</h3>
+        <p>Si por un motivo de fuerza mayor no pudiéramos recibirte, te devolvemos el
+          <strong>100% de lo abonado</strong> y te ayudamos a buscar alternativas en la zona.</p>
+
+        <h3>Cómo cancelar</h3>
+        <p>Escribinos por WhatsApp al <a data-legal="tel-link" href="#"></a> o por correo a
+          <a data-legal="mail-link" href="#"></a> indicando el nombre con el que reservaste y
+          las fechas. Te confirmamos la cancelación por el mismo medio.</p>
+        <p>Si tu reserva es reciente, además tenés el derecho de arrepentimiento que da la
+          ley: <a href="arrepentimiento.html">ver cómo funciona</a>.</p>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<footer class="pie pie--completo" id="pie"></footer>
+
+<script src="js/config.js?v=32"></script>
+<script src="js/pie.js?v=32"></script>
+<script src="js/legales.js?v=32"></script>
+</body>
+</html>

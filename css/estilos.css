@@ -1577,15 +1577,62 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 
 .letra-chica { font-size: .78rem; color: var(--piedra); margin-top: 14px; text-align: center; }
 
-/* -------------------------------------------------------------- contacto - */
-.contacto__layout { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 5vw, 64px); align-items: center; }
-.contacto__datos { list-style: none; padding: 0; margin: 28px 0 0; }
-.contacto__datos li { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,.12); }
-.contacto__datos li:last-child { border-bottom: 0; }
-.contacto__datos strong { display: block; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ocre); font-weight: 600; margin-bottom: 3px; }
-.contacto__datos a { color: var(--crema); text-decoration: none; }
-.contacto__datos a:hover { color: var(--ocre); }
-.contacto__foto img { border-radius: var(--radio); aspect-ratio: 4/3; object-fit: cover; width: 100%; }
+/* ------------------------------------------------------ páginas legales -- */
+/* Términos, privacidad, cancelación y botón de arrepentimiento. Texto largo
+   y poco más: se lee, no se navega. */
+.legal { max-width: 760px; margin-inline: auto; }
+.legal__indice {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  padding: 0 0 30px; margin: 0 0 34px;
+  border-bottom: 1px solid var(--borde);
+  list-style: none;
+}
+.legal__indice a {
+  display: inline-block; padding: 8px 14px;
+  border: 1px solid var(--borde); border-radius: var(--radio-sm);
+  font-size: .85rem; color: var(--carbon-suave); text-decoration: none;
+}
+.legal__indice a:hover { border-color: var(--terracota); color: var(--terracota); }
+
+.legal__bloque { padding-top: 24px; margin-bottom: 46px; }
+.legal__bloque h2 {
+  font-size: 1.5rem; padding-bottom: 12px; margin-bottom: 20px;
+  border-bottom: 2px solid var(--ocre); display: inline-block;
+}
+.legal__bloque h3 {
+  font-family: var(--texto); font-size: .96rem; font-weight: 600;
+  color: var(--carbon); margin: 26px 0 8px;
+}
+.legal__bloque p, .legal__bloque li { font-size: .95rem; color: var(--carbon-suave); }
+.legal__bloque ul { padding-left: 20px; }
+.legal__bloque li { margin-bottom: 7px; }
+
+.legal__fecha { font-size: .82rem; color: var(--piedra); margin-bottom: 34px; }
+
+/* aviso de "esto es un borrador, revisalo" — se ve sólo mientras queden
+   datos sin cargar en config.js */
+.legal__pendiente {
+  padding: 16px 18px; margin-bottom: 30px;
+  background: #fdf4e6; border-left: 3px solid var(--ocre);
+  border-radius: var(--radio-sm);
+  font-size: .88rem; color: var(--carbon-suave);
+}
+.legal__pendiente code {
+  background: rgba(43, 38, 33, .07); padding: 1px 5px;
+  border-radius: 3px; font-size: .92em;
+}
+
+/* el código de trámite del botón de arrepentimiento: tiene que poder
+   copiarse o anotarse sin errores, así que va grande y monoespaciado */
+.arrep__codigo {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 1.5rem; font-weight: 600; letter-spacing: .04em;
+  color: var(--terracota);
+  background: var(--arena); border: 1px dashed var(--borde);
+  border-radius: var(--radio-sm);
+  padding: 16px; text-align: center;
+  user-select: all;
+}
 
 /* ------------------------------------------------- página de reserva ----- */
 /* La reserva vive fuera de la home: el visitante ya eligió y acá sólo
@@ -1720,6 +1767,69 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 .pie a { color: #a89e91; text-decoration: none; }
 .pie a:hover { color: var(--ocre); }
 .pie__redes { display: flex; gap: 18px; }
+
+/* El pie completo (inicio y páginas legales). Reemplazó a la sección
+   #contacto en carbón con foto al costado: eran dos bandas oscuras
+   seguidas y la foto no agregaba nada. */
+.pie--completo { padding: 0 0 30px; }
+
+.pie__cta {
+  text-align: center; padding: 62px 0 54px;
+  border-bottom: 1px solid rgba(255, 255, 255, .1);
+  margin-bottom: 46px;
+}
+.pie__cta h2 { color: var(--crema); margin-bottom: 12px; }
+.pie__cta p {
+  color: #a89e91; font-size: 1.02rem;
+  max-width: 54ch; margin: 0 auto 26px;
+}
+
+.pie__cols {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.1fr;
+  gap: 34px; padding-bottom: 38px;
+}
+.pie__col h3 {
+  font-family: var(--texto); font-size: .72rem; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ocre); margin-bottom: 14px;
+}
+.pie__nombre {
+  font-family: var(--display); font-size: 1.25rem;
+  color: var(--crema); margin-bottom: 8px;
+}
+.pie__desc { max-width: 34ch; margin-bottom: 18px; line-height: 1.6; }
+
+.pie__lista { list-style: none; padding: 0; margin: 0; }
+.pie__lista li { padding: 5px 0; line-height: 1.5; }
+
+/* La Resolución 424/2020 pide que el botón de arrepentimiento sea de acceso
+   fácil, directo y destacado, así que se separa del resto de los links
+   legales en vez de ser uno más de la lista. */
+.pie__arrepentimiento {
+  display: inline-block; margin-top: 14px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--radio-sm);
+  font-size: .8rem; font-weight: 600;
+}
+.pie__arrepentimiento:hover { border-color: var(--ocre); }
+
+.pie__barra {
+  display: flex; flex-wrap: wrap; gap: 6px 20px;
+  justify-content: space-between; align-items: baseline;
+  padding-top: 26px; border-top: 1px solid rgba(255, 255, 255, .1);
+  font-size: .8rem;
+}
+.pie__barra p { margin: 0; }
+.pie__fiscal { color: #6f665c; }
+
+@media (max-width: 900px) {
+  .pie__cols { grid-template-columns: 1fr 1fr; gap: 30px; }
+  .pie__col--marca { grid-column: 1 / -1; }
+}
+@media (max-width: 560px) {
+  .pie__cols { grid-template-columns: 1fr; gap: 26px; }
+  .pie__cta { padding: 46px 0 40px; }
+}
 
 /* --------------------------------------------------------- wsp flotante -- */
 .wsp-flotante {

@@ -22,9 +22,10 @@ y entrar a `http://localhost:5173`.
 > Con `file://` el navegador bloquea la navegación entre páginas y el flujo de
 > reserva se corta al pasar a `reserva.html`.
 
-**Caché:** los `<script>` y el CSS se cargan con `?v=24`. Cuando publiques un
-cambio, **subí ese número** en `index.html`, `reserva.html` y `checkout.html`
-o los visitantes van a seguir viendo la versión vieja.
+**Caché:** los `<script>` y el CSS se cargan con `?v=32`. Cuando publiques un
+cambio, **subí ese número** en todos los HTML (index, reserva, checkout,
+preguntas, legales, arrepentimiento) o los visitantes van a seguir viendo la
+versión vieja.
 
 **Funciones serverless (`api/`):** necesitan sus dependencias instaladas una
 vez:
@@ -67,6 +68,8 @@ entorno y conectar la base de Neon (los dos pasos están detallados en §6).
 | `reserva.html` | Paso 2: qué se alquila, con el precio de cada opción |
 | `checkout.html` | Paso 3: detalle, datos y (más adelante) el pago |
 | `preguntas.html` | Las 13 preguntas frecuentes completas (en el inicio sólo se ven algunas, según la variante) |
+| `legales.html` | Términos y condiciones, privacidad y cancelación |
+| `arrepentimiento.html` | Botón de arrepentimiento (Res. 424/2020) |
 | `admin.html` | Panel para cargar la disponibilidad. Genera el texto de `disponibilidad.js` |
 | `css/estilos.css` | Todos los estilos |
 | `js/config.js` | **Los datos del negocio**: precios, temporadas, textos, contacto, FAQ, Public Key de Mercado Pago |
@@ -78,6 +81,9 @@ entorno y conectar la base de Neon (los dos pasos están detallados en §6).
 | `js/reserva-pagina.js` | Lógica de `reserva.html` |
 | `js/checkout.js` | Lógica de `checkout.html`: datos, Payment Brick y pago |
 | `js/preguntas-pagina.js` | Lógica de `preguntas.html` |
+| `js/pie.js` | El pie del sitio, igual para todas las páginas |
+| `js/legales.js` | Rellena los datos variables de `legales.html` y `arrepentimiento.html` |
+| `js/arrepentimiento.js` | Formulario y código de trámite del botón de arrepentimiento |
 | `lib/mercadopago.js` | Cliente de Mercado Pago del lado del servidor |
 | `lib/reservas.js` | Disponibilidad "en vivo" en Postgres (Neon): lo que ya se pagó online |
 | `api/crear-pago.js` | Cobra la seña (recalcula todo del lado del servidor) |
@@ -710,6 +716,70 @@ al abrir la página, con la pregunta concreta que hay que responder.
   copiar y pegar, pero cualquiera con la URL lo abre.
 - Las fotos pesan 18 MB en total. Ninguna llega al mega, pero si en algún
   momento va a un hosting con límite de tráfico, conviene comprimirlas.
+
+---
+
+## 6.b El pie y las páginas legales
+
+### Qué exige la normativa argentina
+
+Se investigó antes de escribirlo, porque acá no se puede improvisar. Lo que
+aplica a un alojamiento que se comercializa por internet:
+
+| Norma | Qué obliga | Dónde está resuelto |
+|---|---|---|
+| [Res. 424/2020](https://www.argentina.gob.ar/normativa/nacional/resoluci%C3%B3n-424-2020-342869/texto) de Comercio Interior | Botón de arrepentimiento, con acceso **fácil, directo y destacado desde la home**, sin exigir registro previo. 10 días corridos. El proveedor da un código de trámite y responde en 24hs | `arrepentimiento.html` + link separado en el pie |
+| Ley 24.240 de Defensa del Consumidor | Identificar al proveedor (nombre/razón social, CUIT, domicilio) y las condiciones de contratación | `legales.html#terminos` y la barra del pie |
+| [Ley 25.326](https://www.argentina.gob.ar/aaip/datospersonales) de Protección de Datos | Informar qué datos se recolectan, para qué, y cómo se ejercen acceso/rectificación/supresión | `legales.html#privacidad` |
+| Ley 6483 y Decreto 1359 (Córdoba) + Registro Nacional de Viviendas de Alquiler Turístico Temporario | Registrar el alojamiento y publicar el número | campo `registroTuristico` en `config.js` |
+
+**Un detalle que sorprende:** en la Unión Europea el alojamiento con fecha
+determinada está exento del derecho de revocación, pero el
+[art. 1116 del Código Civil y Comercial](https://leyes-ar.com/codigo_civil_y_comercial/1116.htm)
+argentino **no incluye esa excepción** — la doctrina lo señala como una
+omisión del legislador. O sea que acá el turismo con fecha fija queda dentro.
+Por eso el botón de arrepentimiento está puesto aunque sea una casa de campo
+con fechas cerradas: es barato tenerlo y caro que lo reclamen.
+
+### Cómo está armado
+
+- **`js/pie.js`** escribe el pie completo, igual para todo el sitio. Antes
+  estaba copiado a mano en cada HTML y se desincronizaba solo. Cada página lo
+  pide con `pintarPie({ cta, enInicio })`.
+- **El pie reemplazó a la sección `#contacto`**, que era una banda carbón con
+  una foto de la casa de noche al costado. Con "Preguntas frecuentes" ya
+  oscura, quedaban tres bandas oscuras seguidas, y esa foto no mostraba nada
+  que la galería no mostrara mejor (sigue estando ahí). Ahora el CTA de
+  WhatsApp vive arriba del pie y es un solo cierre.
+- **`legales.html`** tiene los tres textos en una página con índice
+  (`#terminos`, `#privacidad`, `#cancelacion`). El texto está en el HTML —es
+  texto, no datos— pero todo lo variable (titular, CUIT, plazos, contacto)
+  sale de `CONFIG.legales` vía `js/legales.js`, que rellena los
+  `<span data-legal="...">`. Así el CUIT se toca en un solo lugar.
+- **`arrepentimiento.html`** tiene página propia y link aparte del resto de
+  los legales, porque la resolución pide que sea *destacado*, no uno más de la
+  lista. Genera el código de trámite (`ARR-AAAAMMDD-XXXX`) en el navegador y
+  lo mete dentro del mensaje de WhatsApp: no hay servidor donde guardarlo, así
+  que el respaldo real es el mensaje que le queda al huésped en su teléfono.
+- **En `reserva.html` y `checkout.html` el pie sigue corto** (un pie de veinte
+  links en medio del checkout distrae), pero se les agregaron los tres links
+  legales: es justo el momento donde el huésped se está por comprometer.
+
+### Lo que falta completar
+
+`CONFIG.legales` en `js/config.js` tiene marcado con `<< REVISAR >>`:
+
+- **`titular`, `cuit`, `registroTuristico`** — datos reales, no se inventan.
+  Mientras falten, `legales.html` muestra un aviso amarillo arriba diciendo
+  qué falta, y la línea fiscal del pie directamente no se dibuja. Eso es a
+  propósito: publicar un CUIT inventado es peor que no publicar ninguno.
+- **`cancelacion`** — los plazos (30 días sin cargo, 15 al 50%, 20 para
+  reprogramar) son **un borrador razonable del rubro**, no una decisión
+  tomada. Hay que confirmarlos antes de sostenerlos frente a un huésped.
+
+**Y lo más importante: esto no reemplaza a un abogado.** Cubre lo que la
+normativa exige y está redactado en el tono del sitio, pero conviene que lo
+lea alguien del rubro antes de publicarlo.
 
 ---
 

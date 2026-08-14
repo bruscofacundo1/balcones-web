@@ -7,7 +7,7 @@
    ============================================================================ */
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('anio').textContent = new Date().getFullYear();
+  pintarPie({ cta: false });
 
   document.getElementById('faq-completo').innerHTML = FAQ.map(f => `
     <details>
