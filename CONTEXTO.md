@@ -166,6 +166,51 @@ tienen en común **no es el diseño, es el contenido**:
 4. **Negocios locales con nombre propio**, no "hay supermercados y verdulerías".
 5. **Opiniones reales con fuente y fecha.**
 
+### Animaciones (14/08/2026)
+
+Pedido explícito: "algún chiche" de movimiento, sin librerías. El sitio ya
+tenía `.revelar` (fade + `translateY`, con `IntersectionObserver` en
+`iniciarRevelado()`, `js/app.js`); se extendió con lo mismo, sin sumar nada:
+
+- **`.revelar--foto`**: además del fade, un leve *scale* (de .96 a 1). Se
+  usa sólo en fotos (unidades, bandas, actividades, mosaico, "La casa") —
+  los bloques de texto se quedan con el `translateY` solo, para no mezclar
+  dos lenguajes de animación en la misma pantalla.
+- **`.cascada`**: en un contenedor con hijos `.revelar`, cada uno entra
+  70ms después que el anterior (`:nth-child`, hasta 8 — de ahí no sigue
+  creciendo). En `unidades-tira`, `bandas-unidades`, `actividades`,
+  `mosaico`, `tarifas-grid`.
+- **El hero anima al cargar**, no al scrollear (es lo primero que se ve):
+  la foto con un `scale(1.04)→1` suave, el título/bajada/botones con
+  `translateY` y un pequeño delay entre uno y otro (`@keyframes hero-entra`
+  / `hero-texto-entra`).
+
+**Un cuidado real, no cosmético, que costó encontrar:** varias tarjetas se
+pintan dentro de algo que arranca oculto (`tarifas-grid-b` en un `<details>`
+cerrado; la capa de "ver más" de actividades, `display:none` hasta que se
+abre). Un elemento sin caja mientras está oculto nunca cruza el umbral del
+`IntersectionObserver` — si arrancara en `opacity:0` como el resto de
+`.revelar`, quedaría invisible **para siempre**, incluso después de abrirse.
+Por eso `pintarTarifas()` y `tarjetasActividades()` reciben un parámetro
+(`conRevelado`) que sólo agrega la clase en la tarjeta que se ve de entrada;
+la copia que vive escondida se pinta sin animación, directamente visible.
+
+Mismo problema, versión "tarde": `pintarMosaico()` se puede repintar después
+de la carga inicial si alguien cambia la variante de "La casa y el lugar" en
+la misma visita (`aplicarVarianteGaleria` → `Variantes.alCambiar`). El
+`IntersectionObserver` de `iniciarRevelado()` escanea el DOM **una sola vez**
+al cargar; un `.revelar` que aparece después no lo observa nadie. Se resuelve
+con la bandera `animacionesListas` (`js/app.js`): en true recién al terminar
+`iniciarRevelado()`, y `pintarMosaico()` sólo pone la clase si todavía es
+`false` (el pintado inicial). Un repintado tardío aparece directo, sin
+animar — mejor eso que una tarjeta invisible.
+
+**Si se agrega `.revelar`/`.revelar--foto` a algo nuevo que se pinta por JS,
+hay que hacerse esta pregunta primero: ¿puede existir ese elemento oculto
+(`hidden`, `display:none`, `<details>` cerrado) en el momento en que se
+pinta, ya sea al cargar la página o después? Si la respuesta es sí, no le
+pongas la clase ahí — pintalo visible directo, como se hizo acá.**
+
 ---
 
 ## 4. El flujo de reserva

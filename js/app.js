@@ -40,11 +40,18 @@ function iniciarNav() {
 }
 
 /* ------------------------------------------------------------ animaciones */
+// Se pone en true al final de iniciarRevelado(). Las funciones que pueden
+// repintar tarjetas más tarde (al cambiar una variante, no en el pintado
+// inicial) la consultan para no agregarles la clase .revelar a esa altura:
+// el observer de acá abajo ya escaneó el DOM una sola vez, así que un
+// .revelar que aparece después no lo ve nadie y quedaría invisible siempre.
+let animacionesListas = false;
+
 function iniciarRevelado() {
   const items = document.querySelectorAll('.revelar');
   const mostrarTodo = () => items.forEach(i => i.classList.add('visible'));
 
-  if (!('IntersectionObserver' in window)) return;   // sin animación, todo visible
+  if (!('IntersectionObserver' in window)) { animacionesListas = true; return; }
 
   document.documentElement.classList.add('anim');
 
@@ -61,6 +68,8 @@ function iniciarRevelado() {
   // red de seguridad: si por algún motivo el observer no se dispara,
   // a los 3 segundos mostramos todo igual.
   setTimeout(mostrarTodo, 3000);
+
+  animacionesListas = true;
 }
 
 /* ----------------------------------------------------------- datos varios */
@@ -238,9 +247,15 @@ function aplicarVarianteAmbientes(v = Variantes.get('ambientes')) {
 /* Cuatro arriba, en la home; el resto sólo aparece si tocás "Ver más" —
    ocho tarjetas de 3:4 eran la sección más larga del inicio en celular,
    después del FAQ. */
-function tarjetasActividades(lista) {
+/**
+ * `conRevelado` va sólo en la tira de 4 que se ve de entrada. La capa de
+ * "Ver más" arranca con `display:none` (se abre con JS), y un elemento sin
+ * caja mientras está oculto nunca cruza el umbral del IntersectionObserver
+ * — si arrancara en opacity:0 quedaría invisible aunque después se abra.
+ */
+function tarjetasActividades(lista, conRevelado) {
   return lista.map(a => `
-    <article class="actividad">
+    <article class="actividad ${conRevelado ? 'revelar revelar--foto' : ''}">
       <img src="${THUMB(a.foto)}" alt="${a.titulo}" loading="lazy">
       <div class="actividad__cuerpo">
         <h3>${a.titulo}</h3>
@@ -250,8 +265,8 @@ function tarjetasActividades(lista) {
 }
 
 function pintarActividades() {
-  document.getElementById('actividades').innerHTML = tarjetasActividades(ACTIVIDADES.slice(0, 4));
-  document.getElementById('todas-actividades-grid').innerHTML = tarjetasActividades(ACTIVIDADES);
+  document.getElementById('actividades').innerHTML = tarjetasActividades(ACTIVIDADES.slice(0, 4), true);
+  document.getElementById('todas-actividades-grid').innerHTML = tarjetasActividades(ACTIVIDADES, false);
 }
 
 function abrirTodasActividades() {
@@ -333,8 +348,15 @@ function pintarMosaico() {
   const destacadas = fotosDestacadas();
   const restantes = FOTOS.length - destacadas.length;
 
+  // Si esto se repinta después de que iniciarRevelado() ya armó el
+  // IntersectionObserver (pasa si alguien cambia la variante de "La casa y
+  // el lugar" en la misma visita), un .revelar nuevo no lo observa nadie y
+  // quedaría en opacity:0 para siempre. La animación sólo va en el pintado
+  // inicial; un repintado tardío aparece directo, sin animar.
+  const claseRevelado = animacionesListas ? '' : 'revelar revelar--foto';
+
   cont.innerHTML = destacadas.map((foto, i) => `
-    <figure class="mosaico__item" data-i="${i}">
+    <figure class="mosaico__item ${claseRevelado}" data-i="${i}">
       <img src="${THUMB(foto.f)}" alt="${foto.t}" loading="lazy">
       ${i === destacadas.length - 1 && restantes > 0
         ? `<figcaption class="mosaico__mas">+${restantes} fotos</figcaption>` : ''}
@@ -551,8 +573,15 @@ function pintarTarifas(idContenedor) {
   const cont = document.getElementById(idContenedor);
   if (!cont) return;
 
+  // 'tarifas-grid-b' vive adentro de un <details> cerrado (la variante B lo
+  // pliega bajo "Ver precios por temporada"): un elemento sin caja mientras
+  // está cerrado nunca cruza el umbral del IntersectionObserver, así que si
+  // arrancara en opacity:0 quedaría invisible para siempre aunque se abra
+  // el desplegable. Sólo la grilla que se ve de entrada usa la cascada.
+  const conRevelado = idContenedor === 'tarifas-grid';
+
   cont.innerHTML = CONFIG.temporadas.map(t => `
-    <article class="tarifa ${t.destacada ? 'tarifa--destacada' : ''}">
+    <article class="tarifa ${conRevelado ? 'revelar' : ''} ${t.destacada ? 'tarifa--destacada' : ''}">
       <h3 class="tarifa__nombre">${t.nombre}</h3>
       <p class="tarifa__periodo">${t.periodo}</p>
       <ul class="tarifa__precios">
@@ -576,7 +605,7 @@ function pintarUnidades() {
   if (!cont) return;
 
   cont.innerHTML = CONFIG.modalidades.map((m, i) => `
-    <article class="unidad${i === 0 ? ' unidad--principal' : ''}">
+    <article class="unidad revelar revelar--foto${i === 0 ? ' unidad--principal' : ''}">
       <img class="unidad__foto" src="${FOTO_UNIDAD[m.id]}" alt="" loading="lazy">
       <div class="unidad__cuerpo">
         <h3>${m.nombre}</h3>
@@ -592,7 +621,7 @@ function pintarBandas() {
   if (!cont) return;
 
   cont.innerHTML = CONFIG.modalidades.map((m, i) => `
-    <article class="banda${i === 0 ? ' banda--principal' : ''}">
+    <article class="banda revelar revelar--foto${i === 0 ? ' banda--principal' : ''}">
       <img class="banda__foto" src="${FOTO_UNIDAD[m.id]}" alt="${m.nombre}" loading="lazy">
       <div class="banda__cuerpo">
         <h3>${m.nombre}</h3>

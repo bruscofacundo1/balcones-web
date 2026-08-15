@@ -1864,6 +1864,41 @@ html.anim .revelar {
 }
 html.anim .revelar.visible { opacity: 1; transform: none; }
 
+/* Las fotos, además del fade, se acercan un poco — se sienten "asentar" en
+   su lugar en vez de solo aparecer. Los bloques de texto se quedan con el
+   translateY solo: mezclar los dos lenguajes en la misma pantalla se ve
+   inconsistente. */
+html.anim .revelar--foto { transform: translateY(18px) scale(.96); }
+html.anim .revelar--foto.visible { transform: none; }
+
+/* Cascada: en una grilla de tarjetas, cada una entra un poco después que la
+   anterior en vez de todas de golpe. Se satura a los 8 elementos — pasado
+   ese número el delay no sigue creciendo, para que una grilla grande no se
+   sienta "goteando" cada vez que aparece. */
+.cascada > .revelar:nth-child(1) { transition-delay: 0ms; }
+.cascada > .revelar:nth-child(2) { transition-delay: 70ms; }
+.cascada > .revelar:nth-child(3) { transition-delay: 140ms; }
+.cascada > .revelar:nth-child(4) { transition-delay: 210ms; }
+.cascada > .revelar:nth-child(5) { transition-delay: 280ms; }
+.cascada > .revelar:nth-child(6) { transition-delay: 350ms; }
+.cascada > .revelar:nth-child(7) { transition-delay: 420ms; }
+.cascada > .revelar:nth-child(n+8) { transition-delay: 490ms; }
+
+/* El hero no espera al scroll — es lo primero que se ve, así que entra solo
+   al cargar la página. Una vez sola, no se repite. */
+@keyframes hero-entra {
+  from { opacity: 0; transform: scale(1.04); }
+  to   { opacity: 1; transform: none; }
+}
+.hero__fondo img { animation: hero-entra 1.4s cubic-bezier(.2,.7,.3,1) both; }
+@keyframes hero-texto-entra {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+.hero__contenido > * { animation: hero-texto-entra .9s cubic-bezier(.2,.7,.3,1) both; }
+.hero__contenido > *:nth-child(2) { animation-delay: .12s; }
+.hero__contenido > *:nth-child(3) { animation-delay: .22s; }
+
 @media (prefers-reduced-motion: reduce) {
   html.anim .revelar { opacity: 1; transform: none; transition: none; }
   html { scroll-behavior: auto; }

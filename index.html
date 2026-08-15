@@ -30,7 +30,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=33">
+<link rel="stylesheet" href="css/estilos.css?v=34">
 
 <script type="application/ld+json">
 {
@@ -110,7 +110,7 @@
       <div id="casa-texto"></div>
       <p class="casa__cifras" id="casa-cifras"></p>
     </div>
-    <div class="casa__foto revelar">
+    <div class="casa__foto revelar revelar--foto">
       <img class="casa__foto-grande" src="img/casa-parque.jpg" alt="La casa vista desde el parque" loading="lazy">
       <img class="casa__foto-chica" src="img/galeria-mate.jpg" alt="Mates en la galería" loading="lazy">
     </div>
@@ -140,13 +140,13 @@
 
     <!-- variante A: las tres unidades una sola vez, y abajo los precios por temporada -->
     <div id="alquiler-a">
-      <div class="unidades revelar" id="unidades-tira"></div>
-      <div class="tarifas revelar" id="tarifas-grid"></div>
+      <div class="unidades cascada" id="unidades-tira"></div>
+      <div class="tarifas cascada" id="tarifas-grid"></div>
     </div>
 
     <!-- variante B: bandas alternadas con "desde", y los precios finos plegados -->
     <div id="alquiler-b">
-      <div class="bandas revelar" id="bandas-unidades"></div>
+      <div class="bandas cascada" id="bandas-unidades"></div>
 
       <div class="bandas__pie revelar">
         <a class="boton boton--primario" href="#reservas" data-reservar>Ver fechas y precio exacto</a>
@@ -201,7 +201,7 @@
     </div>
 
     <!-- variante A: mosaico corto, y las demás fotos a un clic -->
-    <div class="mosaico" id="mosaico"></div>
+    <div class="mosaico cascada" id="mosaico"></div>
 
     <!-- variante B: todas las fotos con filtros -->
     <div id="galeria-completa">
@@ -251,7 +251,7 @@
       <p class="bajada">Ríos, senderos, pueblos serranos y el camino de las Altas Cumbres,
         todo a distancia de una salida de un día.</p>
     </div>
-    <div class="actividades" id="actividades"></div>
+    <div class="actividades cascada" id="actividades"></div>
     <p class="actividades__pie revelar">
       <button class="boton boton--linea" id="btn-ver-actividades">Ver todo lo que hay para hacer</button>
     </p>
@@ -524,12 +524,12 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=33"></script>
-<script src="js/disponibilidad.js?v=33"></script>
-<script src="js/precios.js?v=33"></script>
-<script src="js/variantes.js?v=33"></script>
-<script src="js/calendario.js?v=33"></script>
-<script src="js/pie.js?v=33"></script>
-<script src="js/app.js?v=33"></script>
+<script src="js/config.js?v=34"></script>
+<script src="js/disponibilidad.js?v=34"></script>
+<script src="js/precios.js?v=34"></script>
+<script src="js/variantes.js?v=34"></script>
+<script src="js/calendario.js?v=34"></script>
+<script src="js/pie.js?v=34"></script>
+<script src="js/app.js?v=34"></script>
 </body>
 </html>
