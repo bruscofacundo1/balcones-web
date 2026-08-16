@@ -504,10 +504,10 @@ para una fecha que ya no está; si el problema es técnico (la base caída, sin
 red), deja pasar igual — no le tapa el WhatsApp a alguien que sólo quiere
 preguntar, es la misma degradación elegante que ya tenía el Payment Brick.
 
-**Cómo se libera o confirma una reserva pendiente:** `admin.html` tiene un
-panel nuevo, "Reservas del sitio", que habla con `api/admin/reservas.js`
-(protegido con la variable `ADMIN_TOKEN` — sin esa clave cargada en Vercel,
-el panel no funciona, falla cerrado y no abierto). Ahí Naty ve todas las
+**Cómo se libera o confirma una reserva pendiente:** desde el panel de
+`/admin`, que habla con `api/admin/reservas.js` (protegido por la cookie de
+sesión; sin `ADMIN_PASSWORD` cargada en Vercel el panel no abre — falla
+cerrado y no abierto). Ver §6.c. Ahí Naty ve todas las
 reservas activas (pendientes y confirmadas, de WhatsApp o Mercado Pago), con
 nombre y teléfono del huésped, y dos botones: **"Marcar pagada"** (pasa de
 `pendiente` a `confirmada`, sólo tiene sentido para las de WhatsApp) y **"Dar
@@ -725,9 +725,10 @@ tocan.)
    Webhooks): `https://tu-dominio/api/webhook-mercadopago`, evento `payments`.
 6. **`CONFIG.mercadoPago.publicKey`** en `js/config.js` — la Public Key (no
    es secreta, viaja al navegador). Ya tiene cargada la de prueba.
-7. **`ADMIN_TOKEN`**, como variable de entorno del proyecto en Vercel —
-   cualquier texto largo, es la clave del panel "Reservas del sitio" de
-   `admin.html`. Sin esto cargado ese panel no funciona.
+7. **`ADMIN_PASSWORD`**, como variable de entorno del proyecto en Vercel — la
+   contraseña para entrar a `/admin`. Larga y al azar: con ella se cancelan
+   reservas y se ven los datos de los huéspedes. Sin esto cargado el panel no
+   abre. (Reemplazó a `ADMIN_TOKEN`, que ya no se lee — ver §6.c.)
 
 `.env.example` en la raíz lista estas mismas variables para probar en la
 computadora con `vercel dev` (copiarlo a `.env.local`, que queda fuera de

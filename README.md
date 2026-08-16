@@ -60,8 +60,6 @@ online:
      y al azar, y guardala en un gestor de contraseñas: con esa clave se
      cancelan reservas y se ven los datos de los huéspedes. Cambiarla cierra
      todas las sesiones abiertas.
-     *(Si venías usando `ADMIN_TOKEN`, se sigue aceptando por compatibilidad,
-     pero conviene renombrarla.)*
    - `MP_ACCESS_TOKEN` — el Access Token de
      [mercadopago.com.ar/developers/panel](https://www.mercadopago.com.ar/developers/panel)
      (empezá con el de prueba, `TEST-...`). Sólo hace falta si van a prender
