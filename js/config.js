@@ -25,7 +25,7 @@ const CONFIG = {
     // en Google Maps (buscá la casa en Maps → botón "Reseñas" → "Escribir
     // una reseña" → copiá esa URL). Si no tenés perfil en Booking, dejá
     // bookingResenas vacío: el botón correspondiente no se muestra.
-    googleResenas: 'https://search.google.com/local/writereview?placeid=13268309225191809105',
+    googleResenas: '',                             // << REVISAR >> ver CONTEXTO.md para cómo conseguir el link correcto
     bookingResenas: '',                            // << REVISAR >>
     direccion: 'Arroyo de los Patos, Nono, Valle de Traslasierra, Córdoba',
     // Coordenadas aproximadas para el mapa (reemplazá por las exactas de la casa)
