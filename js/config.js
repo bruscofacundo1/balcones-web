@@ -20,6 +20,13 @@ const CONFIG = {
     email: 'balconesdelarroyo@gmail.com',         // << REVISAR >>
     instagram: '',                                 // ej: 'https://instagram.com/balconesdelarroyo'
     facebook: 'https://www.facebook.com/Balcones-del-Arroyo', // << REVISAR >>
+    // Para el botón "Dejanos tu opinión" y "Ver todas" de la sección de
+    // reseñas. El de Google es el link de "Escribir una reseña" de tu ficha
+    // en Google Maps (buscá la casa en Maps → botón "Reseñas" → "Escribir
+    // una reseña" → copiá esa URL). Si no tenés perfil en Booking, dejá
+    // bookingResenas vacío: el botón correspondiente no se muestra.
+    googleResenas: '',                             // << REVISAR >>
+    bookingResenas: '',                            // << REVISAR >>
     direccion: 'Arroyo de los Patos, Nono, Valle de Traslasierra, Córdoba',
     // Coordenadas aproximadas para el mapa (reemplazá por las exactas de la casa)
     mapa: {
@@ -452,6 +459,36 @@ const FAQ = [
   {
     p: '¿Hay lugar para estacionar?',
     r: 'Sí, hay cochera cubierta y espacio de sobra en el parque para varios autos.'
+  }
+];
+
+/* ============================================================================
+   RESENAS — copiadas de Google Maps y Booking, tal cual las escribió cada
+   huésped. NO inventes reseñas nuevas: reemplazá estas 3 de ejemplo por
+   reseñas reales (texto tal cual, nombre si es público, fuente y fecha).
+   `estrellas` va de 1 a 5.
+   ============================================================================ */
+const RESENAS = [
+  {                                                 // << REVISAR >>
+    texto: 'La pasamos increíble, la casa es tal cual las fotos y la vista a las sierras desde la galería no tiene precio.',
+    autor: 'Ejemplo — reemplazar',
+    fuente: 'Google',
+    fecha: '2026-02',
+    estrellas: 5
+  },
+  {                                                 // << REVISAR >>
+    texto: 'Excelente ubicación, muy tranquilo. Volvemos seguro.',
+    autor: 'Ejemplo — reemplazar',
+    fuente: 'Booking',
+    fecha: '2026-01',
+    estrellas: 5
+  },
+  {                                                 // << REVISAR >>
+    texto: 'Todo impecable, los dueños muy atentos desde el primer mensaje.',
+    autor: 'Ejemplo — reemplazar',
+    fuente: 'Google',
+    fecha: '2025-12',
+    estrellas: 5
   }
 ];
 

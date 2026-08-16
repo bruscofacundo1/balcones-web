@@ -74,6 +74,7 @@ function pintarPie(opciones = {}) {
             <li><a href="${raiz}#tarifas">Tarifas</a></li>
             <li><a href="${raiz}#galeria">Galería</a></li>
             <li><a href="${raiz}#ubicacion">Ubicación</a></li>
+            <li><a href="${raiz}#opiniones">Opiniones</a></li>
             <li><a href="preguntas.html">Preguntas frecuentes</a></li>
           </ul>
         </div>

@@ -211,6 +211,49 @@ hay que hacerse esta pregunta primero: ¿puede existir ese elemento oculto
 pinta, ya sea al cargar la página o después? Si la respuesta es sí, no le
 pongas la clase ahí — pintalo visible directo, como se hizo acá.**
 
+### Opiniones (14/08/2026)
+
+Sección nueva, `#opiniones`, entre "Qué hacer en la zona" y "Preguntas
+frecuentes". Reseñas **reales**, copiadas de Google Maps y de Booking — no un
+formulario propio en el sitio para que la gente opine acá. Dos razones: una
+reseña con el sello de un tercero (Google, Booking) pesa más que un
+testimonio suelto en la propia web, que cualquiera podría haber escrito; y no
+hace falta construir ni moderar un sistema de reseñas nuevo — el botón
+"Dejanos tu opinión" manda directo a escribirla donde ya se escriben.
+
+Los textos viven en `js/config.js`, array `RESENAS` (`{ texto, autor, fuente,
+fecha: 'AAAA-MM', estrellas }`). Hoy tiene 3 de ejemplo bien marcadas
+`<< REVISAR >>` — **no inventar reseñas nuevas**, reemplazar por las reales
+tal cual las escribió cada huésped. Si `RESENAS` queda vacío, la sección
+entera se oculta sola (`pintarResenas()` en `js/app.js`) en vez de mostrar un
+carrusel vacío.
+
+Los dos botones ("Dejanos tu opinión en Google" / "...en Booking") salen de
+`CONFIG.contacto.googleResenas` / `bookingResenas` — vacíos por defecto, cada
+uno se muestra sólo si tiene link cargado. El de Google es el link de
+"Escribir una reseña" de la ficha en Google Maps.
+
+**Es una tira que desliza sola, no una grilla fija** — pedido explícito,
+pensando en que el día que haya muchas reseñas una grilla se vería rota,
+mientras que la tira se ve igual de bien con 3 que con 30. Cómo funciona el
+loop infinito sin librería: `pintarResenas()` duplica la lista una vez
+(`tarjetas + tarjetas`) y la animación mueve la tira exactamente `-50%`
+(`@keyframes opiniones-desliza`, `css/estilos.css`) — cuando la primera copia
+termina de salir por la izquierda, la segunda copia está exactamente donde
+empezó la primera, así que el corte no se nota. La duración depende de la
+cantidad de reseñas (`--cant`, variable CSS que pone `pintarResenas()`) para
+que la velocidad de desplazamiento no cambie según cuántas haya, sólo el
+recorrido se hace más largo. Se pausa con `:hover`/`:focus-within` para poder
+leer.
+
+**`prefers-reduced-motion`:** acá no alcanza con la regla global que apaga
+las animaciones (`* { animation: none !important }`) — si sólo se apagara la
+animación, quedarían visibles nada más las tarjetas que entran en el ancho de
+pantalla, sin scroll y sin loop, inalcanzables el resto. `pintarResenas()`
+chequea `matchMedia('(prefers-reduced-motion: reduce)')`: si está activado,
+no duplica la lista y el carrusel pasa a `overflow-x: auto` (scroll
+horizontal nativo, con el dedo o la rueda) en vez de animar solo.
+
 ---
 
 ## 4. El flujo de reserva

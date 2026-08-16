@@ -1235,6 +1235,55 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 
 .actividades__pie { text-align: center; margin: 30px 0 0; }
 
+/* ------------------------------------------------------------ opiniones -- */
+/* Tira a todo el ancho (se sale del .contenedor, mismo truco que
+   .carrusel--pantalla) que desliza sola. La lista se duplica una vez en JS
+   y el loop es mover exactamente -50%: cuando la primera copia termina de
+   salir, la segunda está justo donde estaba la primera — no se nota el
+   corte. Un degradado en los bordes (mask-image) disimula que las tarjetas
+   "nacen" y "mueren" ahí en vez de venir de más lejos. */
+.opiniones-carrusel {
+  overflow: hidden; margin-top: 36px;
+  margin-inline: calc(50% - 50vw);
+  padding-inline: max(24px, calc(50vw - var(--ancho) / 2));
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 60px, #000 calc(100% - 60px), transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 60px, #000 calc(100% - 60px), transparent);
+}
+.opiniones-pista {
+  display: flex; gap: 22px; width: max-content;
+  /* --cant lo pone pintarResenas(): la velocidad no cambia con la cantidad
+     de reseñas, sólo se hace más largo el recorrido. */
+  animation: opiniones-desliza calc(var(--cant, 3) * 7s) linear infinite;
+}
+.opiniones-carrusel:hover .opiniones-pista,
+.opiniones-carrusel:focus-within .opiniones-pista { animation-play-state: paused; }
+
+@keyframes opiniones-desliza {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Con "reducir movimiento" no hay animación posible que respetar, así que en
+   vez de mostrar sólo la tarjeta que entra al ancho de la pantalla (el resto
+   quedaría inalcanzable, sin scroll y sin loop), se deja scroll horizontal
+   nativo — pintarResenas() no duplica la lista en ese caso. */
+.opiniones-carrusel--estatica { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+.opiniones-carrusel--estatica .opiniones-pista { animation: none; }
+
+.opinion {
+  flex: 0 0 auto; width: min(360px, 82vw);
+  background: var(--crema); border: 1px solid var(--borde); border-radius: var(--radio);
+  padding: 28px 26px;
+}
+.opinion__estrellas { color: var(--ocre); font-size: 1.05rem; letter-spacing: 3px; margin-bottom: 14px; }
+.opinion__texto {
+  font-family: var(--display); font-size: 1.05rem; font-style: italic;
+  color: var(--carbon); line-height: 1.55; margin: 0 0 18px;
+}
+.opinion__fuente { font-size: .8rem; color: var(--piedra); margin: 0; }
+
+.opiniones__pie { text-align: center; margin-top: 34px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
 /* La capa de "todas las actividades" reusa el cabezal fijo de .todas-fotos
    (mismo componente que la galería); acá abajo sólo el cuerpo, que es un
    .actividades normal adentro de un contenedor que scrollea aparte. Si el

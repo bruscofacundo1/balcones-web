@@ -269,6 +269,56 @@ function pintarActividades() {
   document.getElementById('todas-actividades-grid').innerHTML = tarjetasActividades(ACTIVIDADES, false);
 }
 
+/* -------------------------------------------------------------- opiniones */
+
+const MESES_CORTOS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+/** 'AAAA-MM' -> 'feb 2026'. Si no matchea ese formato, se muestra tal cual. */
+function mesCorto(iso) {
+  const m = /^(\d{4})-(\d{2})$/.exec(iso || '');
+  if (!m) return iso || '';
+  return `${MESES_CORTOS[Number(m[2]) - 1]} ${m[1]}`;
+}
+
+function tarjetaOpinion(r) {
+  const estrellas = Math.max(0, Math.min(5, r.estrellas || 5));
+  return `
+    <article class="opinion">
+      <div class="opinion__estrellas" aria-label="${estrellas} de 5 estrellas">
+        ${'★'.repeat(estrellas)}${'☆'.repeat(5 - estrellas)}
+      </div>
+      <p class="opinion__texto">"${r.texto}"</p>
+      <p class="opinion__fuente">${r.autor ? `${r.autor} · ` : ''}${r.fuente} · ${mesCorto(r.fecha)}</p>
+    </article>`;
+}
+
+function pintarResenas() {
+  const seccion = document.getElementById('opiniones');
+  const carrusel = document.getElementById('opiniones-carrusel');
+  const pista = document.getElementById('opiniones-pista');
+  if (!seccion || !pista) return;
+
+  // Sin reseñas cargadas, no hay nada que mostrar: mejor que la sección
+  // desaparezca a que se vea un carrusel vacío.
+  if (!RESENAS || !RESENAS.length) { seccion.hidden = true; return; }
+
+  const reducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const tarjetas = RESENAS.map(tarjetaOpinion).join('');
+  // El loop infinito es duplicar la lista y mover la tira exactamente -50%:
+  // cuando la primera copia termina de salir, la segunda ocupa su lugar.
+  // Con "reducir movimiento" no hay animación, así que no tiene sentido
+  // duplicar — se deja scroll horizontal nativo para llegar a todas.
+  pista.innerHTML = reducido ? tarjetas : tarjetas + tarjetas;
+  pista.style.setProperty('--cant', RESENAS.length);
+  carrusel.classList.toggle('opiniones-carrusel--estatica', reducido);
+
+  const c = CONFIG.contacto;
+  const btnGoogle = document.getElementById('btn-opinion-google');
+  const btnBooking = document.getElementById('btn-opinion-booking');
+  if (c.googleResenas) { btnGoogle.href = c.googleResenas; btnGoogle.hidden = false; }
+  if (c.bookingResenas) { btnBooking.href = c.bookingResenas; btnBooking.hidden = false; }
+}
+
 function abrirTodasActividades() {
   const caja = document.getElementById('todas-actividades');
   if (!caja) return;
@@ -731,6 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
   aplicarVarianteGaleria();
   Variantes.alCambiar('galeria', aplicarVarianteGaleria);
   pintarActividades();
+  pintarResenas();
   pintarDistancias();
   pintarAlquiler();
   pintarPie({ cta: true, enInicio: true });

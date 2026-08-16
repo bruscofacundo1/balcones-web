@@ -30,7 +30,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=34">
+<link rel="stylesheet" href="css/estilos.css?v=35">
 
 <script type="application/ld+json">
 {
@@ -272,6 +272,32 @@
     </div>
   </div>
 </div>
+
+<!-- ======================================================= OPINIONES ==== -->
+<!-- Reseñas reales copiadas de Google Maps y Booking (RESENAS en config.js),
+     no un formulario propio: una reseña con el sello de un tercero pesa más
+     que un testimonio suelto en la propia web. Tira que desliza sola en vez
+     de una grilla fija — con 3 reseñas o con 30 se ve igual de bien; una
+     grilla se rompe cuando crece. Se pausa al pasar el mouse o el foco, para
+     poder leer. -->
+<section class="seccion" id="opiniones">
+  <div class="contenedor">
+    <div class="encabezado-seccion encabezado-seccion--centro revelar">
+      <span class="antetitulo">Opiniones</span>
+      <h2>Nuestros huéspedes opinan</h2>
+      <p class="bajada">Reseñas reales, tal cual las dejaron en Google y en Booking.</p>
+    </div>
+  </div>
+
+  <div class="opiniones-carrusel" id="opiniones-carrusel">
+    <div class="opiniones-pista" id="opiniones-pista"></div>
+  </div>
+
+  <div class="contenedor opiniones__pie revelar">
+    <a class="boton boton--linea" id="btn-opinion-google" href="#" target="_blank" rel="noopener" hidden>Dejanos tu opinión en Google</a>
+    <a class="boton boton--linea" id="btn-opinion-booking" href="#" target="_blank" rel="noopener" hidden>Dejanos tu opinión en Booking</a>
+  </div>
+</section>
 
 <!-- ======================================================== RESERVAS ==== -->
 <section class="seccion" id="reservas" hidden>
@@ -524,12 +550,12 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=34"></script>
-<script src="js/disponibilidad.js?v=34"></script>
-<script src="js/precios.js?v=34"></script>
-<script src="js/variantes.js?v=34"></script>
-<script src="js/calendario.js?v=34"></script>
-<script src="js/pie.js?v=34"></script>
-<script src="js/app.js?v=34"></script>
+<script src="js/config.js?v=35"></script>
+<script src="js/disponibilidad.js?v=35"></script>
+<script src="js/precios.js?v=35"></script>
+<script src="js/variantes.js?v=35"></script>
+<script src="js/calendario.js?v=35"></script>
+<script src="js/pie.js?v=35"></script>
+<script src="js/app.js?v=35"></script>
 </body>
 </html>
