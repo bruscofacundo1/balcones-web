@@ -463,31 +463,54 @@ const FAQ = [
 ];
 
 /* ============================================================================
-   RESENAS — copiadas de Google Maps y Booking, tal cual las escribió cada
-   huésped. NO inventes reseñas nuevas: reemplazá estas 3 de ejemplo por
-   reseñas reales (texto tal cual, nombre si es público, fuente y fecha).
+   RESENAS — copiadas de Google Maps, tal cual las escribió cada huésped.
+   NO inventes reseñas nuevas ni cambies el texto: si hay que sumar o sacar
+   alguna, copiala/borrala tal cual está.
+
+   La fecha que da Google es relativa ("hace 7 años"), así que `fecha` es
+   sólo el año aproximado — mesCorto() en app.js muestra tal cual lo que
+   no tenga formato 'AAAA-MM'.
+
+   Quedaron afuera a propósito las reseñas de apellido Brusco (familia
+   directa): son reales y están en el mapa, pero mezclarlas con las de
+   huéspedes sin relación con la familia le resta credibilidad a la
+   sección. Si preferís incluirlas de todos modos, avisame.
    `estrellas` va de 1 a 5.
    ============================================================================ */
 const RESENAS = [
-  {                                                 // << REVISAR >>
-    texto: 'La pasamos increíble, la casa es tal cual las fotos y la vista a las sierras desde la galería no tiene precio.',
-    autor: 'Ejemplo — reemplazar',
+  {
+    texto: 'Espectacular el lugar! Una vista soñada!! Mucha comodidad para toda la familia. Los dueños divinos y súper serviciales!!!',
+    autor: 'Erika Moeykens',
     fuente: 'Google',
-    fecha: '2026-02',
+    fecha: '2019',
     estrellas: 5
   },
-  {                                                 // << REVISAR >>
-    texto: 'Excelente ubicación, muy tranquilo. Volvemos seguro.',
-    autor: 'Ejemplo — reemplazar',
-    fuente: 'Booking',
-    fecha: '2026-01',
+  {
+    texto: 'Increíble lugar super recomendable no te lo pierdas si vas a Nono.',
+    autor: 'Carolina Nuñez Bussolini',
+    fuente: 'Google',
+    fecha: '2022',
     estrellas: 5
   },
-  {                                                 // << REVISAR >>
-    texto: 'Todo impecable, los dueños muy atentos desde el primer mensaje.',
-    autor: 'Ejemplo — reemplazar',
+  {
+    texto: 'Tremenda casa con un parque y una vista hermosa',
+    autor: 'Pablo Javier Hernandez',
     fuente: 'Google',
-    fecha: '2025-12',
+    fecha: '2020',
+    estrellas: 5
+  },
+  {
+    texto: 'Excelente, totalmente recomendable!!!',
+    autor: 'Hernan V',
+    fuente: 'Google',
+    fecha: '2019',
+    estrellas: 5
+  },
+  {
+    texto: 'muy lindo exelente',
+    autor: 'Maximiliano Lelli',
+    fuente: 'Google',
+    fecha: '2019',
     estrellas: 5
   }
 ];
