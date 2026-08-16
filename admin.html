@@ -3,630 +3,890 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de disponibilidad — Balcones del Arroyo</title>
+<title>Administración — Balcones del Arroyo</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232b2621'/><path d='M20 58 L50 32 L80 58 v22 H20z' fill='%23d89a4a'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/estilos.css">
+<link rel="stylesheet" href="css/estilos.css?v=36">
 <style>
   body { background: var(--arena); }
-  .admin-cab { background: var(--carbon); color: var(--crema); padding: 26px 0; }
-  .admin-cab h1 { color: #fff; font-size: 1.5rem; margin: 0 0 4px; }
-  .admin-cab p { margin: 0; color: #a89e91; font-size: .9rem; }
-  .admin-cab a { color: var(--ocre); }
 
-  .admin-grid { display: grid; grid-template-columns: 1fr 340px; gap: 26px; align-items: start; }
-  @media (max-width: 980px) { .admin-grid { grid-template-columns: 1fr; } }
-
-  .anio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 26px; }
-
-  .modo { display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; }
-
-  .dia--ocupado { cursor: pointer !important; }
-  .dia--pinta { outline: 2px solid var(--ocre); outline-offset: -2px; }
-  /* la otra planta está ocupada, pero la unidad elegida no */
-  .dia--parcial { background: #f6efe2; color: var(--piedra); }
-  .ref__caja--parcial { background: #f6efe2; }
-
-  /* Fecha bloqueada por una reserva online (pagada o pendiente de WhatsApp)
-     que este archivo todavía no tiene marcada — se dibuja aparte de
-     dia--ocupado/dia--parcial, que vienen sólo del archivo local. */
-  .dia--online { box-shadow: inset 0 -4px 0 var(--terracota); }
-  .ref__caja--online { box-shadow: inset 0 -4px 0 var(--terracota); background: var(--crema); }
-
-  .reservas-online { list-style: none; padding: 0; margin: 0; font-size: .86rem; }
-  .reservas-online li {
-    padding: 12px 0; border-bottom: 1px solid var(--borde);
+  /* ------------------------------------------------------------- entrar -- */
+  .login { min-height: 100dvh; display: grid; place-items: center; padding: 24px; }
+  .login__caja {
+    background: var(--crema); border: 1px solid var(--borde); border-radius: var(--radio);
+    box-shadow: var(--sombra); padding: 34px 30px; width: 100%; max-width: 380px;
   }
-  .reservas-online li:last-child { border-bottom: 0; }
-  .ro__cab { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
-  .ro__unidad { font-weight: 600; color: var(--carbon); }
-  .ro__badge {
-    font-size: .68rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
-    padding: 2px 8px; border-radius: 20px; white-space: nowrap;
+  .login__caja h1 { font-family: var(--display); font-size: 1.4rem; color: var(--carbon); margin: 0 0 6px; }
+  .login__caja p { color: var(--piedra); font-size: .88rem; margin: 0 0 22px; }
+  .login__caja input {
+    width: 100%; padding: 12px 14px; border: 1px solid var(--borde);
+    border-radius: var(--radio-sm); font-family: var(--texto); font-size: .95rem;
   }
-  .ro__badge--pendiente { background: #f6efe2; color: var(--terracota-osc); }
-  .ro__badge--confirmada { background: #e7f0e2; color: var(--oliva); }
-  .ro__badge--mercadopago { background: var(--arena-osc); color: var(--piedra); }
-  .ro__badge--whatsapp { background: var(--arena-osc); color: var(--piedra); }
-  .ro__datos { color: var(--piedra); margin: 0 0 8px; }
-  .ro__acciones { display: flex; gap: 8px; }
-  .ro__acciones button {
-    border: 1px solid var(--borde); background: var(--crema); border-radius: var(--radio-sm);
-    padding: 6px 12px; font-size: .78rem; font-family: var(--texto); cursor: pointer;
-  }
-  .ro__acciones button:hover { border-color: var(--terracota); color: var(--terracota); }
-  .ro__acciones .ro__cancelar:hover { border-color: #b23b3b; color: #b23b3b; }
+  .login__caja button { width: 100%; margin-top: 12px; }
 
-  .admin-clave { display: flex; gap: 8px; margin-bottom: 14px; }
-  .admin-clave input {
-    flex: 1; padding: 9px 12px; border: 1px solid var(--borde); border-radius: var(--radio-sm);
-    font-family: var(--texto); font-size: .85rem;
+  /* ----------------------------------------------------------- estructura -- */
+  .admin-cab { background: var(--carbon); color: var(--crema); padding: 18px 0; }
+  .admin-cab .contenedor { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .admin-cab h1 { color: #fff; font-size: 1.15rem; margin: 0; font-family: var(--display); }
+  .admin-cab .crece { flex: 1 1 auto; }
+  .admin-cab button {
+    background: transparent; border: 1px solid #564e45; color: #cdc3b6;
+    border-radius: var(--radio-sm); padding: 7px 14px; font-size: .82rem;
+    font-family: var(--texto); cursor: pointer;
+  }
+  .admin-cab button:hover { border-color: var(--ocre); color: var(--ocre); }
+
+  .barra { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 22px 0 18px; }
+  .barra .crece { flex: 1 1 auto; }
+
+  .tabs { display: inline-flex; background: var(--arena-osc); border-radius: var(--radio); padding: 3px; }
+  .tabs button {
+    border: 0; background: transparent; padding: 8px 18px; border-radius: var(--radio-sm);
+    font-family: var(--texto); font-size: .86rem; color: var(--piedra); cursor: pointer;
+  }
+  .tabs button[aria-selected="true"] { background: var(--crema); color: var(--carbon); font-weight: 600; box-shadow: var(--sombra-sm); }
+
+  .aviso-caja {
+    background: #fdf4e3; border: 1px solid var(--ocre); border-left-width: 4px;
+    border-radius: var(--radio-sm); padding: 13px 16px; margin-bottom: 18px; font-size: .88rem;
+  }
+  .aviso-caja strong { color: var(--terracota-osc); }
+  .aviso-caja--mal { background: #fbeceb; border-color: #b23b3b; }
+  .aviso-caja button {
+    border: 0; background: transparent; color: var(--terracota); text-decoration: underline;
+    cursor: pointer; font-family: var(--texto); font-size: .88rem; padding: 0;
   }
 
-  .caja-json {
-    width: 100%; min-height: 150px; font-family: ui-monospace, Consolas, monospace;
-    font-size: .78rem; border: 1px solid var(--borde); border-radius: var(--radio-sm);
-    padding: 12px; background: var(--crema); color: var(--carbon); resize: vertical;
+  /* ---------------------------------------------------------- calendario -- */
+  .anio-nav { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+  .anio-nav button {
+    width: 34px; height: 34px; border: 1px solid var(--borde); background: var(--crema);
+    border-radius: 50%; cursor: pointer; font-size: 1.1rem; color: var(--carbon); line-height: 1;
   }
-  .lista-reservas { list-style: none; padding: 0; margin: 0; font-size: .88rem; max-height: 260px; overflow-y: auto; }
-  .lista-reservas li {
-    display: flex; justify-content: space-between; align-items: center; gap: 10px;
-    padding: 9px 0; border-bottom: 1px solid var(--borde);
+  .anio-nav strong { font-family: var(--display); font-size: 1.3rem; }
+
+  .meses { display: grid; grid-template-columns: repeat(auto-fill, minmax(248px, 1fr)); gap: 22px; }
+  .mes {
+    background: var(--crema); border: 1px solid var(--borde);
+    border-radius: var(--radio); padding: 14px;
   }
-  .lista-reservas button {
-    border: 0; background: transparent; color: var(--terracota);
-    cursor: pointer; font-size: .82rem; font-family: var(--texto);
+  .mes h3 {
+    font-size: .82rem; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--piedra); margin: 0 0 10px; text-align: center; font-weight: 600;
   }
-  .paso { counter-increment: paso; }
-  .pasos { counter-reset: paso; padding-left: 0; list-style: none; margin: 0; }
-  .pasos li { padding: 9px 0 9px 34px; position: relative; font-size: .9rem; border-bottom: 1px solid var(--borde); }
-  .pasos li:last-child { border-bottom: 0; }
-  .pasos li::before {
-    counter-increment: n; content: counter(n);
-    position: absolute; left: 0; top: 9px;
-    width: 22px; height: 22px; border-radius: 50%;
-    background: var(--terracota); color: #fff;
-    font-size: .74rem; font-weight: 600;
-    display: flex; align-items: center; justify-content: center;
+  .mes__dias { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .mes__dias span {
+    font-size: .64rem; color: var(--piedra); text-align: center; padding-bottom: 4px;
   }
-  .pasos { counter-reset: n; }
+  .dia {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    font-size: .78rem; border-radius: var(--radio-sm); border: 1px solid transparent;
+    background: var(--dia-libre); color: var(--carbon-suave); cursor: pointer; position: relative;
+  }
+  .dia:hover { outline: 2px solid var(--ocre); outline-offset: -2px; }
+  .dia--vacio { background: transparent; cursor: default; }
+  .dia--vacio:hover { outline: 0; }
+  .dia--pasado { background: var(--arena-osc); color: #b8ada0; }
+  .dia--lleno { background: var(--dia-ocupado); border-color: var(--dia-ocupado-bd); }
+  .dia--parcial { background: #fbecd8; border-color: #e8d0a8; }
+  .dia--bloqueo { background: #ded8cf; border-color: #c5bcaf; color: var(--piedra); }
+  /* franjita abajo = hay algo pendiente de confirmar esa noche */
+  .dia--pendiente::after {
+    content: ''; position: absolute; left: 4px; right: 4px; bottom: 3px;
+    height: 3px; border-radius: 2px; background: var(--ocre);
+  }
+  .dia--hoy { font-weight: 700; box-shadow: inset 0 0 0 2px var(--carbon); }
+
+  .leyenda { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 20px; font-size: .8rem; color: var(--piedra); }
+  .leyenda i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; }
+
+  /* --------------------------------------------------------------- lista -- */
+  .filtros { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .filtros button {
+    border: 1px solid var(--borde); background: var(--crema); border-radius: 20px;
+    padding: 6px 15px; font-size: .82rem; font-family: var(--texto); cursor: pointer; color: var(--piedra);
+  }
+  .filtros button[aria-pressed="true"] { background: var(--carbon); color: #fff; border-color: var(--carbon); }
+
+  .tarjetas { display: grid; gap: 12px; }
+  .rsv {
+    background: var(--crema); border: 1px solid var(--borde); border-radius: var(--radio);
+    padding: 16px 18px; cursor: pointer; text-align: left; width: 100%; font-family: var(--texto);
+  }
+  .rsv:hover { border-color: var(--ocre); }
+  .rsv__cab { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 5px; }
+  .rsv__nombre { font-weight: 600; color: var(--carbon); font-size: .98rem; }
+  .rsv__meta { color: var(--piedra); font-size: .85rem; margin: 0; }
+  .rsv--cancelada { opacity: .55; }
+  .rsv--cancelada .rsv__nombre { text-decoration: line-through; }
+
+  .badge {
+    font-size: .66rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 20px; white-space: nowrap;
+  }
+  .badge--confirmada { background: #e7f0e2; color: var(--oliva); }
+  .badge--pendiente  { background: #fbecd8; color: var(--terracota-osc); }
+  .badge--cancelada  { background: var(--arena-osc); color: var(--piedra); }
+  .badge--suave      { background: var(--arena-osc); color: var(--piedra); font-weight: 500; }
+
+  .vacio { text-align: center; color: var(--piedra); padding: 46px 20px; font-size: .9rem; }
+
+  /* ---------------------------------------------------------------- hoja -- */
+  .hoja {
+    position: fixed; inset: 0; z-index: 90; background: rgba(43,38,33,.5);
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .hoja__caja {
+    background: var(--crema); border-radius: var(--radio); width: 100%; max-width: 540px;
+    max-height: calc(100dvh - 40px); overflow-y: auto; box-shadow: var(--sombra-lg);
+  }
+  .hoja__cab {
+    display: flex; align-items: center; gap: 12px; padding: 18px 22px;
+    border-bottom: 1px solid var(--borde); position: sticky; top: 0; background: var(--crema); z-index: 2;
+  }
+  .hoja__cab h2 { font-family: var(--display); font-size: 1.15rem; margin: 0; flex: 1; color: var(--carbon); }
+  .hoja__cerrar {
+    border: 0; background: transparent; font-size: 1.5rem; line-height: 1;
+    color: var(--piedra); cursor: pointer; padding: 0 4px;
+  }
+  .hoja__cuerpo { padding: 22px; }
+  @media (max-width: 560px) {
+    .hoja { align-items: flex-end; padding: 0; }
+    .hoja__caja { max-width: none; border-radius: var(--radio) var(--radio) 0 0; max-height: 92dvh; }
+  }
+
+  /* -------------------------------------------------------------- campos -- */
+  .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 460px) { .fila { grid-template-columns: 1fr; } }
+  .campo-ad { margin-bottom: 14px; }
+  .campo-ad label {
+    display: block; font-size: .8rem; font-weight: 600; color: var(--carbon-suave); margin-bottom: 5px;
+  }
+  .campo-ad input, .campo-ad select, .campo-ad textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--borde);
+    border-radius: var(--radio-sm); font-family: var(--texto); font-size: .9rem;
+    background: #fff; color: var(--carbon);
+  }
+  .campo-ad textarea { resize: vertical; min-height: 66px; }
+  .campo-ad small { display: block; color: var(--piedra); font-size: .76rem; margin-top: 4px; }
+
+  .datos-dl { margin: 0 0 18px; font-size: .89rem; }
+  .datos-dl div { display: flex; justify-content: space-between; gap: 14px; padding: 7px 0; border-bottom: 1px solid var(--borde); }
+  .datos-dl dt { color: var(--piedra); }
+  .datos-dl dd { margin: 0; color: var(--carbon); text-align: right; font-weight: 500; }
+
+  .acciones-hoja { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+  .acciones-hoja .boton { flex: 1 1 auto; }
+  .boton--peligro { background: transparent; border: 1px solid #d0a09a; color: #b23b3b; }
+  .boton--peligro:hover { background: #fbeceb; border-color: #b23b3b; }
+
+  .estado-form { font-size: .86rem; margin: 12px 0 0; min-height: 1.2em; }
+  .estado-form--mal { color: #b23b3b; }
+  .estado-form--bien { color: var(--oliva); }
 </style>
 </head>
 <body>
 
-<header class="admin-cab">
-  <div class="contenedor">
-    <h1>Panel de disponibilidad</h1>
-    <p>Marcá acá las fechas que ya están reservadas. · <a href="index.html">Ver el sitio</a></p>
-  </div>
-</header>
+<!-- ======================================================== PANTALLA LOGIN -->
+<div class="login" id="pantalla-login" hidden>
+  <form class="login__caja" id="form-login">
+    <h1>Administración</h1>
+    <p>Balcones del Arroyo</p>
+    <input type="password" id="clave" placeholder="Contraseña" autocomplete="current-password" required>
+    <button class="boton boton--primario" type="submit" id="btn-entrar">Entrar</button>
+    <p class="estado-form estado-form--mal" id="login-error"></p>
+  </form>
+</div>
 
-<main class="contenedor" style="padding-top: 34px; padding-bottom: 60px;">
-  <div class="admin-grid">
+<!-- ======================================================== PANTALLA PANEL -->
+<div id="pantalla-panel" hidden>
+  <header class="admin-cab">
+    <div class="contenedor">
+      <h1>Administración</h1>
+      <span class="crece"></span>
+      <button id="btn-ver-sitio" type="button">Ver el sitio</button>
+      <button id="btn-salir" type="button">Salir</button>
+    </div>
+  </header>
 
-    <!-- calendario del año -->
-    <div class="panel">
-      <p style="font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--piedra);margin-bottom:8px">
-        1 · ¿Qué se alquiló?
-      </p>
-      <div class="modo" id="unidades"></div>
+  <main class="contenedor" style="padding-bottom:60px">
+    <div id="avisos"></div>
 
-      <p style="font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--piedra);margin-bottom:8px">
-        2 · ¿Qué querés hacer?
-      </p>
-      <div class="modo">
-        <button class="tab" id="modo-ocupar" aria-selected="true">Marcar ocupado</button>
-        <button class="tab" id="modo-liberar" aria-selected="false">Liberar</button>
-        <button class="boton boton--linea" id="btn-hoy" style="padding:9px 18px;font-size:.85rem;margin-left:auto">Ir a hoy</button>
+    <div class="barra">
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-vista="calendario">Calendario</button>
+        <button role="tab" aria-selected="false" data-vista="lista">Reservas</button>
       </div>
-
-      <p style="font-size:.88rem;color:var(--piedra)">
-        Hacé clic en el <strong>primer día</strong> y después en el <strong>último día</strong> del bloque.
-        Para un solo día, hacé clic dos veces sobre el mismo. Los colores del calendario
-        muestran la ocupación de <strong id="unidad-actual"></strong>.
-      </p>
-
-      <div class="cal__barra">
-        <button class="cal__nav" id="ad-prev" aria-label="Año anterior">&#8249;</button>
-        <div class="cal__titulo" id="ad-anio"></div>
-        <button class="cal__nav" id="ad-next" aria-label="Año siguiente">&#8250;</button>
-      </div>
-
-      <div class="anio-grid" id="ad-meses"></div>
-
-      <div class="cal__referencias">
-        <span class="ref"><span class="ref__caja ref__caja--libre"></span> Libre</span>
-        <span class="ref"><span class="ref__caja ref__caja--ocupado"></span> Ocupado (la unidad elegida)</span>
-        <span class="ref"><span class="ref__caja ref__caja--parcial"></span> Ocupada la otra planta</span>
-        <span class="ref"><span class="ref__caja ref__caja--online"></span> Reserva online (ver al lado →)</span>
-      </div>
+      <span class="crece"></span>
+      <button class="boton boton--primario" id="btn-nueva" type="button" style="padding:10px 18px;font-size:.86rem">+ Nueva reserva</button>
+      <button class="boton boton--linea" id="btn-bloquear" type="button" style="padding:10px 18px;font-size:.86rem">Bloquear fechas</button>
     </div>
 
-    <!-- lateral -->
-    <div style="display:grid;gap:22px">
-
-      <!-- Reservas hechas desde el sitio (WhatsApp o Mercado Pago): viven en
-           la base, no en este archivo. Esta caja habla con api/admin/reservas.js. -->
-      <div class="panel">
-        <h3 style="font-size:1.15rem;margin-bottom:6px">Reservas del sitio</h3>
-        <p style="font-size:.82rem;color:var(--piedra);margin-bottom:14px">
-          Las que se hicieron desde la web (por WhatsApp o pagadas con Mercado Pago).
-          Bloquean la fecha solas, aparte de este archivo — se ven en el calendario
-          con una rayita debajo del número.
-        </p>
-
-        <div class="admin-clave">
-          <input type="password" id="ad-clave" placeholder="Clave de administración">
-          <button class="boton boton--linea" id="ad-clave-guardar" style="padding:9px 16px;font-size:.85rem">Entrar</button>
-        </div>
-        <p class="aviso" id="ad-online-error"></p>
-
-        <p style="font-size:.85rem;color:var(--piedra);margin-bottom:10px" id="ad-online-total"></p>
-        <ul class="reservas-online" id="ad-online-lista"></ul>
+    <!-- ------------------------------------------------------- calendario -->
+    <section id="vista-calendario">
+      <div class="anio-nav">
+        <button id="anio-prev" type="button" aria-label="Año anterior">&#8249;</button>
+        <strong id="anio-actual"></strong>
+        <button id="anio-next" type="button" aria-label="Año siguiente">&#8250;</button>
       </div>
-
-      <div class="panel">
-        <h3 style="font-size:1.15rem;margin-bottom:14px">Cómo guardar los cambios</h3>
-        <ol class="pasos">
-          <li>Marcá o liberá las fechas en el calendario.</li>
-          <li>Apretá <strong>Descargar disponibilidad.js</strong>.</li>
-          <li>Reemplazá el archivo <code>js/disponibilidad.js</code> del sitio por el que se descargó.</li>
-          <li>Volvé a subir el sitio a tu hosting.</li>
-        </ol>
-        <p style="font-size:.82rem;color:var(--piedra);margin:16px 0 0">
-          Los cambios que hagas acá quedan guardados en este navegador hasta que descargues
-          el archivo, así que podés cerrar y seguir después.
-        </p>
+      <div class="meses" id="meses"></div>
+      <div class="leyenda">
+        <span><i style="background:var(--dia-libre)"></i>Libre</span>
+        <span><i style="background:#fbecd8;border:1px solid #e8d0a8"></i>Una planta ocupada</span>
+        <span><i style="background:var(--dia-ocupado);border:1px solid var(--dia-ocupado-bd)"></i>Todo ocupado</span>
+        <span><i style="background:#ded8cf;border:1px solid #c5bcaf"></i>Bloqueado</span>
+        <span><i style="background:var(--ocre);height:4px;border-radius:2px"></i>Pendiente de seña</span>
       </div>
+    </section>
 
-      <div class="panel">
-        <h3 style="font-size:1.15rem;margin-bottom:6px">Reservas cargadas</h3>
-        <p style="font-size:.85rem;color:var(--piedra);margin-bottom:14px" id="ad-total"></p>
-        <ul class="lista-reservas" id="ad-lista"></ul>
+    <!-- ------------------------------------------------------------ lista -->
+    <section id="vista-lista" hidden>
+      <div class="filtros" id="filtros">
+        <button data-filtro="proximas" aria-pressed="true">Próximas</button>
+        <button data-filtro="pendientes" aria-pressed="false">Pendientes de seña</button>
+        <button data-filtro="todas" aria-pressed="false">Todas</button>
+        <button data-filtro="canceladas" aria-pressed="false">Canceladas</button>
       </div>
+      <div class="tarjetas" id="lista"></div>
+    </section>
+  </main>
+</div>
 
-      <div class="panel">
-        <button class="boton boton--primario" id="ad-descargar" style="width:100%">Descargar disponibilidad.js</button>
-        <button class="boton boton--linea" id="ad-copiar" style="width:100%;margin-top:10px">Copiar contenido</button>
-        <button class="boton boton--linea" id="ad-reset" style="width:100%;margin-top:10px">Borrar todo</button>
-        <details style="margin-top:16px">
-          <summary style="cursor:pointer;font-size:.85rem;color:var(--piedra)">Ver el contenido del archivo</summary>
-          <textarea class="caja-json" id="ad-json" readonly style="margin-top:10px"></textarea>
-        </details>
-      </div>
-
+<!-- =============================================================== HOJA --->
+<div class="hoja" id="hoja" hidden>
+  <div class="hoja__caja" role="dialog" aria-modal="true" aria-labelledby="hoja-titulo">
+    <div class="hoja__cab">
+      <h2 id="hoja-titulo"></h2>
+      <button class="hoja__cerrar" id="hoja-cerrar" type="button" aria-label="Cerrar">&times;</button>
     </div>
+    <div class="hoja__cuerpo" id="hoja-cuerpo"></div>
   </div>
-</main>
+</div>
 
-<script src="js/config.js"></script>
-<script src="js/disponibilidad.js"></script>
+<script src="js/config.js?v=36"></script>
+<script src="js/precios.js?v=36"></script>
 <script>
-/* ==========================================================================
-   Panel de disponibilidad — funciona 100% en el navegador, sin servidor.
-   ========================================================================== */
-
-const MESES_AD = ['enero','febrero','marzo','abril','mayo','junio','julio',
-                  'agosto','septiembre','octubre','noviembre','diciembre'];
-const DIAS_AD = ['Lu','Ma','Mi','Ju','Vi','Sá','Do'];
-const CLAVE = 'bda-disponibilidad';
-
-function iso(f) {
-  return `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}-${String(f.getDate()).padStart(2,'0')}`;
-}
-function deIso(t) { const [a,m,d] = t.split('-').map(Number); return new Date(a, m-1, d); }
-function masDias(f, n) { const x = new Date(f); x.setDate(x.getDate()+n); return x; }
-function fechaLarga(t) {
-  const f = deIso(t);
-  return `${f.getDate()} ${MESES_AD[f.getMonth()].slice(0,3)} ${f.getFullYear()}`;
-}
-
-/* estado --------------------------------------------------------------- */
-
-/** Estructura por planta. Acepta el formato viejo (una sola lista). */
-function desdeArchivo(d) {
-  if (Array.isArray(d.ocupadas)) {
-    return { alta: new Set(d.ocupadas), baja: new Set(d.ocupadas) };
-  }
-  return { alta: new Set(d.alta || []), baja: new Set(d.baja || []) };
-}
-
-let ocupadas = desdeArchivo(DISPONIBILIDAD);
-const guardado = localStorage.getItem(CLAVE);
-if (guardado) {
-  try { ocupadas = desdeArchivo(JSON.parse(guardado)); } catch (e) { /* nos quedamos con el archivo */ }
-}
-
-let anio = new Date().getFullYear();
-let modo = 'ocupar';
-let unidad = 'completa';          // qué se alquiló: completa | alta | baja
-let inicioRango = null;
-
-/* reservas del sitio (WhatsApp / Mercado Pago) — viven en la base, se
-   cargan aparte con la clave de administración. */
-let reservasOnline = [];
-let ocupadasOnline = { alta: new Set(), baja: new Set() };
-
-/** Plantas que afecta la unidad elegida. */
-function plantasDe(id) {
-  const m = CONFIG.modalidades.find(x => x.id === id);
-  return m ? m.ocupa : ['alta', 'baja'];
-}
-
-function persistir() {
-  localStorage.setItem(CLAVE, JSON.stringify({
-    alta: [...ocupadas.alta].sort(),
-    baja: [...ocupadas.baja].sort()
-  }));
-}
-
-/* calendario ----------------------------------------------------------- */
-function mesAd(a, m) {
-  const primero = new Date(a, m, 1);
-  const cant = new Date(a, m + 1, 0).getDate();
-  const off = (primero.getDay() + 6) % 7;
-  const hoy = iso(new Date());
-
-  const cont = document.createElement('div');
-  cont.className = 'cal__mes';
-  cont.innerHTML = `<h4>${MESES_AD[m]}</h4>
-    <div class="cal__cabecera">${DIAS_AD.map(d => `<span>${d}</span>`).join('')}</div>`;
-
-  const grilla = document.createElement('div');
-  grilla.className = 'cal__dias';
-
-  for (let i = 0; i < off; i++) {
-    const v = document.createElement('div');
-    v.className = 'dia dia--vacio';
-    grilla.appendChild(v);
-  }
-
-  const plantas = plantasDe(unidad);
-
-  for (let d = 1; d <= cant; d++) {
-    const t = iso(new Date(a, m, d));
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'dia';
-    b.textContent = d;
-
-    const propias = plantas.filter(p => ocupadas[p].has(t)).length;
-    const otras = ['alta', 'baja'].filter(p => !plantas.includes(p) && ocupadas[p].has(t)).length;
-
-    if (propias === plantas.length) b.classList.add('dia--ocupado');
-    else if (propias > 0 || otras > 0) b.classList.add('dia--parcial');
-
-    // reserva online que este archivo todavía no tiene marcada
-    if (plantas.some(p => ocupadasOnline[p].has(t))) b.classList.add('dia--online');
-
-    if (t === hoy) b.classList.add('dia--hoy');
-    if (t === inicioRango) b.classList.add('dia--pinta');
-    b.addEventListener('click', () => clicDia(t));
-    grilla.appendChild(b);
-  }
-
-  cont.appendChild(grilla);
-  return cont;
-}
-
-function dibujar() {
-  const cont = document.getElementById('ad-meses');
-  cont.innerHTML = '';
-  for (let m = 0; m < 12; m++) cont.appendChild(mesAd(anio, m));
-  document.getElementById('ad-anio').textContent = anio;
-  pintarLista();
-  pintarArchivo();
-}
-
-function clicDia(t) {
-  if (!inicioRango) {
-    inicioRango = t;
-    dibujar();
-    return;
-  }
-  const [a, b] = inicioRango <= t ? [inicioRango, t] : [t, inicioRango];
-  const plantas = plantasDe(unidad);
-  let f = deIso(a);
-  const fin = deIso(b);
-  while (f <= fin) {
-    const k = iso(f);
-    plantas.forEach(p => {
-      if (modo === 'ocupar') ocupadas[p].add(k); else ocupadas[p].delete(k);
-    });
-    f = masDias(f, 1);
-  }
-  inicioRango = null;
-  persistir();
-  dibujar();
-}
-
-/* lista de bloques ----------------------------------------------------- */
-
-/** Agrupa días consecutivos con la misma combinación de plantas ocupadas. */
-function bloques() {
-  const todas = [...new Set([...ocupadas.alta, ...ocupadas.baja])].sort();
-  const clave = t => (ocupadas.alta.has(t) ? 'A' : '') + (ocupadas.baja.has(t) ? 'B' : '');
-
-  const res = [];
-  let ini = null, prev = null, k = null;
-  todas.forEach(t => {
-    const kt = clave(t);
-    if (ini === null) { ini = t; prev = t; k = kt; return; }
-    if (kt === k && iso(masDias(deIso(prev), 1)) === t) { prev = t; return; }
-    res.push([ini, prev, k]);
-    ini = t; prev = t; k = kt;
-  });
-  if (ini !== null) res.push([ini, prev, k]);
-  return res;
-}
-
-const ROTULO = { AB: 'Casa completa', A: 'Planta alta', B: 'Planta baja' };
-
-function pintarLista() {
-  const ul = document.getElementById('ad-lista');
-  const bs = bloques();
-  const total = new Set([...ocupadas.alta, ...ocupadas.baja]).size;
-  document.getElementById('ad-total').textContent =
-    `${bs.length} ${bs.length === 1 ? 'reserva' : 'reservas'} · ${total} ${total === 1 ? 'noche' : 'noches'} con la casa ocupada`;
-
-  if (!bs.length) {
-    ul.innerHTML = '<li style="color:var(--piedra);border:0">Todavía no hay fechas marcadas.</li>';
-    return;
-  }
-  ul.innerHTML = bs.map(([a, b, k]) => `
-    <li>
-      <span>
-        <strong style="display:block;font-size:.78rem;color:var(--terracota)">${ROTULO[k] || k}</strong>
-        ${a === b ? fechaLarga(a) : `${fechaLarga(a)} → ${fechaLarga(b)}`}
-      </span>
-      <button data-a="${a}" data-b="${b}" data-k="${k}">Quitar</button>
-    </li>`).join('');
-
-  ul.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const plantas = [];
-      if (btn.dataset.k.includes('A')) plantas.push('alta');
-      if (btn.dataset.k.includes('B')) plantas.push('baja');
-      let f = deIso(btn.dataset.a);
-      const fin = deIso(btn.dataset.b);
-      while (f <= fin) {
-        const t = iso(f);
-        plantas.forEach(p => ocupadas[p].delete(t));
-        f = masDias(f, 1);
-      }
-      persistir();
-      dibujar();
-    });
-  });
-}
-
-/* archivo de salida ---------------------------------------------------- */
-function contenidoArchivo() {
-  const lista = p => [...ocupadas[p]].sort().map(t => `    '${t}'`).join(',\n');
-  return (
-`/* ============================================================================
-   DISPONIBILIDAD — fechas ya reservadas, planta por planta
+/* ============================================================================
+   Panel de administración
    ----------------------------------------------------------------------------
-   Generado desde admin.html el ${new Date().toLocaleString('es-AR')}.
-   No lo edites a mano: volvé a abrir admin.html, cambiá las fechas y descargalo.
+   Todo sale de la base de datos: las reservas que entran por la web, las que
+   Naty carga a mano y los bloqueos por uso propio son todos el mismo tipo de
+   registro. Antes había además un archivo (disponibilidad.js) que se editaba
+   acá y había que descargar y volver a subir por separado — eso se eliminó:
+   dos listas de "ocupado" que se actualizan por caminos distintos terminan,
+   tarde o temprano, en una sobreventa.
+
+   La contraseña nunca queda guardada del lado del navegador: al entrar se
+   canjea por una cookie de sesión que este código no puede leer.
    ============================================================================ */
 
-const DISPONIBILIDAD = {
-  actualizado: '${iso(new Date())}',
-  alta: [
-${lista('alta')}
-  ],
-  baja: [
-${lista('baja')}
-  ]
+const $ = id => document.getElementById(id);
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DIAS_SEM = ['L','M','M','J','V','S','D'];
+/** A partir de cuántos días una reserva sin seña ya merece que alguien la mire. */
+const DIAS_PARA_INSISTIR = 7;
+
+const estado = {
+  reservas: [],
+  anio: new Date().getFullYear(),
+  hoy: Precios.aIso(new Date()),
+  filtro: 'proximas',
+  porNoche: {}
 };
-`);
+
+const pesos = n => new Intl.NumberFormat('es-AR', {
+  style: 'currency', currency: 'ARS', maximumFractionDigits: 0
+}).format(Number(n) || 0);
+
+function fechaCorta(iso) {
+  if (!iso) return '';
+  const [a, m, d] = iso.split('-');
+  return `${Number(d)} ${MESES[Number(m) - 1].slice(0, 3).toLowerCase()} ${a}`;
 }
 
-function pintarArchivo() {
-  document.getElementById('ad-json').value = contenidoArchivo();
+/* ------------------------------------------------------------- servidor -- */
+
+async function api(ruta, opciones = {}) {
+  const r = await fetch(ruta, {
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    ...opciones
+  });
+  // La sesión dura 12 horas: si venció en medio del uso, se vuelve al login
+  // sin perder el resto de la pantalla en un error críptico.
+  if (r.status === 401) { mostrarLogin(); throw new Error('sesion'); }
+  const datos = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(datos.error || 'Hubo un problema.'), { datos });
+  return datos;
 }
 
-/* controles ------------------------------------------------------------ */
-function pintarUnidades() {
-  const cont = document.getElementById('unidades');
-  cont.innerHTML = CONFIG.modalidades.map(m => `
-    <button class="tab" data-unidad="${m.id}" aria-selected="${m.id === unidad}">
-      ${m.nombre}
+/* ---------------------------------------------------------------- login -- */
+
+function mostrarLogin() {
+  $('pantalla-panel').hidden = true;
+  $('pantalla-login').hidden = false;
+  $('clave').focus();
+}
+
+function mostrarPanel() {
+  $('pantalla-login').hidden = true;
+  $('pantalla-panel').hidden = false;
+}
+
+$('form-login').addEventListener('submit', async e => {
+  e.preventDefault();
+  const boton = $('btn-entrar');
+  boton.disabled = true;
+  boton.textContent = 'Entrando…';
+  $('login-error').textContent = '';
+  try {
+    await api('/api/admin/sesion', {
+      method: 'POST',
+      body: JSON.stringify({ clave: $('clave').value })
+    });
+    $('clave').value = '';
+    mostrarPanel();
+    await cargar();
+  } catch (err) {
+    if (err.message !== 'sesion') $('login-error').textContent = err.message;
+    else $('login-error').textContent = 'Contraseña incorrecta.';
+  } finally {
+    boton.disabled = false;
+    boton.textContent = 'Entrar';
+  }
+});
+
+$('btn-salir').addEventListener('click', async () => {
+  await fetch('/api/admin/sesion', { method: 'DELETE', credentials: 'same-origin' });
+  estado.reservas = [];
+  mostrarLogin();
+});
+
+$('btn-ver-sitio').addEventListener('click', () => { window.open('/', '_blank'); });
+
+/* --------------------------------------------------------------- cargar -- */
+
+async function cargar() {
+  const datos = await api('/api/admin/reservas?canceladas=1');
+  estado.reservas = datos.reservas || [];
+  if (datos.hoy) estado.hoy = datos.hoy;
+  indexarNoches();
+  pintarAvisos();
+  pintarCalendario();
+  pintarLista();
+}
+
+/** Qué reserva ocupa cada planta cada noche: { 'AAAA-MM-DD': {alta, baja} }. */
+function indexarNoches() {
+  const indice = {};
+  for (const r of estado.reservas) {
+    if (r.estado === 'cancelada') continue;
+    const modalidad = Precios.modalidadPorId(r.modalidad, CONFIG);
+    if (!modalidad) continue;
+    for (const noche of Precios.nochesLista(r.entrada, r.salida)) {
+      if (!indice[noche]) indice[noche] = {};
+      for (const planta of modalidad.ocupa) indice[noche][planta] = r;
+    }
+  }
+  estado.porNoche = indice;
+}
+
+function nombreDe(r) {
+  if (r.origen === 'bloqueo') return (r.datos && r.datos.motivo) || 'Bloqueo';
+  return (r.datos && r.datos.nombre) || 'Sin nombre';
+}
+
+function diasDesde(iso) {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+}
+
+/* --------------------------------------------------------------- avisos -- */
+
+function pintarAvisos() {
+  const caja = $('avisos');
+  const viejas = estado.reservas.filter(r =>
+    r.estado === 'pendiente' && diasDesde(r.creado) >= DIAS_PARA_INSISTIR
+  );
+
+  // Las reservas por WhatsApp bloquean la fecha apenas se mandan, pero puede
+  // que esa seña no llegue nunca. Si nadie las revisa se comen disponibilidad
+  // en silencio, así que el panel las trae a la superficie solo.
+  caja.innerHTML = viejas.length ? `
+    <div class="aviso-caja">
+      <strong>${viejas.length} ${viejas.length === 1 ? 'reserva lleva' : 'reservas llevan'}
+      más de ${DIAS_PARA_INSISTIR} días sin confirmar la seña.</strong>
+      Están bloqueando fechas. <button type="button" id="ir-pendientes">Verlas</button>
+    </div>` : '';
+
+  if (viejas.length) {
+    $('ir-pendientes').addEventListener('click', () => {
+      cambiarVista('lista');
+      cambiarFiltro('pendientes');
+    });
+  }
+}
+
+/* ----------------------------------------------------------- calendario -- */
+
+function pintarCalendario() {
+  $('anio-actual').textContent = estado.anio;
+  $('meses').innerHTML = MESES.map((_, m) => mesHtml(estado.anio, m)).join('');
+}
+
+function mesHtml(anio, mes) {
+  const primero = new Date(anio, mes, 1);
+  const dias = new Date(anio, mes + 1, 0).getDate();
+  // getDay() da 0 para domingo; acá la semana arranca el lunes.
+  const desplazamiento = (primero.getDay() + 6) % 7;
+
+  let celdas = '';
+  for (let i = 0; i < desplazamiento; i++) celdas += '<div class="dia dia--vacio"></div>';
+
+  for (let d = 1; d <= dias; d++) {
+    const iso = `${anio}-${String(mes + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const ocupa = estado.porNoche[iso] || {};
+    const cuantas = (ocupa.alta ? 1 : 0) + (ocupa.baja ? 1 : 0);
+    const involucradas = [ocupa.alta, ocupa.baja].filter(Boolean);
+
+    const clases = ['dia'];
+    if (iso < estado.hoy) clases.push('dia--pasado');
+    if (iso === estado.hoy) clases.push('dia--hoy');
+    if (cuantas === 2) clases.push('dia--lleno');
+    else if (cuantas === 1) clases.push('dia--parcial');
+    if (cuantas && involucradas.every(r => r.origen === 'bloqueo')) clases.push('dia--bloqueo');
+    if (involucradas.some(r => r.estado === 'pendiente')) clases.push('dia--pendiente');
+
+    const quien = involucradas.map(nombreDe).join(', ');
+    celdas += `<div class="${clases.join(' ')}" data-dia="${iso}"
+      title="${iso}${quien ? ' — ' + quien.replace(/"/g, '') : ' — libre'}">${d}</div>`;
+  }
+
+  return `
+    <div class="mes">
+      <h3>${MESES[mes]}</h3>
+      <div class="mes__dias">
+        ${DIAS_SEM.map(d => `<span>${d}</span>`).join('')}
+        ${celdas}
+      </div>
+    </div>`;
+}
+
+$('meses').addEventListener('click', e => {
+  const celda = e.target.closest('[data-dia]');
+  if (celda) abrirDia(celda.dataset.dia);
+});
+$('anio-prev').addEventListener('click', () => { estado.anio--; pintarCalendario(); });
+$('anio-next').addEventListener('click', () => { estado.anio++; pintarCalendario(); });
+
+/* ---------------------------------------------------------------- lista -- */
+
+function reservasFiltradas() {
+  const r = estado.reservas;
+  if (estado.filtro === 'canceladas') return r.filter(x => x.estado === 'cancelada');
+  if (estado.filtro === 'pendientes') return r.filter(x => x.estado === 'pendiente');
+  if (estado.filtro === 'proximas') {
+    return r.filter(x => x.estado !== 'cancelada' && x.salida >= estado.hoy)
+            .sort((a, b) => a.entrada.localeCompare(b.entrada));
+  }
+  return r.filter(x => x.estado !== 'cancelada');
+}
+
+function pintarLista() {
+  const lista = reservasFiltradas();
+  $('lista').innerHTML = lista.length
+    ? lista.map(tarjetaHtml).join('')
+    : '<p class="vacio">No hay nada para mostrar acá.</p>';
+}
+
+function tarjetaHtml(r) {
+  const noches = Precios.nochesEntre(r.entrada, r.salida);
+  const modalidad = Precios.modalidadPorId(r.modalidad, CONFIG);
+  const origen = { manual: 'a mano', whatsapp: 'WhatsApp', mercadopago: 'Mercado Pago', bloqueo: 'bloqueo' }[r.origen] || r.origen;
+
+  return `
+    <button class="rsv ${r.estado === 'cancelada' ? 'rsv--cancelada' : ''}" data-id="${r.id}" type="button">
+      <div class="rsv__cab">
+        <span class="rsv__nombre">${nombreDe(r)}</span>
+        <span class="badge badge--${r.estado}">${r.estado}</span>
+        <span class="badge badge--suave">${origen}</span>
+      </div>
+      <p class="rsv__meta">
+        ${fechaCorta(r.entrada)} → ${fechaCorta(r.salida)} · ${noches} ${noches === 1 ? 'noche' : 'noches'}
+        · ${modalidad ? modalidad.nombre : r.modalidad}
+        ${r.origen !== 'bloqueo' ? ` · ${pesos(r.total)}` : ''}
+      </p>
+    </button>`;
+}
+
+$('lista').addEventListener('click', e => {
+  const t = e.target.closest('[data-id]');
+  if (t) abrirDetalle(t.dataset.id);
+});
+
+$('filtros').addEventListener('click', e => {
+  const b = e.target.closest('[data-filtro]');
+  if (b) cambiarFiltro(b.dataset.filtro);
+});
+
+function cambiarFiltro(filtro) {
+  estado.filtro = filtro;
+  for (const b of $('filtros').querySelectorAll('button')) {
+    b.setAttribute('aria-pressed', String(b.dataset.filtro === filtro));
+  }
+  pintarLista();
+}
+
+function cambiarVista(vista) {
+  $('vista-calendario').hidden = vista !== 'calendario';
+  $('vista-lista').hidden = vista !== 'lista';
+  for (const b of document.querySelectorAll('[data-vista]')) {
+    b.setAttribute('aria-selected', String(b.dataset.vista === vista));
+  }
+}
+
+document.querySelector('.tabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-vista]');
+  if (b) cambiarVista(b.dataset.vista);
+});
+
+/* ----------------------------------------------------------------- hoja -- */
+
+function abrirHoja(titulo, html) {
+  $('hoja-titulo').textContent = titulo;
+  $('hoja-cuerpo').innerHTML = html;
+  $('hoja').hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarHoja() {
+  $('hoja').hidden = true;
+  $('hoja-cuerpo').innerHTML = '';
+  document.body.style.overflow = '';
+}
+
+$('hoja-cerrar').addEventListener('click', cerrarHoja);
+$('hoja').addEventListener('click', e => { if (e.target === $('hoja')) cerrarHoja(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('hoja').hidden) cerrarHoja(); });
+
+/* ------------------------------------------------------- detalle del día -- */
+
+function abrirDia(iso) {
+  const ocupa = estado.porNoche[iso] || {};
+  const unicas = [...new Set([ocupa.alta, ocupa.baja].filter(Boolean))];
+
+  const bloques = unicas.map(r => `
+    <button class="rsv" data-id="${r.id}" type="button" style="margin-bottom:10px">
+      <div class="rsv__cab">
+        <span class="rsv__nombre">${nombreDe(r)}</span>
+        <span class="badge badge--${r.estado}">${r.estado}</span>
+      </div>
+      <p class="rsv__meta">${fechaCorta(r.entrada)} → ${fechaCorta(r.salida)}</p>
     </button>`).join('');
 
-  cont.querySelectorAll('.tab').forEach(b => {
-    b.addEventListener('click', () => {
-      unidad = b.dataset.unidad;
-      inicioRango = null;
-      cont.querySelectorAll('.tab').forEach(o =>
-        o.setAttribute('aria-selected', String(o.dataset.unidad === unidad)));
-      document.getElementById('unidad-actual').textContent =
-        CONFIG.modalidades.find(m => m.id === unidad).nombre.toLowerCase();
-      dibujar();
-    });
+  abrirHoja(fechaCorta(iso), `
+    ${unicas.length ? bloques : '<p class="vacio" style="padding:20px 0">Esa noche está libre.</p>'}
+    <div class="acciones-hoja">
+      <button class="boton boton--primario" data-nueva="${iso}" type="button">Cargar reserva desde acá</button>
+      <button class="boton boton--linea" data-bloquear="${iso}" type="button">Bloquear</button>
+    </div>`);
+
+  $('hoja-cuerpo').addEventListener('click', e => {
+    const detalle = e.target.closest('[data-id]');
+    if (detalle) { abrirDetalle(detalle.dataset.id); return; }
+    const nueva = e.target.closest('[data-nueva]');
+    if (nueva) { abrirFormulario('reserva', nueva.dataset.nueva); return; }
+    const bloq = e.target.closest('[data-bloquear]');
+    if (bloq) abrirFormulario('bloqueo', bloq.dataset.bloquear);
   });
-  document.getElementById('unidad-actual').textContent =
-    CONFIG.modalidades.find(m => m.id === unidad).nombre.toLowerCase();
 }
 
-document.getElementById('ad-prev').addEventListener('click', () => { anio--; dibujar(); });
-document.getElementById('ad-next').addEventListener('click', () => { anio++; dibujar(); });
-document.getElementById('btn-hoy').addEventListener('click', () => { anio = new Date().getFullYear(); dibujar(); });
+/* --------------------------------------------------- detalle de reserva -- */
 
-document.getElementById('modo-ocupar').addEventListener('click', () => {
-  modo = 'ocupar'; inicioRango = null;
-  document.getElementById('modo-ocupar').setAttribute('aria-selected', 'true');
-  document.getElementById('modo-liberar').setAttribute('aria-selected', 'false');
-  dibujar();
-});
-document.getElementById('modo-liberar').addEventListener('click', () => {
-  modo = 'liberar'; inicioRango = null;
-  document.getElementById('modo-liberar').setAttribute('aria-selected', 'true');
-  document.getElementById('modo-ocupar').setAttribute('aria-selected', 'false');
-  dibujar();
-});
+function abrirDetalle(id) {
+  const r = estado.reservas.find(x => x.id === id);
+  if (!r) return;
+  const modalidad = Precios.modalidadPorId(r.modalidad, CONFIG);
+  const d = r.datos || {};
+  const noches = Precios.nochesEntre(r.entrada, r.salida);
+  const esBloqueo = r.origen === 'bloqueo';
 
-document.getElementById('ad-descargar').addEventListener('click', () => {
-  const blob = new Blob([contenidoArchivo()], { type: 'text/javascript;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'disponibilidad.js';
-  a.click();
-  URL.revokeObjectURL(a.href);
-});
+  const filas = [
+    ['Estado', r.estado],
+    ['Fechas', `${fechaCorta(r.entrada)} → ${fechaCorta(r.salida)}`],
+    ['Noches', noches],
+    ['Qué alquila', modalidad ? modalidad.nombre : r.modalidad]
+  ];
+  if (!esBloqueo) {
+    filas.push(['Huéspedes', r.huespedes || '—']);
+    if (d.telefono) filas.push(['Teléfono', d.telefono]);
+    if (d.email) filas.push(['Email', d.email]);
+    if (d.localidad) filas.push(['De dónde viene', d.localidad]);
+    filas.push(['Total', pesos(r.total)]);
+    filas.push(['Seña', pesos(r.sena)]);
+    filas.push(['Cobrado', pesos(r.pagado)]);
+  }
+  filas.push(['Cargada', new Date(r.creado).toLocaleDateString('es-AR')]);
 
-document.getElementById('ad-copiar').addEventListener('click', async (e) => {
+  abrirHoja(nombreDe(r), `
+    <dl class="datos-dl">
+      ${filas.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}
+    </dl>
+
+    ${r.estado === 'cancelada' ? '' : `
+      ${esBloqueo ? '' : `
+      <div class="fila">
+        <div class="campo-ad">
+          <label for="ed-pagado">Cobrado hasta ahora</label>
+          <input type="number" id="ed-pagado" value="${r.pagado || 0}" min="0" step="1000">
+        </div>
+        <div class="campo-ad">
+          <label for="ed-total">Total acordado</label>
+          <input type="number" id="ed-total" value="${r.total || 0}" min="0" step="1000">
+        </div>
+      </div>`}
+      <div class="campo-ad">
+        <label for="ed-nota">Nota interna</label>
+        <textarea id="ed-nota" placeholder="Lo que quieras recordar de esta reserva">${r.nota || ''}</textarea>
+      </div>
+      <div class="acciones-hoja">
+        <button class="boton boton--linea" id="ed-guardar" type="button">Guardar cambios</button>
+        ${r.estado === 'pendiente' ? '<button class="boton boton--primario" id="ed-confirmar" type="button">Marcar seña cobrada</button>' : ''}
+      </div>
+      <div class="acciones-hoja">
+        <button class="boton boton--peligro" id="ed-cancelar" type="button">Dar de baja y liberar fechas</button>
+      </div>
+    `}
+    <p class="estado-form" id="ed-estado"></p>`);
+
+  if (r.estado === 'cancelada') return;
+
+  $('ed-guardar').addEventListener('click', () => enviar('ed-estado', {
+    accion: 'actualizar', id: r.id,
+    pagado: esBloqueo ? undefined : $('ed-pagado').value,
+    total: esBloqueo ? undefined : $('ed-total').value,
+    nota: $('ed-nota').value
+  }, 'Guardado.'));
+
+  if ($('ed-confirmar')) {
+    $('ed-confirmar').addEventListener('click', () =>
+      enviar('ed-estado', { accion: 'confirmar', id: r.id }, 'Marcada como cobrada.'));
+  }
+
+  $('ed-cancelar').addEventListener('click', () => {
+    if (!confirm(`¿Dar de baja "${nombreDe(r)}" y liberar esas fechas?`)) return;
+    enviar('ed-estado', { accion: 'cancelar', id: r.id }, 'Dada de baja.');
+  });
+}
+
+/** Manda una acción, refresca todo y avisa cómo salió. */
+async function enviar(idEstado, cuerpo, exito) {
+  const caja = $(idEstado);
+  caja.className = 'estado-form';
+  caja.textContent = 'Guardando…';
   try {
-    await navigator.clipboard.writeText(contenidoArchivo());
-    e.target.textContent = '¡Copiado!';
-    setTimeout(() => { e.target.textContent = 'Copiar contenido'; }, 1800);
+    await api('/api/admin/reservas', { method: 'POST', body: JSON.stringify(cuerpo) });
+    await cargar();
+    caja.className = 'estado-form estado-form--bien';
+    caja.textContent = exito;
+    setTimeout(cerrarHoja, 700);
   } catch (err) {
-    const ta = document.getElementById('ad-json');
-    ta.closest('details').open = true;
-    ta.select();
+    if (err.message === 'sesion') return;
+    caja.className = 'estado-form estado-form--mal';
+    caja.textContent = err.message;
   }
-});
-
-document.getElementById('ad-reset').addEventListener('click', () => {
-  if (!confirm('¿Borrar todas las fechas ocupadas? Esta acción no se puede deshacer.')) return;
-  ocupadas = { alta: new Set(), baja: new Set() };
-  inicioRango = null;
-  persistir();
-  dibujar();
-});
-
-/* --------------------------------------- reservas del sitio (online) -- */
-
-const CLAVE_ADMIN = 'bda-admin-token';
-let claveAdmin = localStorage.getItem(CLAVE_ADMIN) || '';
-
-const ROTULO_ORIGEN = { whatsapp: 'WhatsApp', mercadopago: 'Mercado Pago' };
-const ROTULO_ESTADO = { pendiente: 'Pendiente', confirmada: 'Confirmada' };
-
-function pesosAd(n) {
-  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n);
 }
 
-function avisoOnline(texto) {
-  const el = document.getElementById('ad-online-error');
-  if (!texto) { el.className = 'aviso'; el.textContent = ''; return; }
-  el.className = 'aviso aviso--error';
-  el.textContent = texto;
-}
+/* ----------------------------------------------------- alta de reservas -- */
 
-/** Reconstruye el índice de noches ocupadas por reservas online, para el
-    calendario (dia--online) — sólo con las que siguen activas. */
-function recalcularOcupadasOnline() {
-  ocupadasOnline = { alta: new Set(), baja: new Set() };
-  reservasOnline.forEach(r => {
-    const m = CONFIG.modalidades.find(x => x.id === r.modalidad);
-    if (!m) return;
-    let f = deIso(r.entrada);
-    const fin = deIso(r.salida);
-    while (f < fin) {
-      m.ocupa.forEach(p => ocupadasOnline[p].add(iso(f)));
-      f = masDias(f, 1);
+$('btn-nueva').addEventListener('click', () => abrirFormulario('reserva'));
+$('btn-bloquear').addEventListener('click', () => abrirFormulario('bloqueo'));
+
+function abrirFormulario(tipo, fechaInicial) {
+  const entrada = fechaInicial || estado.hoy;
+  const salida = Precios.aIso(Precios.sumarDias(Precios.deIso(entrada), 2));
+  const esBloqueo = tipo === 'bloqueo';
+
+  abrirHoja(esBloqueo ? 'Bloquear fechas' : 'Nueva reserva', `
+    <div class="fila">
+      <div class="campo-ad">
+        <label for="nv-entrada">Entrada</label>
+        <input type="date" id="nv-entrada" value="${entrada}">
+      </div>
+      <div class="campo-ad">
+        <label for="nv-salida">Salida</label>
+        <input type="date" id="nv-salida" value="${salida}">
+      </div>
+    </div>
+
+    <div class="campo-ad">
+      <label for="nv-modalidad">${esBloqueo ? 'Qué se bloquea' : 'Qué alquila'}</label>
+      <select id="nv-modalidad">
+        ${CONFIG.modalidades.map(m => `<option value="${m.id}">${m.nombre}</option>`).join('')}
+      </select>
+    </div>
+
+    ${esBloqueo ? `
+      <div class="campo-ad">
+        <label for="nv-motivo">Motivo</label>
+        <input type="text" id="nv-motivo" placeholder="Mantenimiento, uso familiar…" value="Bloqueo">
+      </div>
+    ` : `
+      <div class="campo-ad">
+        <label for="nv-nombre">Nombre y apellido</label>
+        <input type="text" id="nv-nombre" placeholder="Quién se aloja">
+      </div>
+      <div class="fila">
+        <div class="campo-ad">
+          <label for="nv-telefono">Teléfono</label>
+          <input type="tel" id="nv-telefono">
+        </div>
+        <div class="campo-ad">
+          <label for="nv-huespedes">Huéspedes</label>
+          <input type="number" id="nv-huespedes" value="2" min="1">
+        </div>
+      </div>
+      <div class="campo-ad">
+        <label for="nv-email">Email <span style="font-weight:400;color:var(--piedra)">(opcional)</span></label>
+        <input type="email" id="nv-email">
+      </div>
+
+      <div class="fila">
+        <div class="campo-ad">
+          <label for="nv-total">Total</label>
+          <input type="number" id="nv-total" min="0" step="1000">
+          <small id="nv-sugerido"></small>
+        </div>
+        <div class="campo-ad">
+          <label for="nv-pagado">Ya cobrado</label>
+          <input type="number" id="nv-pagado" value="0" min="0" step="1000">
+        </div>
+      </div>
+
+      <div class="campo-ad">
+        <label for="nv-estado">¿Ya está la seña?</label>
+        <select id="nv-estado">
+          <option value="confirmada">Sí, reserva confirmada</option>
+          <option value="pendiente">Todavía no, queda pendiente</option>
+        </select>
+      </div>
+    `}
+
+    <div class="campo-ad">
+      <label for="nv-nota">Nota interna <span style="font-weight:400;color:var(--piedra)">(opcional)</span></label>
+      <textarea id="nv-nota"></textarea>
+    </div>
+
+    <div class="acciones-hoja">
+      <button class="boton boton--primario" id="nv-guardar" type="button">
+        ${esBloqueo ? 'Bloquear' : 'Cargar reserva'}
+      </button>
+    </div>
+    <p class="estado-form" id="nv-estado-msg"></p>`);
+
+  // El precio se sugiere solo desde la tarifa, pero apenas Naty lo edita a
+  // mano dejamos de pisárselo: una reserva por teléfono suele tener un precio
+  // arreglado aparte y sería muy molesto que el formulario se lo corrija.
+  let precioTocado = false;
+  if (!esBloqueo) {
+    $('nv-total').addEventListener('input', () => { precioTocado = true; });
+    for (const id of ['nv-entrada', 'nv-salida', 'nv-modalidad', 'nv-huespedes']) {
+      $(id).addEventListener('change', () => recalcular(precioTocado));
     }
-  });
-}
-
-async function cargarReservasOnline() {
-  if (!claveAdmin) { pintarReservasOnline(); return; }
-  try {
-    const r = await fetch('/api/admin/reservas', { headers: { 'x-admin-token': claveAdmin } });
-    if (r.status === 401) throw new Error('Esa clave no es correcta.');
-    if (!r.ok) throw new Error('No se pudo conectar con el servidor.');
-    const cuerpo = await r.json();
-    reservasOnline = cuerpo.reservas;
-    avisoOnline('');
-    recalcularOcupadasOnline();
-    pintarReservasOnline();
-    dibujar(); // repinta el calendario para que se vean las rayitas
-  } catch (e) {
-    avisoOnline(e.message);
+    recalcular(false);
   }
+
+  $('nv-guardar').addEventListener('click', () => guardarNueva(tipo, false));
 }
 
-function pintarReservasOnline() {
-  const ul = document.getElementById('ad-online-lista');
-  const totalTxt = document.getElementById('ad-online-total');
-
-  if (!claveAdmin) {
-    totalTxt.textContent = 'Poné la clave para ver las reservas hechas desde el sitio.';
-    ul.innerHTML = '';
+function recalcular(precioTocado) {
+  const entrada = $('nv-entrada').value;
+  const salida = $('nv-salida').value;
+  const modalidad = Precios.modalidadPorId($('nv-modalidad').value, CONFIG);
+  const chico = $('nv-sugerido');
+  if (!entrada || !salida || !modalidad || Precios.nochesEntre(entrada, salida) < 1) {
+    chico.textContent = '';
     return;
   }
-
-  const pendientes = reservasOnline.filter(r => r.estado === 'pendiente').length;
-  totalTxt.textContent = reservasOnline.length
-    ? `${reservasOnline.length} ${reservasOnline.length === 1 ? 'reserva' : 'reservas'}` +
-      (pendientes ? ` · ${pendientes} pendiente${pendientes === 1 ? '' : 's'} de confirmar` : '')
-    : 'Todavía no hay reservas hechas desde el sitio.';
-
-  ul.innerHTML = reservasOnline.map(r => {
-    const m = CONFIG.modalidades.find(x => x.id === r.modalidad);
-    const datos = r.datos || {};
-    return `
-      <li>
-        <div class="ro__cab">
-          <span class="ro__unidad">${m ? m.nombre : r.modalidad}</span>
-          <span class="ro__badge ro__badge--${r.estado}">${ROTULO_ESTADO[r.estado] || r.estado}</span>
-        </div>
-        <p class="ro__datos" style="margin-bottom:2px">
-          ${fechaLarga(r.entrada)} → ${fechaLarga(r.salida)} ·
-          <span class="ro__badge ro__badge--${r.origen}">${ROTULO_ORIGEN[r.origen] || r.origen}</span>
-        </p>
-        <p class="ro__datos">
-          ${datos.nombre || 'Sin nombre'}${datos.telefono ? ' · ' + datos.telefono : ''} ·
-          seña ${pesosAd(r.sena)}
-        </p>
-        <div class="ro__acciones">
-          ${r.estado === 'pendiente' ? `<button class="ro__confirmar" data-id="${r.id}">Marcar pagada</button>` : ''}
-          <button class="ro__cancelar" data-id="${r.id}">Dar de baja</button>
-        </div>
-      </li>`;
-  }).join('');
-
-  ul.querySelectorAll('.ro__cancelar').forEach(btn => {
-    btn.addEventListener('click', () => accionReservaOnline('cancelar', btn.dataset.id, btn));
-  });
-  ul.querySelectorAll('.ro__confirmar').forEach(btn => {
-    btn.addEventListener('click', () => accionReservaOnline('confirmar', btn.dataset.id, btn));
-  });
+  const huespedes = Number($('nv-huespedes').value) || 2;
+  const c = Precios.cotizar(entrada, salida, modalidad, CONFIG, huespedes);
+  chico.textContent = `Tarifa: ${pesos(c.total)} por ${c.noches} ${c.noches === 1 ? 'noche' : 'noches'}`;
+  if (!precioTocado) $('nv-total').value = c.total;
 }
 
-async function accionReservaOnline(accion, id, boton) {
-  if (accion === 'cancelar' && !confirm('¿Dar de baja esta reserva? La fecha vuelve a quedar libre.')) return;
+async function guardarNueva(tipo, forzar) {
+  const caja = $('nv-estado-msg');
+  const esBloqueo = tipo === 'bloqueo';
+  const cuerpo = {
+    accion: 'crear',
+    tipo,
+    entrada: $('nv-entrada').value,
+    salida: $('nv-salida').value,
+    modalidad: $('nv-modalidad').value,
+    nota: $('nv-nota').value,
+    forzar
+  };
 
-  boton.disabled = true;
-  try {
-    const r = await fetch('/api/admin/reservas', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-token': claveAdmin },
-      body: JSON.stringify({ accion, id })
+  if (esBloqueo) {
+    cuerpo.motivo = $('nv-motivo').value || 'Bloqueo';
+    cuerpo.nombre = cuerpo.motivo;
+  } else {
+    Object.assign(cuerpo, {
+      nombre: $('nv-nombre').value,
+      telefono: $('nv-telefono').value,
+      email: $('nv-email').value,
+      huespedes: $('nv-huespedes').value,
+      total: $('nv-total').value,
+      pagado: $('nv-pagado').value,
+      estado: $('nv-estado').value
     });
-    if (r.status === 401) throw new Error('Esa clave no es correcta.');
-    const cuerpo = await r.json();
-    if (!cuerpo.ok) throw new Error('No se pudo completar la acción.');
-    await cargarReservasOnline();
-  } catch (e) {
-    avisoOnline(e.message);
-    boton.disabled = false;
+  }
+
+  caja.className = 'estado-form';
+  caja.textContent = 'Guardando…';
+  try {
+    await api('/api/admin/reservas', { method: 'POST', body: JSON.stringify(cuerpo) });
+    await cargar();
+    caja.className = 'estado-form estado-form--bien';
+    caja.textContent = esBloqueo ? 'Fechas bloqueadas.' : 'Reserva cargada.';
+    setTimeout(cerrarHoja, 700);
+  } catch (err) {
+    if (err.message === 'sesion') return;
+    // Choque de fechas: se puede insistir a propósito (por ejemplo, para
+    // arreglar una carga mal hecha), pero nunca sin preguntar antes.
+    if (err.datos && err.datos.ocupado && !forzar) {
+      caja.className = 'estado-form estado-form--mal';
+      caja.textContent = err.message;
+      if (confirm(`${err.message}\n\n¿Cargarla igual, superpuesta?`)) {
+        return guardarNueva(tipo, true);
+      }
+      return;
+    }
+    caja.className = 'estado-form estado-form--mal';
+    caja.textContent = err.message;
   }
 }
 
-document.getElementById('ad-clave').value = claveAdmin;
-document.getElementById('ad-clave-guardar').addEventListener('click', () => {
-  claveAdmin = document.getElementById('ad-clave').value.trim();
-  localStorage.setItem(CLAVE_ADMIN, claveAdmin);
-  cargarReservasOnline();
-});
+/* -------------------------------------------------------------- arranque -- */
 
-pintarUnidades();
-dibujar();
-cargarReservasOnline();
+(async function arrancar() {
+  try {
+    const s = await api('/api/admin/sesion');
+    if (!s.configurada) {
+      document.body.innerHTML = `
+        <div class="login"><div class="login__caja">
+          <h1>Falta configurar el panel</h1>
+          <p>No hay contraseña cargada en el servidor. Agregá la variable
+          <code>ADMIN_PASSWORD</code> en Vercel y volvé a desplegar el sitio.</p>
+        </div></div>`;
+      return;
+    }
+    if (s.activa) { mostrarPanel(); await cargar(); }
+    else mostrarLogin();
+  } catch (err) {
+    if (err.message !== 'sesion') mostrarLogin();
+  }
+})();
 </script>
 </body>
 </html>

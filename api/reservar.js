@@ -63,7 +63,7 @@ module.exports = async (req, res) => {
     const id = idExterno();
     const noches = Precios.nochesLista(reserva.entrada, reserva.salida);
 
-    await marcarPendienteWhatsapp(modalidad, noches, {
+    const guardado = await marcarPendienteWhatsapp(modalidad, noches, {
       id,
       pagoId: null,
       modalidad: modalidad.id,
@@ -75,6 +75,14 @@ module.exports = async (req, res) => {
       datos: datos || {},
       creado: new Date().toISOString()
     });
+
+    // Segundo filtro, ahora sí a prueba de carreras: entre el chequeo de más
+    // arriba y este INSERT puede haberse metido otra reserva por las mismas
+    // noches. La base es la que decide, y si perdió la carrera no se guarda.
+    if (!guardado.ok) {
+      res.status(409).json({ error: 'Uy, justo se ocupó una de esas fechas. Elegí otras y probá de nuevo.' });
+      return;
+    }
 
     res.status(200).json({ ok: true, id, sena, total: cotizacion.total });
   } catch (err) {

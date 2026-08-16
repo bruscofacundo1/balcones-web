@@ -9,10 +9,10 @@ No necesita base de datos ni servidor: se sube tal cual a cualquier hosting.
 
 ```
 index.html                 La página del sitio
-admin.html                 Panel privado para marcar fechas ocupadas
+admin.html                 Panel de administración (se entra por /admin, con contraseña)
 css/estilos.css            Todos los estilos
 js/config.js               ← LO QUE TENÉS QUE EDITAR (teléfono, precios, textos, FAQ)
-js/disponibilidad.js       Fechas reservadas (lo genera admin.html)
+js/disponibilidad.js       Ya no se toca: las fechas viven en la base de datos
 js/calendario.js           Calendario y cálculo de precios
 js/app.js                  Armado de las secciones
 img/                       Fotos grandes (para el visor)
@@ -46,23 +46,63 @@ alta, esas fechas quedan libres para quien quiera la planta baja, pero la casa
 completa aparece ocupada. Eso lo resuelve el sitio solo: vos únicamente tenés
 que marcar qué se alquiló.
 
-## Cargar las fechas ocupadas
+## El panel de administración
 
-1. Abrí `admin.html` en el navegador (podés hacerle doble clic).
-2. Elegí arriba **qué se alquiló**: casa completa, planta alta o planta baja.
-3. Hacé clic en el primer día del bloque reservado y después en el último.
-   Para un solo día, hacé clic dos veces sobre el mismo.
-4. Para liberar fechas, cambiá a modo **Liberar** y repetí, o usá "Quitar" en la lista.
-5. Apretá **Descargar disponibilidad.js**.
-6. Reemplazá `js/disponibilidad.js` por el archivo descargado y volvé a subir el sitio.
+Entrá a **tusitio.com/admin** y poné la contraseña. Anda igual desde la
+computadora que desde el celular. Todo lo que hagas ahí se ve en el sitio **al
+instante**: no hay que descargar ni volver a subir nada.
 
-En el calendario del panel, un día **rayado** significa que la unidad elegida
-está ocupada, y un día **beige** que está ocupada la otra planta.
+### Ver cómo viene el mes
 
-Lo que marques queda guardado en el navegador hasta que descargues el archivo,
-así que podés cerrar y seguir después. Ojo: `admin.html` no tiene contraseña.
-Si preferís que nadie lo encuentre, no lo subas al hosting y usalo solo desde tu
-computadora, o renombralo a algo difícil de adivinar.
+La pantalla que aparece primero es el calendario del año. Los colores:
+
+- **Verde**: libre.
+- **Naranja claro**: hay una sola planta ocupada (la otra se puede alquilar).
+- **Rojo claro**: ocupado todo.
+- **Gris**: bloqueado por vos (mantenimiento, uso de la familia).
+- **Rayita naranja abajo**: esa noche hay una reserva **sin la seña confirmada**.
+
+Tocá cualquier día para ver quién está esa noche, o para cargar algo ahí mismo.
+
+### Cargar una reserva que llegó por teléfono o WhatsApp
+
+1. Apretá **+ Nueva reserva**.
+2. Poné entrada, salida y qué alquila (casa completa o una planta).
+3. Escribí el nombre y el teléfono.
+4. El **total lo calcula solo** según la tarifa. Si arreglaste otro precio,
+   pisalo y listo: desde ese momento el formulario no te lo vuelve a cambiar.
+5. Elegí si la seña ya está o queda pendiente.
+6. **Cargar reserva**.
+
+Si las fechas ya estaban ocupadas te avisa y no te deja seguir de una: te
+pregunta si querés cargarla igual, superpuesta.
+
+### Bloquear fechas sin que haya huésped
+
+Para cuando va la familia o hay que hacer arreglos: **Bloquear fechas**, elegís
+el rango y ponés el motivo. En el sitio esas fechas aparecen ocupadas.
+
+### Cuando alguien reserva desde la web
+
+Llega sola al panel, marcada como **pendiente**: la fecha ya queda bloqueada,
+pero falta que te llegue la seña. Cuando te llega, entrá a la reserva y apretá
+**Marcar seña cobrada**.
+
+Si una reserva lleva **más de una semana pendiente**, el panel te lo avisa
+arriba de todo con un cartel. Convienen mirarlo: esas reservas están tapando
+fechas que quizá se podrían vender.
+
+### Dar de baja
+
+Entrá a la reserva y apretá **Dar de baja y liberar fechas**. Las fechas quedan
+libres en el sitio enseguida. Nada se borra del todo: podés verlas después con
+el filtro **Canceladas**.
+
+### La contraseña
+
+La configura quien administra el sitio (variable `ADMIN_PASSWORD` en Vercel).
+Si la escribís mal muchas veces seguidas, el panel se traba 15 minutos — es a
+propósito, para que nadie la saque probando.
 
 ## Cómo probarlo en tu computadora
 

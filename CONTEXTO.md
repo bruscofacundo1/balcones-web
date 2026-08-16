@@ -672,24 +672,27 @@ cobra lo calcula `api/crear-pago.js` desde cero. Aunque alguien manipulara
 servidor le cobre el precio real igual, o rechace la fecha si ya no está
 libre.
 
-### Disponibilidad: dos capas
+### Disponibilidad: una sola capa (desde 16/08/2026)
 
-- **`disponibilidad.js`** sigue siendo la base, cargada a mano con
-  `admin.html`, para reservas que se coordinan por WhatsApp/transferencia.
-- **Postgres (Neon)** guarda aparte las noches que se pagaron online.
-  `api/crear-pago.js` junta las dos antes de aceptar un pago nuevo
-  (`Precios.unirOcupadas`), así una reserva pagada bloquea la fecha al
-  instante sin depender de que alguien actualice el archivo.
+Durante un tiempo hubo **dos** listas de "ocupado": `disponibilidad.js`, que
+se editaba bajando un archivo desde `admin.html` y requería un deploy, y la
+tabla `ocupadas` en Postgres, que se llenaba sola con las reservas de la web.
 
-No hace falta migrar `admin.html` a la base: las dos conviven. Si algún día
-se quiere ver todo en un solo lugar, el siguiente paso sería que `admin.html`
-también lea la tabla `reservas` — no es necesario para que esto funcione hoy.
+Eso se unificó: **todo vive en la base**. Las reservas de la web, las que se
+cargan a mano por teléfono y los bloqueos por uso propio son todos el mismo
+tipo de registro. `disponibilidad.js` quedó vacío y ya no se edita; sigue
+sumándose por si alguna vez hace falta bloquear algo sin base de datos.
+
+El motivo no es prolijidad: dos listas que se actualizan por caminos
+distintos —una necesita deploy y la otra no— terminan desincronizándose, y en
+un sistema de reservas eso se llama sobreventa.
 
 `lib/reservas.js` usa `@neondatabase/serverless`, que habla por HTTP en vez
 de mantener una conexión TCP abierta — lo que conviene en una función
-serverless, donde cada invocación es corta. Las tres tablas (`ocupadas`,
-`reservas`, `pagos_vistos`) se crean solas la primera vez que hace falta
-(`asegurarTablas`); no hay que correr ninguna migración a mano.
+serverless, donde cada invocación es corta. Las cuatro tablas (`ocupadas`,
+`reservas`, `pagos_vistos`, `intentos_login`) se crean solas la primera vez
+que hace falta (`asegurarTablas`); no hay que correr ninguna migración a
+mano, y las columnas nuevas se agregan con `ADD COLUMN IF NOT EXISTS`.
 
 (Se probó primero con Redis — la integración "Redis" del Marketplace de
 Vercel, reemplazo de la vieja "Vercel KV" — pero nunca se pudo confirmar que
@@ -868,6 +871,106 @@ con fechas cerradas: es barato tenerlo y caro que lo reclamen.
 **Y lo más importante: esto no reemplaza a un abogado.** Cubre lo que la
 normativa exige y está redactado en el tono del sitio, pero conviene que lo
 lea alguien del rubro antes de publicarlo.
+
+---
+
+## 6.c El panel de administración (`/admin`, 16/08/2026)
+
+`admin.html` se rehízo entero. Antes era una herramienta para marcar celdas y
+descargar un archivo; ahora es el lugar donde se gestionan las reservas.
+
+### Cómo se entra
+
+`vercel.json` ya tiene `cleanUrls: true`, así que `/admin` sirve `admin.html`
+sin configurar nada más.
+
+La autenticación va por **cookie de sesión firmada** (`lib/sesion.js`), no por
+la clave suelta en cada pedido como antes. La clave viaja una sola vez, en el
+POST a `/api/admin/sesion`, y se canjea por una cookie `httpOnly` que el
+JavaScript de la página **no puede leer**. Antes la clave se guardaba en
+`localStorage` y a veces viajaba en la URL (`?clave=...`), que queda escrita
+en el historial del navegador, en los logs del servidor y en el `Referer` de
+cualquier link que se abra desde ahí.
+
+La llave de la firma se deriva de la propia contraseña, así que **cambiar
+`ADMIN_PASSWORD` cierra todas las sesiones abiertas** — a propósito, y evita
+tener que rotar un segundo secreto.
+
+`/api/admin/sesion` cuenta los intentos fallados **en la base**, no en
+memoria: cada invocación serverless puede caer en una instancia distinta, así
+que un contador en memoria no frenaría nada. A los 8 fallos en 15 minutos, esa
+IP queda afuera.
+
+> **Lo importante:** esconder `admin.html` no protege nada — el HTML es
+> público y no pasa nada con eso. Lo que protege es que **cada** endpoint de
+> `/api/admin/` llame a `exigirSesion()` antes de contestar. Si alguna vez se
+> agrega un endpoint nuevo ahí adentro, esa línea no es opcional.
+
+### El bug de la sobreventa silenciosa
+
+`ocupadas` tiene clave primaria `(planta, noche)`: una noche, un dueño. Eso es
+lo que impide vender dos veces la misma fecha. Pero el insert usaba
+`ON CONFLICT (planta, noche) DO NOTHING` **sin mirar el resultado**, así que
+cuando dos reservas se pisaban, la segunda se guardaba igual y sin error. La
+sobreventa quedaba en la base y nadie se enteraba.
+
+Ahora el insert va con `RETURNING` y se compara cuántas noches volvieron
+contra cuántas se mandaron. Si faltan, hubo choque:
+
+- **Reserva normal** (web o carga manual): se deshace lo que entró y se
+  responde 409. La base es el árbitro final, no el chequeo previo — entre
+  consultar disponibilidad y guardar hay una ventana donde otro puede
+  meterse.
+- **Pago de Mercado Pago** (`forzar: true`): se guarda igual. La plata ya se
+  cobró y eso no se puede deshacer; lo correcto es registrar la reserva y que
+  el panel la muestre, no perderla.
+
+### `reasegurarNoches()`: la consecuencia del punto anterior
+
+Cuando una reserva se fuerza superpuesta, sus noches en conflicto siguen
+figurando **a nombre de la primera** (porque el `INSERT` no las pudo tomar).
+Si después se cancela la primera, el `DELETE ... WHERE reserva_id = X` libera
+esas noches y la segunda reserva queda existiendo pero sin ocupar nada: el
+sitio público las vería libres.
+
+Por eso `cancelarReserva()` termina llamando a `reasegurarNoches()`, que
+vuelve a marcar las noches que otra reserva activa superpuesta todavía
+reclama. **Esto se descubrió probándolo, no leyéndolo** — el primer intento de
+arreglo pasó el test de "cancelar libera las fechas" y falló el de "cancelar
+no le roba las fechas a la otra reserva".
+
+Si alguna vez se toca `ocupadas`, tener presente el modelo: `reservas` es la
+verdad, `ocupadas` es un índice que además sirve de candado.
+
+### Qué puede hacer el panel
+
+- **Calendario del año** con los estados en color, y la rayita naranja abajo
+  para "pendiente de seña". Es la vista principal a propósito: la pregunta
+  real de Naty es "¿está libre tal finde?", no "listame los registros".
+- **Cargar reservas a mano** (teléfono, WhatsApp, en persona). El precio se
+  calcula desde la tarifa **pero es editable**, y una vez que se edita el
+  formulario deja de pisarlo: las reservas por teléfono suelen tener precio
+  arreglado aparte, y un formulario que te corrige el número es inusable.
+- **Bloquear fechas sin huésped** (`origen: 'bloqueo'`), que es lo que
+  reemplazó al viejo archivo.
+- **Confirmar, editar (cobrado/nota) y dar de baja.**
+- **Aviso de pendientes vencidas**: las reservas por WhatsApp bloquean la
+  fecha apenas se mandan, pero esa seña puede no llegar nunca. A los 7 días el
+  panel las trae arriba de todo. Sin eso, se comen disponibilidad en silencio.
+
+Todo funciona en el celular (la hoja de detalle se ancla abajo, el calendario
+pasa a una columna, las celdas quedan de ~41px).
+
+### Lo que todavía NO hace
+
+Editar textos, precios y fotos. Está decidido que **precios y textos van a la
+base**, con `config.js` de respaldo para que una caída de Neon no rompa la
+home; las fotos quedan para el final porque necesitan almacenamiento aparte
+(el servidor no puede escribir en `img/`) y cambian dos veces por año.
+
+Se descartó el camino de "el panel commitea a GitHub": obliga a guardar un
+token con permiso de escritura sobre el repo, que es un secreto bastante más
+peligroso que el de la base — si se filtra, se pierde el repositorio entero.
 
 ---
 

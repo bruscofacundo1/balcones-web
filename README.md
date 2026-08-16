@@ -22,7 +22,7 @@ Y entrar a `http://localhost:5173`.
 | Quiero cambiar… | Archivo |
 |---|---|
 | Precios, temporadas, textos, contacto, preguntas frecuentes | `js/config.js` |
-| Qué fechas están ocupadas | `js/disponibilidad.js` (o generarlo con `admin.html`) |
+| Qué fechas están ocupadas | El panel: `/admin` (ya no se edita `js/disponibilidad.js`) |
 | Fotos | `img/` |
 | Estilos | `css/estilos.css` |
 
@@ -47,18 +47,21 @@ HTML y el código se revalidan siempre) y las URLs sin `.html`.
 ### Para que funcione el bloqueo de fechas y el cobro de la seña
 
 Esto sí necesita configurarse una vez, después del primer deploy — la parte
-de Neon y `ADMIN_TOKEN` hace falta siempre (el sitio hoy manda todo por
+de Neon y `ADMIN_PASSWORD` hace falta siempre (el sitio hoy manda todo por
 WhatsApp); la de Mercado Pago sólo si van a activar la variante de cobro
 online:
 
 1. Crear una base en [Neon](https://neon.tech) (gratis) y copiar el
-   connection string — ahí quedan la disponibilidad "en vivo" y las reservas
-   (pagadas online o pendientes de WhatsApp).
+   connection string — ahí quedan la disponibilidad y todas las reservas
+   (las de la web, las que se cargan a mano y los bloqueos).
 2. **Settings → Environment Variables**, agregar:
    - `DATABASE_URL` — el connection string de Neon.
-   - `ADMIN_TOKEN` — cualquier texto largo que inventes. Es la clave del
-     panel "Reservas del sitio" de `admin.html`, donde se confirman o dan de
-     baja las reservas.
+   - `ADMIN_PASSWORD` — la contraseña para entrar a `/admin`. Que sea larga
+     y al azar, y guardala en un gestor de contraseñas: con esa clave se
+     cancelan reservas y se ven los datos de los huéspedes. Cambiarla cierra
+     todas las sesiones abiertas.
+     *(Si venías usando `ADMIN_TOKEN`, se sigue aceptando por compatibilidad,
+     pero conviene renombrarla.)*
    - `MP_ACCESS_TOKEN` — el Access Token de
      [mercadopago.com.ar/developers/panel](https://www.mercadopago.com.ar/developers/panel)
      (empezá con el de prueba, `TEST-...`). Sólo hace falta si van a prender
