@@ -352,7 +352,11 @@ function aplicarVariantePago() {
 
 /* ------------------------------------------------------------ arranque -- */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Es el paso donde se muestra el monto a pagar: sí o sí con los precios
+  // vigentes. El servidor vuelve a calcularlo por su cuenta antes de cobrar.
+  await Contenido.preparar(CONFIG, { esperar: true });
+
   document.getElementById('anio').textContent = new Date().getFullYear();
 
   const r = leerReserva();

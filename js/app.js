@@ -764,7 +764,27 @@ function pintarContacto() {
 }
 
 /* ------------------------------------------------------------- arranque -- */
-document.addEventListener('DOMContentLoaded', () => {
+/** Todo lo que sale de CONFIG. Se puede volver a llamar sin efectos raros:
+    hace falta si llegan precios o textos nuevos después de la primera pintura
+    (ver Contenido.preparar). */
+function pintarDesdeConfig() {
+  pintarTextosCasa();
+  pintarCifras();
+  pintarComodidades();
+  pintarFaq();
+  pintarActividades();
+  pintarResenas();
+  pintarDistancias();
+  pintarAlquiler();
+  pintarPie({ cta: true, enInicio: true });
+  pintarContacto();
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // Precios y textos que se hayan editado desde /admin. En la primera visita
+  // espera un instante; después ya no espera nada.
+  await Contenido.preparar(CONFIG, { repintar: pintarDesdeConfig });
+
   pintarTextosCasa();
   pintarCifras();
   pintarComodidades();

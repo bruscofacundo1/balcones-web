@@ -6,7 +6,10 @@
    según la variante elegida — ver js/variantes.js y js/app.js).
    ============================================================================ */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // El link de WhatsApp y los datos de contacto se pueden editar desde /admin.
+  await Contenido.preparar(CONFIG);
+
   pintarPie({ cta: false });
 
   document.getElementById('faq-completo').innerHTML = FAQ.map(f => `

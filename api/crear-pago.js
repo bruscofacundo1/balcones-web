@@ -17,7 +17,7 @@
    aprueba (rechazado, en proceso, etc.) no se toca la disponibilidad.
    ============================================================================ */
 
-const { CONFIG } = require('../js/config.js');
+const { configEfectivo } = require('../lib/contenido.js');
 const { DISPONIBILIDAD } = require('../js/disponibilidad.js');
 const Precios = require('../js/precios.js');
 const { clientePago } = require('../lib/mercadopago.js');
@@ -52,6 +52,9 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // Los precios que rigen ahora: el servidor nunca cotiza con lo que le
+    // manda el navegador, ni con una copia que pueda haber quedado vieja.
+    const CONFIG = await configEfectivo();
     const modalidad = Precios.modalidadPorId(reserva.modalidad, CONFIG);
     if (!modalidad) {
       res.status(400).json({ error: 'Esa modalidad no existe.' });

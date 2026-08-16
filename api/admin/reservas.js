@@ -17,6 +17,7 @@ const { CONFIG } = require('../../js/config.js');
 const { DISPONIBILIDAD } = require('../../js/disponibilidad.js');
 const Precios = require('../../js/precios.js');
 const { exigirSesion } = require('../../lib/sesion.js');
+const { configEfectivo } = require('../../lib/contenido.js');
 const {
   listarReservas, obtenerReserva, cancelarReserva, confirmarReserva,
   actualizarReserva, crearReservaManual, nochesPagadas
@@ -39,6 +40,9 @@ function numeroOpcional(valor) {
 async function crear(req, res) {
   const b = req.body || {};
   const tipo = b.tipo === 'bloqueo' ? 'bloqueo' : 'reserva';
+  // Con las tarifas que rigen hoy, para que el precio sugerido acá coincida
+  // con el que ve el visitante en el sitio.
+  const CONFIG = await configEfectivo();
 
   if (!ES_FECHA.test(b.entrada || '') || !ES_FECHA.test(b.salida || '')) {
     res.status(400).json({ error: 'Las fechas no son válidas.' });

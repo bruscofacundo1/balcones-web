@@ -78,7 +78,9 @@ function avisarPendientes() {
   console.warn('[Balcones del Arroyo] Datos legales sin completar: ' + falta.join(', '));
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await Contenido.preparar(CONFIG);
+
   pintarDatosLegales();
   avisarPendientes();
   pintarPie({ cta: false });

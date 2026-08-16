@@ -21,7 +21,9 @@ Y entrar a `http://localhost:5173`.
 
 | Quiero cambiar… | Archivo |
 |---|---|
-| Precios, temporadas, textos, contacto, preguntas frecuentes | `js/config.js` |
+| Precios, textos del inicio, contacto, seña, horarios | El panel: `/admin` → "Precios y textos" |
+| Preguntas frecuentes, comodidades, actividades, galería | `js/config.js` |
+| Los valores de arranque de todo lo editable | `js/config.js` (el panel los pisa) |
 | Qué fechas están ocupadas | El panel: `/admin` (ya no se edita `js/disponibilidad.js`) |
 | Fotos | `img/` |
 | Estilos | `css/estilos.css` |

@@ -184,6 +184,65 @@
   .estado-form { font-size: .86rem; margin: 12px 0 0; min-height: 1.2em; }
   .estado-form--mal { color: #b23b3b; }
   .estado-form--bien { color: var(--oliva); }
+
+  /* --------------------------------------------------- precios y textos -- */
+  .ayuda-contenido {
+    font-size: .88rem; color: var(--piedra); margin: 0 0 22px; max-width: 62ch;
+  }
+  .grupo {
+    background: var(--crema); border: 1px solid var(--borde);
+    border-radius: var(--radio); padding: 20px 22px; margin-bottom: 16px;
+  }
+  .grupo > h3 {
+    font-family: var(--display); font-size: 1.05rem; color: var(--carbon);
+    margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--borde);
+  }
+  .grupo__campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+  .grupo__campos--ancho { grid-template-columns: 1fr; }
+
+  .campo-ed label { display: flex; align-items: center; gap: 7px; font-size: .8rem; font-weight: 600; color: var(--carbon-suave); margin-bottom: 5px; }
+  .campo-ed input, .campo-ed textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--borde);
+    border-radius: var(--radio-sm); font-family: var(--texto); font-size: .9rem;
+    background: #fff; color: var(--carbon);
+  }
+  .campo-ed textarea { resize: vertical; min-height: 84px; line-height: 1.5; }
+  .campo-ed input:focus, .campo-ed textarea:focus { outline: 2px solid var(--ocre); outline-offset: -1px; }
+  .campo-ed--sucio input, .campo-ed--sucio textarea { border-color: var(--ocre); background: #fffdf5; }
+  .campo-ed small { display: block; color: var(--piedra); font-size: .75rem; margin-top: 4px; }
+
+  /* punto que marca "esto ya no es lo que dice config.js" */
+  .marca-editado {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--ocre); flex: none;
+  }
+  .volver-original {
+    border: 0; background: transparent; color: var(--terracota); cursor: pointer;
+    font-family: var(--texto); font-size: .74rem; text-decoration: underline; padding: 0; margin-left: auto;
+  }
+
+  /* La barra de guardar es fija abajo: sin este colchón, en el celular queda
+     tapando el último campo del formulario justo cuando hay algo sin guardar. */
+  #vista-contenido { padding-bottom: 150px; }
+
+  .guardar-barra {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 80;
+    background: var(--carbon); color: var(--crema);
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 14px 24px; box-shadow: 0 -6px 24px rgba(43,38,33,.22);
+  }
+  .guardar-barra .crece { flex: 1 1 auto; }
+  .guardar-barra span { font-size: .88rem; }
+  .guardar-barra .boton--linea { border-color: #6b6157; color: #cdc3b6; }
+  .guardar-barra .boton--linea:hover { border-color: var(--ocre); color: var(--ocre); }
+
+  /* En el celular la barra se apilaba en tres renglones y se comía media
+     pantalla: el aviso arriba y los dos botones compartiendo una fila. */
+  @media (max-width: 520px) {
+    .guardar-barra { padding: 12px 16px; gap: 8px; }
+    .guardar-barra span { flex: 1 0 100%; font-size: .82rem; }
+    .guardar-barra .crece { display: none; }
+    .guardar-barra .boton { flex: 1 1 0; padding: 10px 12px; font-size: .85rem; }
+  }
 </style>
 </head>
 <body>
@@ -217,6 +276,7 @@
       <div class="tabs" role="tablist">
         <button role="tab" aria-selected="true" data-vista="calendario">Calendario</button>
         <button role="tab" aria-selected="false" data-vista="lista">Reservas</button>
+        <button role="tab" aria-selected="false" data-vista="contenido">Precios y textos</button>
       </div>
       <span class="crece"></span>
       <button class="boton boton--primario" id="btn-nueva" type="button" style="padding:10px 18px;font-size:.86rem">+ Nueva reserva</button>
@@ -250,7 +310,25 @@
       </div>
       <div class="tarjetas" id="lista"></div>
     </section>
+
+    <!-- ------------------------------------------------ precios y textos -->
+    <section id="vista-contenido" hidden>
+      <p class="ayuda-contenido">
+        Lo que cambies acá se ve en el sitio enseguida, sin volver a publicarlo.
+        Los campos con el punto naranja están modificados: podés volver al
+        valor original cuando quieras.
+      </p>
+      <div id="contenido-campos"><p class="vacio">Cargando…</p></div>
+    </section>
   </main>
+
+  <!-- barra que aparece sola cuando hay cambios sin guardar -->
+  <div class="guardar-barra" id="guardar-barra" hidden>
+    <span id="guardar-cuenta"></span>
+    <span class="crece"></span>
+    <button class="boton boton--linea" id="btn-descartar" type="button">Descartar</button>
+    <button class="boton boton--primario" id="btn-guardar" type="button">Guardar cambios</button>
+  </div>
 </div>
 
 <!-- =============================================================== HOJA --->
@@ -265,6 +343,7 @@
 </div>
 
 <script src="js/config.js?v=36"></script>
+<script src="js/contenido.js?v=36"></script>
 <script src="js/precios.js?v=36"></script>
 <script>
 /* ============================================================================
@@ -347,6 +426,7 @@ $('form-login').addEventListener('submit', async e => {
     });
     $('clave').value = '';
     mostrarPanel();
+    await Contenido.preparar(CONFIG);
     await cargar();
   } catch (err) {
     if (err.message !== 'sesion') $('login-error').textContent = err.message;
@@ -540,9 +620,14 @@ function cambiarFiltro(filtro) {
 function cambiarVista(vista) {
   $('vista-calendario').hidden = vista !== 'calendario';
   $('vista-lista').hidden = vista !== 'lista';
+  $('vista-contenido').hidden = vista !== 'contenido';
+  // Los botones de reserva no tienen sentido mientras se editan precios.
+  $('btn-nueva').hidden = vista === 'contenido';
+  $('btn-bloquear').hidden = vista === 'contenido';
   for (const b of document.querySelectorAll('[data-vista]')) {
     b.setAttribute('aria-selected', String(b.dataset.vista === vista));
   }
+  if (vista === 'contenido' && !contenido.campos) cargarContenido();
 }
 
 document.querySelector('.tabs').addEventListener('click', e => {
@@ -867,6 +952,162 @@ async function guardarNueva(tipo, forzar) {
   }
 }
 
+/* --------------------------------------------------- precios y textos -- */
+
+const contenido = { campos: null, valores: {}, guardados: {}, pendientes: {} };
+
+/** Un valor de lista se edita como texto, un renglón por ítem. */
+const aTexto = v => Array.isArray(v) ? v.join('\n') : (v === undefined || v === null ? '' : String(v));
+
+function escapar(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+async function cargarContenido() {
+  try {
+    const datos = await api('/api/admin/contenido');
+    contenido.campos = datos.campos;
+    contenido.valores = datos.valores;
+    contenido.guardados = datos.guardados || {};
+    contenido.pendientes = {};
+    pintarContenido();
+    actualizarBarra();
+  } catch (err) {
+    if (err.message === 'sesion') return;
+    $('contenido-campos').innerHTML = `<p class="vacio">${escapar(err.message)}</p>`;
+  }
+}
+
+function pintarContenido() {
+  // Agrupar respetando el orden en que vienen del servidor.
+  const grupos = new Map();
+  for (const camino of Object.keys(contenido.campos)) {
+    const campo = contenido.campos[camino];
+    if (!grupos.has(campo.grupo)) grupos.set(campo.grupo, []);
+    grupos.get(campo.grupo).push(camino);
+  }
+
+  let html = '';
+  for (const [grupo, caminos] of grupos) {
+    const anchos = caminos.some(c => ['lista', 'largo'].includes(contenido.campos[c].tipo));
+    html += `<div class="grupo"><h3>${escapar(grupo)}</h3>
+      <div class="grupo__campos ${anchos ? 'grupo__campos--ancho' : ''}">
+        ${caminos.map(campoHtml).join('')}
+      </div></div>`;
+  }
+  $('contenido-campos').innerHTML = html;
+}
+
+function campoHtml(camino) {
+  const campo = contenido.campos[camino];
+  const editado = Object.prototype.hasOwnProperty.call(contenido.guardados, camino);
+  const valor = camino in contenido.pendientes
+    ? contenido.pendientes[camino]
+    : contenido.valores[camino];
+  const id = `c-${camino.replace(/\./g, '_')}`;
+
+  const control = campo.tipo === 'entero'
+    ? `<input type="number" id="${id}" data-camino="${camino}" value="${escapar(valor)}"
+         min="${campo.min}" max="${campo.max}" step="1">`
+    : campo.tipo === 'texto'
+      ? `<input type="text" id="${id}" data-camino="${camino}" value="${escapar(valor)}" maxlength="${campo.max}">`
+      : `<textarea id="${id}" data-camino="${camino}" rows="${campo.tipo === 'lista' ? 5 : 3}">${escapar(aTexto(valor))}</textarea>`;
+
+  return `
+    <div class="campo-ed" data-caja="${camino}">
+      <label for="${id}">
+        ${editado ? '<span class="marca-editado" title="Modificado desde el original"></span>' : ''}
+        ${escapar(campo.etiqueta)}
+        ${editado ? `<button class="volver-original" type="button" data-original="${camino}">volver al original</button>` : ''}
+      </label>
+      ${control}
+      ${campo.tipo === 'lista' ? '<small>Un renglón por ítem.</small>' : ''}
+    </div>`;
+}
+
+$('contenido-campos').addEventListener('input', e => {
+  const control = e.target.closest('[data-camino]');
+  if (!control) return;
+  const camino = control.dataset.camino;
+  const campo = contenido.campos[camino];
+
+  const valor = campo.tipo === 'lista'
+    ? control.value.split('\n').map(x => x.trim()).filter(Boolean)
+    : campo.tipo === 'entero' ? control.value : control.value;
+
+  // Si vuelve a coincidir con lo que ya está guardado, deja de ser un cambio.
+  if (aTexto(valor) === aTexto(contenido.valores[camino])) delete contenido.pendientes[camino];
+  else contenido.pendientes[camino] = valor;
+
+  control.closest('.campo-ed').classList.toggle('campo-ed--sucio', camino in contenido.pendientes);
+  actualizarBarra();
+});
+
+$('contenido-campos').addEventListener('click', async e => {
+  const boton = e.target.closest('[data-original]');
+  if (!boton) return;
+  const camino = boton.dataset.original;
+  if (!confirm(`¿Volver "${contenido.campos[camino].etiqueta}" al valor original?`)) return;
+  // null borra la fila: el campo vuelve a salir de config.js.
+  try {
+    await api('/api/admin/contenido', {
+      method: 'POST',
+      body: JSON.stringify({ cambios: { [camino]: null } })
+    });
+    await cargarContenido();
+  } catch (err) {
+    if (err.message !== 'sesion') alert(err.message);
+  }
+});
+
+function actualizarBarra() {
+  const cuantos = Object.keys(contenido.pendientes).length;
+  $('guardar-barra').hidden = cuantos === 0;
+  $('guardar-cuenta').textContent = cuantos === 1
+    ? '1 cambio sin guardar'
+    : `${cuantos} cambios sin guardar`;
+}
+
+$('btn-descartar').addEventListener('click', () => {
+  contenido.pendientes = {};
+  pintarContenido();
+  actualizarBarra();
+});
+
+$('btn-guardar').addEventListener('click', async () => {
+  const boton = $('btn-guardar');
+  boton.disabled = true;
+  boton.textContent = 'Guardando…';
+  try {
+    await api('/api/admin/contenido', {
+      method: 'POST',
+      body: JSON.stringify({ cambios: contenido.pendientes })
+    });
+    // El sitio guarda una copia de esto en cada navegador; al cambiar los
+    // precios conviene que este mismo navegador la tire, o el panel seguiría
+    // sugiriendo los importes viejos al cargar una reserva a mano.
+    try { localStorage.removeItem(Contenido.CLAVE_CACHE); } catch (e) { /* da igual */ }
+    await cargarContenido();
+    // Con lo que acaba de devolver el servidor alcanza: aplicarlo directo
+    // evita un tercer viaje a la base y que el panel muestre por unos
+    // segundos los precios anteriores a lo que uno mismo acaba de guardar.
+    Contenido.aplicar(CONFIG, contenido.guardados);
+    boton.textContent = 'Guardado';
+    setTimeout(() => { boton.textContent = 'Guardar cambios'; }, 1200);
+  } catch (err) {
+    if (err.message !== 'sesion') alert(err.message);
+    boton.textContent = 'Guardar cambios';
+  } finally {
+    boton.disabled = false;
+  }
+});
+
+// Aviso del navegador si se intenta salir con cambios a medio hacer.
+window.addEventListener('beforeunload', e => {
+  if (Object.keys(contenido.pendientes).length) e.preventDefault();
+});
+
 /* -------------------------------------------------------------- arranque -- */
 
 (async function arrancar() {
@@ -881,8 +1122,13 @@ async function guardarNueva(tipo, forzar) {
         </div></div>`;
       return;
     }
-    if (s.activa) { mostrarPanel(); await cargar(); }
-    else mostrarLogin();
+    if (s.activa) {
+      mostrarPanel();
+      // Para que el precio sugerido al cargar una reserva a mano salga de las
+      // tarifas que rigen hoy, no de las que quedaron en config.js.
+      await Contenido.preparar(CONFIG);
+      await cargar();
+    } else mostrarLogin();
   } catch (err) {
     if (err.message !== 'sesion') mostrarLogin();
   }

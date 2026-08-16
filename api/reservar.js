@@ -11,10 +11,10 @@
    si no) desde el panel nuevo de admin.html.
    ============================================================================ */
 
-const { CONFIG } = require('../js/config.js');
 const { DISPONIBILIDAD } = require('../js/disponibilidad.js');
 const Precios = require('../js/precios.js');
 const { nochesPagadas, marcarPendienteWhatsapp } = require('../lib/reservas.js');
+const { configEfectivo } = require('../lib/contenido.js');
 
 function idExterno() {
   return `wsp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -35,6 +35,9 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // Con los precios que rigen ahora (config.js + lo editado en el panel),
+    // no con los que tenga cacheados el navegador del visitante.
+    const CONFIG = await configEfectivo();
     const modalidad = Precios.modalidadPorId(reserva.modalidad, CONFIG);
     if (!modalidad) {
       res.status(400).json({ error: 'Esa modalidad no existe.' });

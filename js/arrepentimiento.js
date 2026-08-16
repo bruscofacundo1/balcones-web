@@ -42,7 +42,10 @@ function mensajeArrepentimiento(datos, codigo) {
   return l.join('\n');
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // El número de WhatsApp al que va el pedido se puede cambiar desde /admin.
+  await Contenido.preparar(CONFIG);
+
   const form = document.getElementById('form-arrepentimiento');
   if (!form) return;
 

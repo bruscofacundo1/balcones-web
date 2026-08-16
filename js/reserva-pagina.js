@@ -96,7 +96,11 @@ function irAlCheckout() {
 
 /* ------------------------------------------------------------ arranque -- */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Antes de cotizar nada: acá se muestran precios, y tienen que ser los que
+  // rigen hoy, no los que quedaron en config.js.
+  await Contenido.preparar(CONFIG, { esperar: true });
+
   document.getElementById('anio').textContent = new Date().getFullYear();
 
   if (!leerSeleccion()) {

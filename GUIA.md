@@ -98,6 +98,32 @@ Entrá a la reserva y apretá **Dar de baja y liberar fechas**. Las fechas queda
 libres en el sitio enseguida. Nada se borra del todo: podés verlas después con
 el filtro **Canceladas**.
 
+### Cambiar precios y textos
+
+En la pestaña **Precios y textos** podés editar, sin tocar ningún archivo:
+
+- Los **precios por noche** de cada temporada, para casa completa y cada planta.
+- El **mínimo de noches** de cada temporada.
+- El **porcentaje de seña**.
+- Los **horarios** de ingreso y salida.
+- El **título y la bajada** del inicio, y los textos de "La casa".
+- Las **aclaraciones** que van debajo de las tarifas.
+- **Teléfono, email y redes.**
+
+Editás lo que quieras y abajo aparece una barra con "Guardar cambios". Se
+guarda todo junto, y si algo está mal (un precio en cero, un texto vacío) te
+avisa y **no guarda nada** — así no queda la mitad de un cambio aplicada.
+
+Los campos que tienen un **punto naranja** están modificados. Al lado tienen
+"volver al original", que los devuelve al valor con el que se armó el sitio.
+
+Lo que cambiás se ve en el sitio **en menos de un minuto**. Si lo mirás desde
+tu propio celular y todavía ves lo anterior, esperá un momento y recargá.
+
+> Los precios que se cobran salen siempre de acá, así que un cambio afecta a
+> las reservas nuevas de inmediato. Las que ya estaban cargadas conservan el
+> precio con el que se hicieron.
+
 ### La contraseña
 
 La configura quien administra el sitio (variable `ADMIN_PASSWORD` en Vercel).

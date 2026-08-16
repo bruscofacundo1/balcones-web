@@ -964,14 +964,92 @@ pasa a una columna, las celdas quedan de ~41px).
 
 ### Lo que todavía NO hace
 
-Editar textos, precios y fotos. Está decidido que **precios y textos van a la
-base**, con `config.js` de respaldo para que una caída de Neon no rompa la
-home; las fotos quedan para el final porque necesitan almacenamiento aparte
-(el servidor no puede escribir en `img/`) y cambian dos veces por año.
+Editar fotos. Quedan para el final porque necesitan almacenamiento aparte (el
+servidor no puede escribir en `img/`) y cambian dos veces por año.
+
+---
+
+## 6.d Precios y textos editables (16/08/2026)
+
+`config.js` sigue siendo la base y lo único versionado en Git. Encima se
+aplican los cambios guardados desde el panel, que viven en la tabla
+`contenido` (una fila por campo, con el camino dentro de CONFIG como clave:
+`temporadas.alta.precios.completa`).
 
 Se descartó el camino de "el panel commitea a GitHub": obliga a guardar un
 token con permiso de escritura sobre el repo, que es un secreto bastante más
 peligroso que el de la base — si se filtra, se pierde el repositorio entero.
+Además, con este esquema una caída de Neon no rompe nada: se ve lo de
+`config.js`, viejo pero válido.
+
+### El catálogo es uno solo
+
+`js/contenido.js` es dual (navegador + `require`), igual que `precios.js`.
+Define **qué se puede editar, con qué tipo y qué límites**, y lo usan tanto el
+panel como la validación del servidor. Si fueran dos listas, el panel dejaría
+guardar cosas que el servidor rechaza (o peor, al revés).
+
+El catálogo se **deriva de CONFIG**: los precios salen de recorrer
+`temporadas × modalidades`, así que si mañana se agrega una temporada aparece
+sola en el panel sin tocar nada.
+
+Lo que no está en el catálogo no se puede escribir aunque se mande el pedido a
+mano. Quedaron afuera a propósito `modalidades` (define qué planta ocupa cada
+alquiler; tocarlo rompe el cálculo de disponibilidad) y `legales`.
+
+Los textos se insertan con `innerHTML`, así que al validar se les sacan `<` y
+`>`. Ninguno necesita HTML.
+
+### Deshacer un cambio
+
+`Contenido.aplicar()` guarda una foto de los valores originales la primera vez
+que corre, y **restaura desde esa foto antes de aplicar los overrides**. Sin
+eso, borrar un campo de la tabla no lo devolvería a su valor de `config.js`:
+se quedaría con el último valor que llegó a tener. En el panel esto es el
+"volver al original", que borra la fila.
+
+### Cómo llega al visitante sin frenar la página
+
+`Contenido.preparar(config, opciones)`:
+
+- **Inicio**: si hay copia de una visita anterior se aplica al instante y la
+  página pinta sin esperar; la versión fresca se busca en paralelo y sólo se
+  repinta si de verdad cambió algo. En la primera visita se espera un poco
+  (`BLOQUEO_MAX`, 900 ms) antes de pintar.
+- **`{ esperar: true }`** en `reserva.html` y `checkout.html`: ahí se muestra
+  plata y se espera la respuesta sí o sí. Mostrar un importe y después cobrar
+  otro es peor que tardar medio segundo más.
+
+**El detalle que importa:** el tope de espera decide **cuánto se demora la
+pintura, no si el dato se usa**. La primera versión abortaba el pedido al
+vencer el tope, y con una conexión lenta el visitante se quedaba con los
+precios viejos sin enterarse nunca — se descubrió probando en local, donde el
+pedido tardaba 1184 ms contra un tope de 900. Ahora el pedido sigue vivo y se
+aplica (repintando) cuando llega.
+
+### Y del lado del servidor
+
+`lib/contenido.js` expone `configEfectivo()`, que devuelve **una copia** de
+CONFIG con los overrides aplicados. Copia y no el objeto compartido: en una
+función serverless el módulo queda cacheado entre invocaciones, y mutar el
+original filtraría los cambios de un pedido al siguiente.
+
+Todo lo que cotiza o cobra tiene que usarlo: `api/crear-pago.js`,
+`api/reservar.js` y el alta manual de `api/admin/reservas.js` ya lo hacen. Si
+alguna usara el CONFIG crudo, el servidor calcularía con los precios viejos
+mientras el visitante ve los nuevos.
+
+(`api/webhook-mercadopago.js` usa CONFIG sólo para `modalidadPorId`, que lee
+`modalidades` — no editable. Ahí el CONFIG estático está bien.)
+
+### Caché
+
+`/api/contenido` va con
+`max-age=0, must-revalidate, s-maxage=60, stale-while-revalidate=600`:
+el navegador pregunta siempre (le sale un 304 barato) y el borde de Vercel
+absorbe el tráfico. Sin el `max-age=0` explícito los navegadores aplican un
+plazo propio y un cambio de precio podría tardar en llegarle a quien ya
+visitó el sitio.
 
 ---
 
