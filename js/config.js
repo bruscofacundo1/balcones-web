@@ -528,3 +528,11 @@ const ACTIVIDADES = [
   { foto: 'caballos-campo',   titulo: 'Cabalgatas',            texto: 'Salidas a caballo por los campos y el filo de las sierras.' },
   { foto: 'barrancas',        titulo: 'Museo Rocsen y Nono',   texto: 'Ferias, museos y la vida de pueblo del Valle de Traslasierra.' }
 ];
+
+/* Las listas de acá abajo (FOTOS, AMBIENTES, FAQ, RESENAS, ACTIVIDADES) se
+   declaran después del `module.exports` de CONFIG, así que necesitan su
+   propia línea de exportación. Sólo la usan las funciones de api/; en el
+   navegador quedan como variables globales, igual que siempre. */
+if (typeof module !== 'undefined' && module.exports) {
+  Object.assign(module.exports, { FOTOS, AMBIENTES, FAQ, RESENAS, ACTIVIDADES });
+}

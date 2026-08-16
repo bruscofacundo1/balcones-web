@@ -4,9 +4,15 @@
    Público: lo pide cada visitante antes de que la página pinte, para tener
    los precios y textos actualizados sin esperar un deploy.
 
-   Devuelve SÓLO los campos que se cambiaron desde el panel (el resto sale de
-   config.js, que ya viajó con la página). Nada de esto es secreto: son los
-   mismos precios y textos que se ven en pantalla.
+   Devuelve dos cosas:
+     `contenido` — sólo los campos que se cambiaron desde el panel (el resto
+                   sale de config.js, que ya viajó con la página)
+     `fotos`     — la galería, si alguien la editó; [] si sigue siendo la de
+                   config.js
+
+   Van juntas a propósito: es un pedido solo en vez de dos, y las dos cosas
+   se necesitan en el mismo momento (antes de pintar). Nada de esto es
+   secreto: son los mismos precios, textos y fotos que se ven en pantalla.
 
    Va cacheado en el borde de Vercel: `s-maxage=60` hace que la mayoría de las
    visitas ni toquen la base, y `stale-while-revalidate` permite servir la
@@ -17,6 +23,7 @@
    ============================================================================ */
 
 const { obtenerOverrides } = require('../lib/contenido.js');
+const { listarFotos } = require('../lib/fotos.js');
 
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
@@ -24,6 +31,7 @@ module.exports = async (req, res) => {
     return;
   }
   try {
+    const [contenido, fotos] = await Promise.all([obtenerOverrides(), listarFotos()]);
     // `max-age=0, must-revalidate` es para el navegador del visitante: que
     // pregunte siempre (le sale un 304 barato) en vez de quedarse con una
     // copia vieja por un rato indeterminado. Sin esto, al no haber max-age,
@@ -32,10 +40,10 @@ module.exports = async (req, res) => {
     // `s-maxage` sí es para el borde de Vercel, que es quien absorbe el
     // tráfico y evita que cada visita golpee la base.
     res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate, s-maxage=60, stale-while-revalidate=600');
-    res.status(200).json({ contenido: await obtenerOverrides() });
+    res.status(200).json({ contenido, fotos });
   } catch (err) {
     console.error('contenido:', err);
     // Nunca un error: el sitio tiene que poder seguir con lo de config.js.
-    res.status(200).json({ contenido: {} });
+    res.status(200).json({ contenido: {}, fotos: [] });
   }
 };

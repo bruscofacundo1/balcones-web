@@ -194,10 +194,33 @@
       const r = await fetch('/api/contenido', { signal: control.signal });
       clearTimeout(reloj);
       if (!r.ok) return null;
-      return (await r.json()).contenido || {};
+      const datos = await r.json();
+      return { contenido: datos.contenido || {}, fotos: datos.fotos || [] };
     } catch (e) {
       return null;   // sin conexión, tardó demasiado o no hay base
     }
+  }
+
+  /* ---------------------------------------------------------- la galería -- */
+
+  // Igual que con el resto del contenido, hay que poder VOLVER: si se vacía
+  // la galería en el panel, el sitio tiene que mostrar de nuevo la de
+  // config.js, no quedarse con la última lista que llegó a tener.
+  let fotosOriginales = null;
+
+  /**
+   * Reemplaza la galería por la editada desde el panel. Una lista vacía
+   * significa "nadie la tocó": ahí vuelve la de config.js.
+   *
+   * Muta el array en lugar de reasignarlo porque `FOTOS` es un `const` de
+   * config.js y hay funciones que ya se quedaron con la referencia.
+   */
+  function aplicarFotos(lista) {
+    if (typeof FOTOS === 'undefined') return;
+    if (!fotosOriginales) fotosOriginales = FOTOS.slice();
+    const nuevas = (lista && lista.length) ? lista : fotosOriginales;
+    FOTOS.length = 0;
+    for (const foto of nuevas) FOTOS.push(foto);
   }
 
   /**
@@ -221,7 +244,10 @@
   async function preparar(config, opciones) {
     const { repintar, esperar } = opciones || {};
     const cache = leerCache();
-    if (cache) aplicar(config, cache);
+    if (cache) {
+      aplicar(config, cache.contenido || cache);
+      aplicarFotos(cache.fotos);
+    }
 
     const pedido = traer(ESPERA_MAX).then(fresco => {
       if (fresco) guardarCache(fresco);
@@ -231,7 +257,8 @@
     const usarLoQueLlegue = fresco => {
       if (!fresco) return;
       if (cache && JSON.stringify(fresco) === JSON.stringify(cache)) return;
-      aplicar(config, fresco);
+      aplicar(config, fresco.contenido);
+      aplicarFotos(fresco.fotos);
       if (typeof repintar === 'function') repintar();
     };
 
@@ -260,8 +287,8 @@
   }
 
   const Contenido = {
-    catalogo, leerCamino, escribirCamino, validar, aplicar, preparar,
-    leerCache, guardarCache, CLAVE_CACHE
+    catalogo, leerCamino, escribirCamino, validar, aplicar, aplicarFotos,
+    preparar, leerCache, guardarCache, CLAVE_CACHE
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = Contenido;

@@ -22,10 +22,11 @@ Y entrar a `http://localhost:5173`.
 | Quiero cambiar… | Archivo |
 |---|---|
 | Precios, textos del inicio, contacto, seña, horarios | El panel: `/admin` → "Precios y textos" |
-| Preguntas frecuentes, comodidades, actividades, galería | `js/config.js` |
-| Los valores de arranque de todo lo editable | `js/config.js` (el panel los pisa) |
+| La galería (agregar, sacar, reordenar, epígrafes) | El panel: `/admin` → "Fotos" |
 | Qué fechas están ocupadas | El panel: `/admin` (ya no se edita `js/disponibilidad.js`) |
-| Fotos | `img/` |
+| Preguntas frecuentes, comodidades, actividades, ambientes | `js/config.js` |
+| Los valores de arranque de todo lo editable | `js/config.js` (el panel los pisa) |
+| Las fotos que vienen con el sitio | `img/` y `img/thumb/` |
 | Estilos | `css/estilos.css` |
 
 Todo lo marcado con `<< REVISAR >>` en `js/config.js` tiene datos de ejemplo y
@@ -62,6 +63,10 @@ online:
      y al azar, y guardala en un gestor de contraseñas: con esa clave se
      cancelan reservas y se ven los datos de los huéspedes. Cambiarla cierra
      todas las sesiones abiertas.
+   - `BLOB_READ_WRITE_TOKEN` — **no se carga a mano**. Se crea el store desde
+     *Storage → Create Database → Blob* y Vercel inyecta la variable solo. Es
+     lo que permite subir fotos nuevas desde el panel; sin esto el resto de la
+     galería (reordenar, epígrafes, sacar) igual funciona.
    - `MP_ACCESS_TOKEN` — el Access Token de
      [mercadopago.com.ar/developers/panel](https://www.mercadopago.com.ar/developers/panel)
      (empezá con el de prueba, `TEST-...`). Sólo hace falta si van a prender

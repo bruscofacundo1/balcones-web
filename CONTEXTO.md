@@ -962,11 +962,6 @@ verdad, `ocupadas` es un índice que además sirve de candado.
 Todo funciona en el celular (la hoja de detalle se ancla abajo, el calendario
 pasa a una columna, las celdas quedan de ~41px).
 
-### Lo que todavía NO hace
-
-Editar fotos. Quedan para el final porque necesitan almacenamiento aparte (el
-servidor no puede escribir en `img/`) y cambian dos veces por año.
-
 ---
 
 ## 6.d Precios y textos editables (16/08/2026)
@@ -1050,6 +1045,72 @@ el navegador pregunta siempre (le sale un 304 barato) y el borde de Vercel
 absorbe el tráfico. Sin el `max-age=0` explícito los navegadores aplican un
 plazo propio y un cambio de precio podría tardar en llegarle a quien ya
 visitó el sitio.
+
+Ese mismo endpoint devuelve también la galería (`fotos`), en el mismo pedido:
+las dos cosas se necesitan en el mismo momento —antes de pintar— y no tiene
+sentido pagar dos viajes.
+
+---
+
+## 6.e La galería editable (16/08/2026)
+
+Las 56 fotos de siempre viven en `img/` y están listadas en `FOTOS`
+(config.js). **Mientras la tabla `fotos` esté vacía, la galería es exactamente
+esa**: no cambia nada.
+
+### Importar en vez de reemplazar
+
+Desde el panel hay que "pasar la galería al panel" una vez. Eso copia cada
+foto de config.js a una fila que **apunta al mismo archivo de `img/`** — no se
+mueve ni se duplica nada. A partir de ahí manda la base: se puede sumar,
+sacar, reordenar y cambiar epígrafes. Vaciar la tabla vuelve todo a config.js.
+
+Se hizo así en vez de que la base pise a config.js desde el arranque porque el
+paso explícito deja claro qué manda en cada momento, y porque "volver a la
+galería original" tiene que ser un botón, no una restauración desde un backup.
+
+### Dónde van las fotos nuevas
+
+En **Vercel Blob**, no en `img/`: el servidor no puede escribir en su propio
+código. Requiere crear un Blob store en el proyecto (Storage → Create Database
+→ Blob), lo que inyecta `BLOB_READ_WRITE_TOKEN` solo. Si falta, el panel lo
+dice con esa instrucción exacta y **deja igual reordenar, editar y sacar** —
+sólo se bloquea subir.
+
+Se eligió Blob antes que guardar las imágenes en Postgres: son binarios
+grandes, inflan los backups y Neon sirve para datos, no para archivos. Y antes
+que commitearlas a GitHub, por lo mismo del token (ver §6.d).
+
+### El navegador achica antes de subir
+
+`achicarFoto()` en admin.html reduce a 1800px (grande) y 760px (miniatura) con
+un canvas, y sube JPEG. Probado con una foto de 4032×3024: sale 1800×1350 y
+760×570 en ~250 ms.
+
+Sin esto: Naty sube desde el celular, donde una foto pesa 8 MB, no entraría en
+el límite de 4,5 MB que tiene el cuerpo de un pedido en Vercel, y el sitio
+terminaría sirviéndole imágenes de 4000px a cada visitante.
+
+`createImageBitmap(archivo, { imageOrientation: 'from-image' })` respeta la
+rotación que guarda la cámara. Sin esa opción, las fotos sacadas de costado se
+suben acostadas.
+
+La imagen viaja como data URL dentro del JSON. Es 33% más pesado que mandar
+los bytes crudos, pero ya viene reducida y así no hay que parsear multipart.
+
+### `IMG()` y `THUMB()` ahora aceptan dos cosas
+
+El nombre corto de una foto de `img/` (como siempre) **o el objeto entero** de
+la galería, que si se subió trae sus propias urls. Así ni el mosaico, ni la
+grilla, ni el visor, ni el overlay tuvieron que enterarse de dónde salió cada
+foto.
+
+### El repintado tiene que incluir la galería
+
+`pintarDesdeConfig()` en app.js incluye `pintarGaleria`, `aplicarVarianteGaleria`
+y `pintarTodasLasFotos` — respetando el filtro y la variante activos. **Esto se
+descubrió probando:** al principio sólo repintaba textos, así que `FOTOS` se
+actualizaba pero la grilla seguía mostrando el orden viejo hasta recargar.
 
 ---
 

@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232b2621'/><path d='M20 58 L50 32 L80 58 v22 H20z' fill='%23d89a4a'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/estilos.css?v=36">
+<link rel="stylesheet" href="css/estilos.css?v=37">
 <style>
   body { background: var(--arena); }
 
@@ -220,6 +220,49 @@
     font-family: var(--texto); font-size: .74rem; text-decoration: underline; padding: 0; margin-left: auto;
   }
 
+  /* ---------------------------------------------------------------- fotos -- */
+  .fotos-barra {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px;
+  }
+  .fotos-barra .crece { flex: 1 1 auto; }
+
+  .fotos-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;
+  }
+  .foto-tarjeta {
+    background: var(--crema); border: 1px solid var(--borde);
+    border-radius: var(--radio); overflow: hidden; display: flex; flex-direction: column;
+  }
+  .foto-tarjeta img {
+    width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: var(--arena-osc);
+  }
+  .foto-tarjeta__cuerpo { padding: 12px; display: grid; gap: 8px; }
+  .foto-tarjeta input, .foto-tarjeta select {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--borde);
+    border-radius: var(--radio-sm); font-family: var(--texto); font-size: .82rem;
+    background: #fff; color: var(--carbon);
+  }
+  .foto-tarjeta__pie { display: flex; gap: 6px; align-items: center; }
+  .foto-tarjeta__pie button {
+    border: 1px solid var(--borde); background: var(--crema); border-radius: var(--radio-sm);
+    padding: 6px 10px; font-size: .78rem; font-family: var(--texto); cursor: pointer;
+    color: var(--carbon-suave); line-height: 1;
+  }
+  .foto-tarjeta__pie button:hover { border-color: var(--ocre); color: var(--terracota); }
+  .foto-tarjeta__pie .peligro:hover { border-color: #b23b3b; color: #b23b3b; }
+  .foto-tarjeta__pie .crece { flex: 1 1 auto; }
+  .foto-tarjeta__orden { font-size: .74rem; color: var(--piedra); }
+  .foto-tarjeta--subiendo { opacity: .5; }
+
+  .caja-aviso {
+    background: var(--crema); border: 1px solid var(--borde); border-radius: var(--radio);
+    padding: 24px 26px; margin-bottom: 20px; max-width: 60ch;
+  }
+  .caja-aviso h3 { font-family: var(--display); font-size: 1.1rem; margin: 0 0 10px; color: var(--carbon); }
+  .caja-aviso p { font-size: .9rem; color: var(--carbon-suave); margin: 0 0 14px; line-height: 1.6; }
+
+  .progreso { font-size: .86rem; color: var(--piedra); margin: 12px 0 0; }
+
   /* La barra de guardar es fija abajo: sin este colchón, en el celular queda
      tapando el último campo del formulario justo cuando hay algo sin guardar. */
   #vista-contenido { padding-bottom: 150px; }
@@ -277,6 +320,7 @@
         <button role="tab" aria-selected="true" data-vista="calendario">Calendario</button>
         <button role="tab" aria-selected="false" data-vista="lista">Reservas</button>
         <button role="tab" aria-selected="false" data-vista="contenido">Precios y textos</button>
+        <button role="tab" aria-selected="false" data-vista="fotos">Fotos</button>
       </div>
       <span class="crece"></span>
       <button class="boton boton--primario" id="btn-nueva" type="button" style="padding:10px 18px;font-size:.86rem">+ Nueva reserva</button>
@@ -320,6 +364,11 @@
       </p>
       <div id="contenido-campos"><p class="vacio">Cargando…</p></div>
     </section>
+
+    <!-- ------------------------------------------------------------ fotos -->
+    <section id="vista-fotos" hidden>
+      <div id="fotos-cuerpo"><p class="vacio">Cargando…</p></div>
+    </section>
   </main>
 
   <!-- barra que aparece sola cuando hay cambios sin guardar -->
@@ -342,9 +391,9 @@
   </div>
 </div>
 
-<script src="js/config.js?v=36"></script>
-<script src="js/contenido.js?v=36"></script>
-<script src="js/precios.js?v=36"></script>
+<script src="js/config.js?v=37"></script>
+<script src="js/contenido.js?v=37"></script>
+<script src="js/precios.js?v=37"></script>
 <script>
 /* ============================================================================
    Panel de administración
@@ -618,16 +667,19 @@ function cambiarFiltro(filtro) {
 }
 
 function cambiarVista(vista) {
+  const esReservas = vista === 'calendario' || vista === 'lista';
   $('vista-calendario').hidden = vista !== 'calendario';
   $('vista-lista').hidden = vista !== 'lista';
   $('vista-contenido').hidden = vista !== 'contenido';
-  // Los botones de reserva no tienen sentido mientras se editan precios.
-  $('btn-nueva').hidden = vista === 'contenido';
-  $('btn-bloquear').hidden = vista === 'contenido';
+  $('vista-fotos').hidden = vista !== 'fotos';
+  // Los botones de reserva no tienen sentido fuera de las vistas de reservas.
+  $('btn-nueva').hidden = !esReservas;
+  $('btn-bloquear').hidden = !esReservas;
   for (const b of document.querySelectorAll('[data-vista]')) {
     b.setAttribute('aria-selected', String(b.dataset.vista === vista));
   }
   if (vista === 'contenido' && !contenido.campos) cargarContenido();
+  if (vista === 'fotos' && !galeria.cargada) cargarFotos();
 }
 
 document.querySelector('.tabs').addEventListener('click', e => {
@@ -1107,6 +1159,274 @@ $('btn-guardar').addEventListener('click', async () => {
 window.addEventListener('beforeunload', e => {
   if (Object.keys(contenido.pendientes).length) e.preventDefault();
 });
+
+/* ---------------------------------------------------------------- fotos -- */
+
+const galeria = { cargada: false, fotos: [], importada: false, puedeSubir: false, categorias: [], enConfig: 0 };
+
+const NOMBRE_CATEGORIA = {
+  'casa': 'La casa', 'interiores': 'Interiores',
+  'aire-libre': 'Al aire libre', 'entorno': 'El entorno'
+};
+
+/** Lado mayor de la foto grande y de la miniatura, en píxeles. */
+const LADO_GRANDE = 1800;
+const LADO_CHICA = 760;
+
+/**
+ * Achica la foto ANTES de subirla.
+ *
+ * Naty va a subir desde el celular, donde una foto pesa tranquilamente 8 MB
+ * y mide 4000px de lado: sin esto tardaría muchísimo, no entraría en el
+ * límite de 4,5 MB que tiene el cuerpo de un pedido en Vercel, y el sitio
+ * terminaría sirviendo imágenes enormes a los visitantes.
+ *
+ * `imageOrientation: 'from-image'` respeta la rotación que guarda la cámara;
+ * sin eso, las fotos sacadas de costado se suben acostadas.
+ */
+async function achicarFoto(archivo, ladoMax, calidad) {
+  const bitmap = await createImageBitmap(archivo, { imageOrientation: 'from-image' });
+  const escala = Math.min(1, ladoMax / Math.max(bitmap.width, bitmap.height));
+  const ancho = Math.round(bitmap.width * escala);
+  const alto = Math.round(bitmap.height * escala);
+
+  const lienzo = document.createElement('canvas');
+  lienzo.width = ancho;
+  lienzo.height = alto;
+  const ctx = lienzo.getContext('2d');
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(bitmap, 0, 0, ancho, alto);
+  bitmap.close();
+
+  return lienzo.toDataURL('image/jpeg', calidad);
+}
+
+async function cargarFotos() {
+  try {
+    const datos = await api('/api/admin/fotos');
+    Object.assign(galeria, datos, { cargada: true });
+    pintarFotos();
+  } catch (err) {
+    if (err.message === 'sesion') return;
+    $('fotos-cuerpo').innerHTML = `<p class="vacio">${escapar(err.message)}</p>`;
+  }
+}
+
+function pintarFotos() {
+  const cuerpo = $('fotos-cuerpo');
+
+  // Mientras nadie importó nada, la galería es la que vino con el sitio y no
+  // hay nada que editar. Importar la copia a la base apuntando a los mismos
+  // archivos de img/, sin mover ni duplicar ninguna foto.
+  if (!galeria.importada) {
+    cuerpo.innerHTML = `
+      <div class="caja-aviso">
+        <h3>La galería es la que vino con el sitio</h3>
+        <p>Hoy se muestran las <strong>${galeria.enConfig} fotos</strong> originales.
+          Para poder agregar, sacar o reordenar, primero hay que pasarlas al panel.
+          Las fotos no se mueven ni se duplican: quedan donde están y el panel
+          simplemente empieza a mandar sobre ellas.</p>
+        <p>Si más adelante te arrepentís, hay un botón para volver a la galería
+          original tal cual está hoy.</p>
+        <button class="boton boton--primario" id="btn-importar" type="button">Pasar la galería al panel</button>
+        <p class="progreso" id="fotos-progreso"></p>
+      </div>`;
+    $('btn-importar').addEventListener('click', importarGaleria);
+    return;
+  }
+
+  const opciones = cat => galeria.categorias.map(c =>
+    `<option value="${c}" ${c === cat ? 'selected' : ''}>${NOMBRE_CATEGORIA[c] || c}</option>`).join('');
+
+  cuerpo.innerHTML = `
+    <div class="fotos-barra">
+      <button class="boton boton--primario" id="btn-subir" type="button"
+        ${galeria.puedeSubir ? '' : 'disabled'}>Subir fotos</button>
+      <input type="file" id="archivo-fotos" accept="image/*" multiple hidden>
+      <span class="crece"></span>
+      <span style="font-size:.85rem;color:var(--piedra)">${galeria.fotos.length} fotos</span>
+      <button class="boton boton--linea" id="btn-restaurar-fotos" type="button">Volver a la galería original</button>
+    </div>
+
+    ${galeria.puedeSubir ? '' : `
+      <div class="aviso-caja aviso-caja--mal">
+        <strong>Todavía no se pueden subir fotos.</strong>
+        Falta conectar el almacenamiento: en Vercel, <em>Storage → Create Database → Blob</em>,
+        y después volvé a desplegar el sitio. Mientras tanto sí podés reordenar,
+        cambiar epígrafes y sacar fotos.
+      </div>`}
+
+    <p class="progreso" id="fotos-progreso"></p>
+
+    <div class="fotos-grid" id="fotos-grid">
+      ${galeria.fotos.map((foto, i) => `
+        <div class="foto-tarjeta" data-id="${foto.id}">
+          <img src="${escapar(miniaturaDe(foto))}" alt="" loading="lazy">
+          <div class="foto-tarjeta__cuerpo">
+            <input type="text" value="${escapar(foto.t)}" data-titulo="${foto.id}"
+              placeholder="Epígrafe" maxlength="120">
+            <select data-categoria="${foto.id}">${opciones(foto.c)}</select>
+            <div class="foto-tarjeta__pie">
+              <button type="button" data-mover="${foto.id}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Subir">&#8593;</button>
+              <button type="button" data-mover="${foto.id}" data-dir="1" ${i === galeria.fotos.length - 1 ? 'disabled' : ''} aria-label="Bajar">&#8595;</button>
+              <span class="foto-tarjeta__orden">${i + 1}</span>
+              <span class="crece"></span>
+              <button type="button" class="peligro" data-borrar="${foto.id}">Sacar</button>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+
+  $('btn-subir').addEventListener('click', () => $('archivo-fotos').click());
+  $('archivo-fotos').addEventListener('change', subirElegidas);
+  $('btn-restaurar-fotos').addEventListener('click', restaurarGaleria);
+}
+
+/** La miniatura para mostrar en el panel: la subida, o la del repo. */
+function miniaturaDe(foto) {
+  if (foto.thumb) return foto.thumb;
+  if (foto.url) return foto.url;
+  return `img/thumb/${foto.f}.jpg`;
+}
+
+function avisoFotos(texto) {
+  const p = $('fotos-progreso');
+  if (p) p.textContent = texto || '';
+}
+
+async function importarGaleria() {
+  const boton = $('btn-importar');
+  boton.disabled = true;
+  avisoFotos('Pasando la galería…');
+  try {
+    const r = await api('/api/admin/fotos', { method: 'POST', body: JSON.stringify({ accion: 'importar' }) });
+    if (!r.ok) throw new Error(r.error || 'No se pudo importar.');
+    galeria.cargada = false;
+    await cargarFotos();
+  } catch (err) {
+    if (err.message === 'sesion') return;
+    avisoFotos(err.message);
+    boton.disabled = false;
+  }
+}
+
+async function subirElegidas(e) {
+  const archivos = [...e.target.files];
+  e.target.value = '';
+  if (!archivos.length) return;
+
+  let hechas = 0;
+  for (const archivo of archivos) {
+    avisoFotos(`Subiendo ${hechas + 1} de ${archivos.length}…`);
+    try {
+      // El nombre del archivo sirve de epígrafe provisorio: es más útil que
+      // dejarlo vacío, y se corrige ahí mismo en la tarjeta.
+      const titulo = archivo.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').slice(0, 120);
+      const [imagen, miniatura] = await Promise.all([
+        achicarFoto(archivo, LADO_GRANDE, 0.82),
+        achicarFoto(archivo, LADO_CHICA, 0.78)
+      ]);
+      await api('/api/admin/fotos', {
+        method: 'POST',
+        body: JSON.stringify({ accion: 'subir', imagen, miniatura, titulo, categoria: 'casa' })
+      });
+      hechas++;
+    } catch (err) {
+      if (err.message === 'sesion') return;
+      avisoFotos(`Falló "${archivo.name}": ${err.message}`);
+      break;
+    }
+  }
+
+  if (hechas) {
+    galeria.cargada = false;
+    await cargarFotos();
+    avisoFotos(`${hechas} ${hechas === 1 ? 'foto subida' : 'fotos subidas'}. Revisá el epígrafe y la categoría de cada una.`);
+  }
+}
+
+// Un solo listener para toda la grilla: se repinta seguido y así no hay que
+// volver a enganchar los botones de cada tarjeta cada vez.
+$('fotos-cuerpo').addEventListener('click', async e => {
+  const mover = e.target.closest('[data-mover]');
+  if (mover) { await moverFoto(mover.dataset.mover, Number(mover.dataset.dir)); return; }
+
+  const borrar = e.target.closest('[data-borrar]');
+  if (borrar) {
+    const foto = galeria.fotos.find(f => f.id === borrar.dataset.borrar);
+    if (!confirm(`¿Sacar "${foto ? foto.t : 'esta foto'}" de la galería?`)) return;
+    avisoFotos('Sacando…');
+    try {
+      await api('/api/admin/fotos', { method: 'POST', body: JSON.stringify({ accion: 'borrar', id: borrar.dataset.borrar }) });
+      galeria.cargada = false;
+      await cargarFotos();
+      avisoFotos('Foto sacada.');
+    } catch (err) {
+      if (err.message !== 'sesion') avisoFotos(err.message);
+    }
+  }
+});
+
+// El epígrafe y la categoría se guardan al salir del campo, no en cada tecla.
+$('fotos-cuerpo').addEventListener('change', async e => {
+  const titulo = e.target.closest('[data-titulo]');
+  const categoria = e.target.closest('[data-categoria]');
+  const campo = titulo || categoria;
+  if (!campo) return;
+
+  const id = campo.dataset.titulo || campo.dataset.categoria;
+  const tarjeta = campo.closest('.foto-tarjeta');
+  const cuerpo = { accion: 'editar', id };
+  cuerpo.titulo = tarjeta.querySelector('[data-titulo]').value;
+  cuerpo.categoria = tarjeta.querySelector('[data-categoria]').value;
+
+  try {
+    await api('/api/admin/fotos', { method: 'POST', body: JSON.stringify(cuerpo) });
+    const foto = galeria.fotos.find(f => f.id === id);
+    if (foto) { foto.t = cuerpo.titulo; foto.c = cuerpo.categoria; }
+    avisoFotos('Guardado.');
+  } catch (err) {
+    if (err.message !== 'sesion') avisoFotos(err.message);
+  }
+});
+
+async function moverFoto(id, dir) {
+  const i = galeria.fotos.findIndex(f => f.id === id);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= galeria.fotos.length) return;
+
+  // Se mueve primero en pantalla y después se avisa al servidor: mover una
+  // foto tiene que sentirse instantáneo aunque la base tarde.
+  const copia = galeria.fotos.slice();
+  copia[i] = galeria.fotos[j];
+  copia[j] = galeria.fotos[i];
+  galeria.fotos = copia;
+  pintarFotos();
+
+  try {
+    await api('/api/admin/fotos', {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'ordenar', ids: copia.map(f => f.id) })
+    });
+  } catch (err) {
+    if (err.message !== 'sesion') { avisoFotos('No se pudo guardar el orden: ' + err.message); }
+  }
+}
+
+async function restaurarGaleria() {
+  if (!confirm(
+    'Esto vuelve la galería a las fotos originales del sitio.\n\n' +
+    'Las fotos que hayas subido se borran y no se pueden recuperar. ¿Seguir?'
+  )) return;
+  avisoFotos('Restaurando…');
+  try {
+    await api('/api/admin/fotos', { method: 'POST', body: JSON.stringify({ accion: 'restaurar' }) });
+    galeria.cargada = false;
+    await cargarFotos();
+  } catch (err) {
+    if (err.message !== 'sesion') avisoFotos(err.message);
+  }
+}
 
 /* -------------------------------------------------------------- arranque -- */
 

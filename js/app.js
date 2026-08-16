@@ -3,8 +3,18 @@
    Depende de: config.js, calendario.js
    ============================================================================ */
 
-const IMG = f => `img/${f}.jpg`;
-const THUMB = f => `img/thumb/${f}.jpg`;
+/* Aceptan dos cosas: el nombre corto de una foto que vive en img/ (como
+   siempre), o el objeto entero de la galería — que, si la foto se subió desde
+   el panel, trae sus propias urls en vez de un nombre. Así el resto del
+   código no tiene que saber de dónde salió cada foto. */
+function IMG(foto) {
+  if (foto && typeof foto === 'object') return foto.url || IMG(foto.f);
+  return /^https?:/.test(foto) ? foto : `img/${foto}.jpg`;
+}
+function THUMB(foto) {
+  if (foto && typeof foto === 'object') return foto.thumb || foto.url || THUMB(foto.f);
+  return /^https?:/.test(foto) ? foto : `img/thumb/${foto}.jpg`;
+}
 
 /* -------------------------------------------------------------- navegación */
 function iniciarNav() {
@@ -356,7 +366,7 @@ function pintarGaleria(categoria = 'todas') {
 
   document.getElementById('galeria-grid').innerHTML = fotosVisibles.map((foto, i) => `
     <figure class="galeria__item" data-i="${i}">
-      <img src="${THUMB(foto.f)}" alt="${foto.t}" loading="lazy">
+      <img src="${THUMB(foto)}" alt="${foto.t}" loading="lazy">
       <figcaption>${foto.t}</figcaption>
     </figure>`).join('');
 
@@ -407,7 +417,7 @@ function pintarMosaico() {
 
   cont.innerHTML = destacadas.map((foto, i) => `
     <figure class="mosaico__item ${claseRevelado}" data-i="${i}">
-      <img src="${THUMB(foto.f)}" alt="${foto.t}" loading="lazy">
+      <img src="${THUMB(foto)}" alt="${foto.t}" loading="lazy">
       ${i === destacadas.length - 1 && restantes > 0
         ? `<figcaption class="mosaico__mas">+${restantes} fotos</figcaption>` : ''}
     </figure>`).join('');
@@ -436,7 +446,7 @@ function pintarTodasLasFotos(categoria = 'todas') {
 
   document.getElementById('tf-grilla').innerHTML = lista.map((foto, i) => `
     <figure class="tf__item" data-i="${i}">
-      <img src="${THUMB(foto.f)}" alt="${foto.t}" loading="lazy">
+      <img src="${THUMB(foto)}" alt="${foto.t}" loading="lazy">
       <figcaption class="tf__pie">${foto.t}</figcaption>
     </figure>`).join('');
 
@@ -536,7 +546,7 @@ function abrirLightbox(fotos, indice) {
 
 function pintarLightbox() {
   const foto = lbFotos[lbIndice];
-  document.getElementById('lb-img').src = IMG(foto.f);
+  document.getElementById('lb-img').src = IMG(foto);
   document.getElementById('lb-img').alt = foto.t;
   document.getElementById('lb-pie').textContent =
     lbFotos.length > 1 ? `${lbIndice + 1} / ${lbFotos.length}  ·  ${foto.t}` : foto.t;
@@ -560,7 +570,7 @@ function pintarTiraLightbox() {
     tira.dataset.primera = lbFotos[0].f;
     tira.innerHTML = lbFotos.map((f, i) =>
       `<button class="lightbox__mini" data-i="${i}" aria-label="${f.t}">
-         <img src="${THUMB(f.f)}" alt="" loading="lazy">
+         <img src="${THUMB(f)}" alt="" loading="lazy">
        </button>`).join('');
     tira.querySelectorAll('.lightbox__mini').forEach(b => {
       b.addEventListener('click', e => {
@@ -764,9 +774,14 @@ function pintarContacto() {
 }
 
 /* ------------------------------------------------------------- arranque -- */
-/** Todo lo que sale de CONFIG. Se puede volver a llamar sin efectos raros:
-    hace falta si llegan precios o textos nuevos después de la primera pintura
-    (ver Contenido.preparar). */
+/** Todo lo que sale de CONFIG y de FOTOS. Se puede volver a llamar sin
+    efectos raros: hace falta si el contenido editado desde /admin llega
+    después de la primera pintura (ver Contenido.preparar).
+
+    La galería va incluida: si la editaron y sólo se repintaran los textos,
+    quedaría la lista vieja de fotos en pantalla aunque FOTOS ya tenga la
+    nueva. Se respeta el filtro y la variante que estén activos, para no
+    devolver al visitante a "todas" si estaba mirando una categoría. */
 function pintarDesdeConfig() {
   pintarTextosCasa();
   pintarCifras();
@@ -778,6 +793,11 @@ function pintarDesdeConfig() {
   pintarAlquiler();
   pintarPie({ cta: true, enInicio: true });
   pintarContacto();
+
+  const filtroActivo = document.querySelector('#filtros .tab[aria-selected="true"]');
+  pintarGaleria(filtroActivo ? filtroActivo.dataset.cat : 'todas');
+  aplicarVarianteGaleria();
+  if (typeof tfCategoria !== 'undefined') pintarTodasLasFotos(tfCategoria);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

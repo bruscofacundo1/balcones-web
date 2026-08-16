@@ -124,6 +124,31 @@ tu propio celular y todavía ves lo anterior, esperá un momento y recargá.
 > las reservas nuevas de inmediato. Las que ya estaban cargadas conservan el
 > precio con el que se hicieron.
 
+### Cambiar las fotos
+
+En la pestaña **Fotos**. La primera vez vas a ver un cartel explicando que la
+galería es la que vino con el sitio: apretá **"Pasar la galería al panel"**.
+Eso no mueve ni borra ninguna foto, sólo hace que a partir de ahí las puedas
+editar desde acá.
+
+Después podés:
+
+- **Subir fotos nuevas** — podés elegir varias de una. Se achican solas antes
+  de subirse, así que no importa que vengan pesadas del celular.
+- **Cambiar el epígrafe** (el texto que aparece debajo) y la **categoría**
+  (La casa, Interiores, Al aire libre, El entorno). Se guarda solo al salir
+  del campo.
+- **Reordenar** con las flechitas. El orden es el que se ve en el sitio.
+- **Sacar** una foto de la galería.
+
+Arriba de todo hay **"Volver a la galería original"**, que deja las fotos
+exactamente como venían. Ojo: eso borra las que hayas subido y no se pueden
+recuperar.
+
+> Si el botón de subir aparece apagado, es porque falta conectar el
+> almacenamiento de fotos. El mismo cartel te dice qué hacer; es un paso que
+> hace una sola vez quien administra el sitio.
+
 ### La contraseña
 
 La configura quien administra el sitio (variable `ADMIN_PASSWORD` en Vercel).

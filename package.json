@@ -4,6 +4,7 @@
   "description": "Sitio de Balcones del Arroyo. No hay build: es HTML/CSS/JS plano. Este package.json existe sólo para las funciones serverless de api/ (Vercel las detecta y les instala estas dependencias).",
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
+    "@vercel/blob": "^2.8.0",
     "mercadopago": "^3.4.0"
   }
 }
