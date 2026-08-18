@@ -75,8 +75,33 @@
   function listaViva(nombre) {
     if (nombre === 'FAQ') return typeof FAQ !== 'undefined' ? FAQ : null;
     if (nombre === 'RESENAS') return typeof RESENAS !== 'undefined' ? RESENAS : null;
+    return null;   // los rangos de temporada sí viven adentro de CONFIG
+  }
+
+  /* --------------------------------------------- revisores por ficha -- */
+
+  /**
+   * Comprobaciones que cruzan **dos sub-campos de la misma ficha**, y que por
+   * eso no entran en la validación campo por campo.
+   *
+   * Se nombran con un string en el esquema (`revisarItem: 'rango'`) y no con
+   * la función directamente porque el catálogo viaja al panel como JSON, y una
+   * función no sobrevive a `JSON.stringify`.
+   */
+  function revisarRango(item) {
+    const conAnio = s => /^\d{4}-/.test(String(s || ''));
+    if (conAnio(item.desde) !== conAnio(item.hasta)) {
+      return 'las dos fechas tienen que ser del mismo tipo: o las dos con año (sólo ese año), o las dos sin año (todos los años).';
+    }
+    // Sin año, que `hasta` sea menor que `desde` es válido: significa que el
+    // rango cruza el año (12-20 -> 02-29). Con año, es un error.
+    if (conAnio(item.desde) && item.desde > item.hasta) {
+      return 'la fecha de inicio quedó después de la de fin.';
+    }
     return null;
   }
+
+  const REVISORES = { rango: revisarRango };
 
   /* ------------------------------------------------------------ catálogo -- */
 
@@ -123,6 +148,28 @@
       campos[`temporadas.${t.id}.minNoches`] = {
         tipo: 'entero', min: 1, max: 30,
         etiqueta: 'Mínimo de noches', grupo: `Precios · ${t.nombre}`
+      };
+
+      // El texto que se muestra ("Enero, febrero, Semana Santa…"). Es aparte de
+      // los rangos y puede quedar desincronizado, así que conviene revisarlo
+      // cada vez que se tocan las fechas.
+      campos[`temporadas.${t.id}.periodo`] = {
+        tipo: 'texto', max: 160,
+        etiqueta: 'Cómo se describe en el sitio', grupo: `Fechas · ${t.nombre}`
+      };
+
+      // Cuándo rige cada temporada. Es una colección, pero a diferencia de FAQ
+      // y RESENAS ésta sí vive adentro de CONFIG.
+      campos[`temporadas.${t.id}.rangos`] = {
+        tipo: 'coleccion', etiqueta: `Cuándo rige ${t.nombre}`,
+        grupo: `Fechas · ${t.nombre}`,
+        singular: 'período', plural: 'períodos',
+        maxItems: 30, revisarItem: 'rango',
+        campos: {
+          nombre: { tipo: 'texto', max: 60, etiqueta: 'Nombre' },
+          desde:  { tipo: 'fecha', etiqueta: 'Desde' },
+          hasta:  { tipo: 'fecha', etiqueta: 'Hasta' }
+        }
       };
     }
 
@@ -209,6 +256,25 @@
       return { ok: true, valor: lista };
     }
 
+    if (campo.tipo === 'fecha') {
+      const s = String(valor === null || valor === undefined ? '' : valor).trim();
+      if (!/^(\d{4}-)?\d{2}-\d{2}$/.test(s)) {
+        return {
+          ok: false,
+          error: `${nombre}: va como MM-DD (se repite todos los años) o AAAA-MM-DD (sólo ese año).`
+        };
+      }
+      const mes = Number(s.slice(-5, -3));
+      const dia = Number(s.slice(-2));
+      // Se permite 02-29 a propósito: en los años bisiestos existe, y en los
+      // demás simplemente no coincide con ninguna noche.
+      const largo = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+      if (mes < 1 || mes > 12 || dia < 1 || dia > largo[mes - 1]) {
+        return { ok: false, error: `${nombre}: "${s}" no es una fecha real.` };
+      }
+      return { ok: true, valor: s };
+    }
+
     const texto = limpiarTexto(valor, campo.max);
     if (!texto && !campo.opcional) return { ok: false, error: `${nombre}: no puede quedar vacío.` };
     return { ok: true, valor: texto };
@@ -242,9 +308,68 @@
         if (!r.ok) return r;
         salida[clave] = r.valor;
       }
+
+      // Lo que cruza dos sub-campos de la misma ficha.
+      const revisor = REVISORES[campo.revisarItem];
+      if (revisor) {
+        const problema = revisor(salida);
+        if (problema) {
+          return { ok: false, error: `${campo.etiqueta}, ${campo.singular} ${i + 1}: ${problema}` };
+        }
+      }
+
       limpios.push(salida);
     }
     return { ok: true, valor: limpios };
+  }
+
+  /* ------------------------------------------------- cobertura del año -- */
+
+  /** Los 366 'MM-DD' de un año bisiesto: el 29/2 tiene que estar cubierto. */
+  function diasDelAnio() {
+    const largo = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const dias = [];
+    for (let m = 0; m < 12; m++) {
+      for (let d = 1; d <= largo[m]; d++) {
+        dias.push(String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0'));
+      }
+    }
+    return dias;
+  }
+
+  /**
+   * Revisa que los rangos que se repiten todos los años cubran el año
+   * **exactamente una vez**.
+   *
+   * Es la comprobación que no puede hacer la validación campo por campo, porque
+   * cruza las tres temporadas. Y es la que más importa de todo el catálogo: si
+   * una noche queda sin temporada se cobra al precio del fallback, y si queda
+   * en dos gana la que esté primero en el array — las dos formas de cobrar mal
+   * sin que nadie se entere.
+   *
+   * Los rangos con año no entran: son excepciones y se espera que pisen.
+   */
+  function revisarCobertura(config) {
+    const huecos = [];
+    const choques = [];
+
+    for (const md of diasDelAnio()) {
+      const cubren = [];
+      for (const t of (config.temporadas || [])) {
+        for (const r of (t.rangos || [])) {
+          if (/^\d{4}-/.test(String(r.desde || ''))) continue;
+          const cruza = r.hasta < r.desde;
+          const dentro = cruza
+            ? (md >= r.desde || md <= r.hasta)
+            : (md >= r.desde && md <= r.hasta);
+          if (dentro) cubren.push(r.nombre ? `${t.nombre} (${r.nombre})` : t.nombre);
+        }
+      }
+      if (!cubren.length) huecos.push(md);
+      else if (cubren.length > 1) choques.push({ dia: md, temporadas: cubren });
+    }
+
+    return { ok: !huecos.length && !choques.length, huecos, choques };
   }
 
   function validar(camino, valor, config) {
@@ -268,7 +393,10 @@
     const campo = catalogo(config)[camino];
     if (campo && campo.tipo === 'coleccion') {
       const viva = listaViva(camino);
-      return viva ? viva.map(x => Object.assign({}, x)) : undefined;
+      if (viva) return viva.map(x => Object.assign({}, x));
+      // Colecciones que sí viven adentro de CONFIG: los rangos de temporada.
+      const dentro = leerCamino(config, camino);
+      return Array.isArray(dentro) ? dentro.map(x => Object.assign({}, x)) : undefined;
     }
     return leerCamino(config, camino);
   }
@@ -278,13 +406,18 @@
     const campo = catalogo(config)[camino];
     if (campo && campo.tipo === 'coleccion') {
       const viva = listaViva(camino);
-      if (!viva || !Array.isArray(valor)) return false;
-      // Se muta el array en su lugar en vez de reasignarlo: es un `const` de
-      // config.js y hay funciones que ya se quedaron con la referencia. Igual
-      // que con FOTOS.
-      viva.length = 0;
-      for (const item of valor) viva.push(item);
-      return true;
+      if (viva) {
+        if (!Array.isArray(valor)) return false;
+        // Se muta el array en su lugar en vez de reasignarlo: es un `const` de
+        // config.js y hay funciones que ya se quedaron con la referencia. Igual
+        // que con FOTOS.
+        viva.length = 0;
+        for (const item of valor) viva.push(item);
+        return true;
+      }
+      // Los rangos viven adentro de CONFIG y nadie guarda la referencia al
+      // array (`temporadaDe` lo recorre fresco), así que se puede reemplazar.
+      return escribirCamino(config, camino, valor);
     }
     return escribirCamino(config, camino, valor);
   }
@@ -550,6 +683,7 @@
   const Contenido = {
     catalogo, leerCamino, escribirCamino, leerCampo, escribirCampo,
     validar, validarValor, aplicar, aplicarFotos, COLECCIONES,
+    revisarCobertura, revisarRango,
     preparar, leerCache, guardarCache, CLAVE_CACHE, fotosDestacadas,
     enPreview, leerPreview, guardarPreview, borrarPreview, PREVIEW_CLAVE
   };

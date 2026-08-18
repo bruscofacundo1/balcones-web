@@ -79,6 +79,32 @@ module.exports = async (req, res) => {
       return;
     }
 
+    // La cobertura del año cruza las tres temporadas, así que no se puede
+    // revisar campo por campo: hay que armar cómo quedaría CONFIG con todo
+    // aplicado. Una noche sin temporada se cobra al precio del fallback y una
+    // noche en dos temporadas cobra la que esté primera en el array — las dos
+    // formas de cobrar mal sin que nadie se entere.
+    if (Object.keys(limpios).some(c => c.endsWith('.rangos'))) {
+      const yaGuardados = await obtenerOverrides();
+      const futuro = Contenido.aplicar(
+        JSON.parse(JSON.stringify(CONFIG)),
+        Object.assign({}, yaGuardados, limpios)
+      );
+      const cobertura = Contenido.revisarCobertura(futuro);
+      if (!cobertura.ok) {
+        const partes = [];
+        if (cobertura.huecos.length) {
+          partes.push(`Quedan ${cobertura.huecos.length} día(s) sin temporada: ${cobertura.huecos.slice(0, 6).join(', ')}${cobertura.huecos.length > 6 ? '…' : ''}.`);
+        }
+        if (cobertura.choques.length) {
+          const c = cobertura.choques[0];
+          partes.push(`${cobertura.choques.length} día(s) caen en más de una temporada, por ejemplo el ${c.dia} (${c.temporadas.join(' y ')}).`);
+        }
+        res.status(400).json({ error: partes.join(' ') + ' No se guardó nada.' });
+        return;
+      }
+    }
+
     await guardarOverrides(limpios);
     res.status(200).json({ ok: true, guardados: Object.keys(limpios).length });
   } catch (err) {

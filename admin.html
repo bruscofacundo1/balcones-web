@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232b2621'/><path d='M20 58 L50 32 L80 58 v22 H20z' fill='%23d89a4a'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/estilos.css?v=40">
+<link rel="stylesheet" href="css/estilos.css?v=41">
 <style>
   body { background: var(--arena); }
 
@@ -314,6 +314,28 @@
   .col-pie { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
   .col-pie .crece { flex: 1 1 auto; }
   .col-cuenta { font-size: .82rem; color: var(--piedra); }
+
+  .grupo__sub {
+    font-family: var(--display); font-size: .95rem; color: var(--carbon);
+    margin: 22px 0 12px; padding-top: 16px; border-top: 1px solid var(--borde);
+  }
+
+  .ayuda-rangos {
+    font-size: .84rem; color: var(--carbon-suave); line-height: 1.6;
+    margin: 0 0 16px; max-width: 70ch;
+  }
+  .ayuda-rangos code {
+    background: var(--arena-osc); padding: 1px 5px; border-radius: 3px; font-size: .92em;
+  }
+
+  /* El aviso de cobertura del año. Va arriba de todo en la pestaña Fechas:
+     enterarse recién al publicar de que quedó un día sin temporada sería tarde. */
+  .cobertura {
+    border-radius: var(--radio-sm); padding: 13px 16px; margin: 0 0 18px;
+    font-size: .88rem; line-height: 1.55; border: 1px solid; border-left-width: 4px;
+  }
+  .cobertura--bien { background: #eef4ea; border-color: var(--oliva); color: var(--carbon-suave); }
+  .cobertura--mal  { background: #fbeceb; border-color: #b23b3b; color: var(--carbon); }
   @media (max-width: 520px) {
     .item-col__cab button { min-height: 38px; padding: 5px 12px; }
   }
@@ -514,6 +536,7 @@
       </div>
       <div class="tabs sub-tabs" id="sub-tabs" role="tablist">
         <button role="tab" aria-selected="true" data-sub="precios">Precios</button>
+        <button role="tab" aria-selected="false" data-sub="fechas">Fechas</button>
         <button role="tab" aria-selected="false" data-sub="textos">Textos</button>
         <button role="tab" aria-selected="false" data-sub="datos">Datos</button>
       </div>
@@ -546,9 +569,9 @@
   </div>
 </div>
 
-<script src="js/config.js?v=40"></script>
-<script src="js/contenido.js?v=40"></script>
-<script src="js/precios.js?v=40"></script>
+<script src="js/config.js?v=41"></script>
+<script src="js/contenido.js?v=41"></script>
+<script src="js/precios.js?v=41"></script>
 <script>
 /* ============================================================================
    Panel de administración
@@ -1174,6 +1197,9 @@ const contenido = { campos: null, valores: {}, guardados: {}, pendientes: {}, su
  * del grupo: el grupo es texto para mostrar y podría cambiar, el camino no.
  */
 function seccionDe(camino) {
+  // Cuándo rige cada temporada va aparte de cuánto sale: son dos preguntas
+  // distintas, y juntas hacían una pestaña larguísima.
+  if (/^temporadas\..+\.(rangos|periodo)$/.test(camino)) return 'fechas';
   if (camino.startsWith('temporadas.')) return 'precios';
   const campo = contenido.campos[camino];
   if (!campo) return 'datos';
@@ -1217,10 +1243,47 @@ async function cargarContenido() {
 }
 
 function pintarContenido() {
-  $('contenido-campos').innerHTML = contenido.sub === 'precios'
-    ? tablaPreciosHtml()
+  $('contenido-campos').innerHTML =
+    contenido.sub === 'precios' ? tablaPreciosHtml()
+    : contenido.sub === 'fechas' ? coberturaHtml() + gruposHtml('fechas')
     : gruposHtml(contenido.sub);
   actualizarSubTabs();
+}
+
+/**
+ * El aviso de si el año quedó bien cubierto.
+ *
+ * Se calcula acá, en vivo, sobre lo que se está editando — el servidor lo
+ * vuelve a revisar y rechaza el guardado, pero enterarse recién al publicar
+ * sería tarde y confuso. Una noche sin temporada se cobra al precio del
+ * fallback; una noche en dos, la primera del array. Las dos formas de cobrar
+ * mal sin que nadie se entere.
+ */
+function coberturaHtml() {
+  if (!contenido.campos) return '';
+
+  // CONFIG con lo pendiente encima, sin tocar el CONFIG de verdad.
+  const futuro = JSON.parse(JSON.stringify(CONFIG));
+  for (const camino of Object.keys(contenido.campos)) {
+    if (!camino.endsWith('.rangos')) continue;
+    const valor = valorVigente(camino);
+    if (Array.isArray(valor)) Contenido.escribirCamino(futuro, camino, valor);
+  }
+
+  const r = Contenido.revisarCobertura(futuro);
+  if (r.ok) {
+    return `<p class="cobertura cobertura--bien">El año queda cubierto: cada noche cae en una sola temporada.</p>`;
+  }
+
+  const partes = [];
+  if (r.huecos.length) {
+    partes.push(`<strong>${r.huecos.length} día(s) sin temporada</strong> (${escapar(r.huecos.slice(0, 8).join(', '))}${r.huecos.length > 8 ? '…' : ''}): se cobrarían al precio de la temporada por defecto.`);
+  }
+  if (r.choques.length) {
+    const c = r.choques[0];
+    partes.push(`<strong>${r.choques.length} día(s) en más de una temporada</strong>, por ejemplo el ${escapar(c.dia)} (${escapar(c.temporadas.join(' y '))}): se cobraría la primera.`);
+  }
+  return `<p class="cobertura cobertura--mal">${partes.join(' ')} Revisá los períodos de acá abajo.</p>`;
 }
 
 /** Las secciones que no son precios: cajas con los campos uno abajo del otro. */
@@ -1236,16 +1299,31 @@ function gruposHtml(seccion) {
 
   let html = '';
   for (const [grupo, caminos] of grupos) {
-    // Una colección es siempre un grupo con un solo campo, y se pinta distinto.
-    if (caminos.length === 1 && contenido.campos[caminos[0]].tipo === 'coleccion') {
-      html += coleccionHtml(caminos[0]);
+    const sueltos = caminos.filter(c => contenido.campos[c].tipo !== 'coleccion');
+    const cols = caminos.filter(c => contenido.campos[c].tipo === 'coleccion');
+
+    // Un grupo que es sólo una colección (preguntas, opiniones) lleva el
+    // nombre de la colección como título y nada más.
+    if (!sueltos.length && cols.length === 1) {
+      html += `<div class="grupo" data-coleccion="${cols[0]}">
+        <h3>${escapar(contenido.campos[cols[0]].etiqueta)}</h3>
+        ${coleccionCuerpoHtml(cols[0])}
+      </div>`;
       continue;
     }
-    const anchos = caminos.some(c => ['lista', 'largo'].includes(contenido.campos[c].tipo));
-    html += `<div class="grupo"><h3>${escapar(grupo)}</h3>
-      <div class="grupo__campos ${anchos ? 'grupo__campos--ancho' : ''}">
-        ${caminos.map(campoHtml).join('')}
-      </div></div>`;
+
+    // Mezclado (las fechas: un texto suelto más los períodos): todo en la
+    // misma caja, con un subtítulo antes de la colección.
+    const anchos = sueltos.some(c => ['lista', 'largo'].includes(contenido.campos[c].tipo));
+    html += `<div class="grupo" ${cols.length ? `data-coleccion="${cols[0]}"` : ''}>
+      <h3>${escapar(grupo)}</h3>
+      ${sueltos.length ? `<div class="grupo__campos ${anchos ? 'grupo__campos--ancho' : ''}">
+        ${sueltos.map(campoHtml).join('')}
+      </div>` : ''}
+      ${cols.map(c => `
+        <h4 class="grupo__sub">${escapar(contenido.campos[c].etiqueta)}</h4>
+        ${coleccionCuerpoHtml(c)}`).join('')}
+    </div>`;
   }
   return html || '<p class="vacio">No hay nada para editar acá.</p>';
 }
@@ -1262,12 +1340,19 @@ function subCampoHtml(camino, i, clave, valor) {
     ? `<textarea ${attrs}>${v}</textarea>`
     : sub.tipo === 'entero'
       ? `<input type="number" ${attrs} value="${v}" min="${sub.min}" max="${sub.max}" step="1">`
-      : `<input type="text" ${attrs} value="${v}" maxlength="${sub.max}">`;
+      : sub.tipo === 'fecha'
+        // No es <input type="date">: acá una fecha puede no tener año
+        // ('07-10' = todos los años), y ese control siempre exige uno.
+        ? `<input type="text" ${attrs} value="${v}" maxlength="10"
+             placeholder="MM-DD o AAAA-MM-DD" inputmode="numeric">`
+        : `<input type="text" ${attrs} value="${v}" maxlength="${sub.max}">`;
 
   return `<div class="sub-campo"><label for="${id}">${escapar(sub.etiqueta)}</label>${control}</div>`;
 }
 
-function coleccionHtml(camino) {
+/** El cuerpo de una colección: la ayuda, las fichas y el pie. Sin envoltorio,
+    para poder meterlo tanto en una caja propia como junto a otros campos. */
+function coleccionCuerpoHtml(camino) {
   const campo = contenido.campos[camino];
   const items = valorVigente(camino) || [];
   const publicados = contenido.valores[camino] || [];
@@ -1296,16 +1381,22 @@ function coleccionHtml(camino) {
       </div>`;
   }).join('');
 
+  const esRangos = camino.endsWith('.rangos');
+
   return `
-    <div class="grupo" data-coleccion="${camino}">
-      <h3>${escapar(campo.etiqueta)}</h3>
-      ${fichas || '<p class="vacio" style="padding:14px 0">Todavía no hay ninguna.</p>'}
-      <div class="col-pie">
-        <button class="boton boton--linea" type="button" data-col-agregar="${camino}"
-          ${items.length >= campo.maxItems ? 'disabled' : ''}>+ Agregar ${escapar(campo.singular)}</button>
-        <span class="crece"></span>
-        <span class="col-cuenta">${items.length} de ${campo.maxItems}</span>
-      </div>
+    ${esRangos ? `
+      <p class="ayuda-rangos">
+        <strong>MM-DD</strong> (por ejemplo <code>07-01</code> a <code>07-31</code> para julio entero)
+        se repite todos los años. <strong>AAAA-MM-DD</strong> vale sólo ese año y
+        <strong>le gana</strong> al anterior: así se marca Semana Santa o un finde largo
+        encima de un mes, sin tener que partir el mes en dos.
+      </p>` : ''}
+    ${fichas || '<p class="vacio" style="padding:14px 0">Todavía no hay ninguna.</p>'}
+    <div class="col-pie">
+      <button class="boton boton--linea" type="button" data-col-agregar="${camino}"
+        ${items.length >= campo.maxItems ? 'disabled' : ''}>+ Agregar ${escapar(campo.singular)}</button>
+      <span class="crece"></span>
+      <span class="col-cuenta">${items.length} de ${campo.maxItems}</span>
     </div>`;
 }
 
@@ -1426,7 +1517,7 @@ function celdaHtml(camino, etiquetaAccesible) {
 
 /** Punto en la pestaña que tiene cambios sin guardar. */
 function actualizarSubTabs() {
-  const cuenta = { precios: 0, textos: 0, datos: 0 };
+  const cuenta = { precios: 0, fechas: 0, textos: 0, datos: 0 };
   for (const camino of Object.keys(contenido.pendientes)) {
     if (contenido.campos[camino]) cuenta[seccionDe(camino)]++;
   }

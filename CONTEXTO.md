@@ -22,7 +22,7 @@ y entrar a `http://localhost:5173`.
 > Con `file://` el navegador bloquea la navegación entre páginas y el flujo de
 > reserva se corta al pasar a `reserva.html`.
 
-**Caché:** los `<script>` y el CSS se cargan con `?v=40`. Cuando publiques un
+**Caché:** los `<script>` y el CSS se cargan con `?v=41`. Cuando publiques un
 cambio, **subí ese número** en todos los HTML (index, reserva, checkout,
 preguntas, legales, arrepentimiento) o los visitantes van a seguir viendo la
 versión vieja.
@@ -1068,6 +1068,65 @@ Detalles que no son cosméticos:
 campo con `closest('[data-caja]')` y no con `.campo-ed`. Las celdas de la tabla
 no son `.campo-ed`, y buscando esa clase `closest` devuelve `null` y rompe al
 tipear. Cualquier control nuevo tiene que llevar `data-caja` en su contenedor.
+
+### Cuándo rige cada temporada (18/08/2026)
+
+Los rangos pasaron de `{ desde, hasta }` a `{ nombre, desde, hasta }` y ahora se
+editan desde el panel, en una pestaña **Fechas** propia (separada de Precios:
+"cuándo rige" y "cuánto sale" son dos preguntas distintas, y juntas hacían una
+pestaña larguísima).
+
+**Hay dos clases de rango y el más específico gana:**
+
+| Clase | Formato | Vale |
+|---|---|---|
+| Fijo | `MM-DD` | todos los años. Si `hasta < desde`, cruza el año (`12-20 → 02-29`) |
+| Con año | `AAAA-MM-DD` | sólo ese año, y **le gana al fijo** |
+
+Eso resuelve lo que el modelo viejo no podía expresar: Semana Santa y los fines
+de semana largos **se mueven de fecha cada año**, así que no se pueden escribir
+como `MM-DD`. La regla de precedencia evita tener que partir un mes en dos para
+hacerle un agujero: se le pone la excepción encima, como en un evento repetido
+de calendario. `temporadaDe()` (`js/precios.js`) recorre primero los rangos con
+año y después los fijos.
+
+Los fines de semana largos argentinos los fija el gobierno por decreto, así que
+no se pueden calcular: hay que cargarlos una vez al año. La fecha de Pascua sí
+se puede calcular, si alguna vez conviene sugerirla.
+
+**El bug que apareció al mirar esto:** la temporada alta terminaba el `02-28`.
+En un año bisiesto el **29 de febrero no caía en ninguna temporada** y se cobraba
+al precio del fallback (media) en plena temporada alta. Se corrigió a `02-29`,
+que en los años no bisiestos simplemente no coincide con ninguna noche. El
+próximo bisiesto es 2028.
+
+**`revisarCobertura()` es la pieza que hace esto responsable.** Recorre los 366
+días de un año bisiesto y comprueba que los rangos fijos cubran el año
+**exactamente una vez**. Es la única comprobación del catálogo que cruza las
+tres temporadas, así que no puede hacerla la validación campo por campo:
+
+- una noche **sin** temporada se cobra al precio del fallback;
+- una noche en **dos** temporadas cobra la que esté primera en el array.
+
+Las dos son formas de cobrar mal sin que nadie se entere, y es exactamente el
+error que un editor de rangos multiplicaría. Corre en dos lugares: en el panel
+mientras se edita (aviso verde/rojo arriba de la pestaña Fechas, con los días
+concretos) y en `api/admin/contenido.js` antes de guardar, que rechaza el
+cambio entero. Los rangos con año no cuentan para la cobertura: son excepciones
+y se espera que pisen.
+
+`revisarRango` comprueba lo que cruza dos sub-campos de la misma ficha (que las
+dos fechas sean del mismo tipo; que con año `desde` no quede después de
+`hasta`). Se nombra con un string en el esquema (`revisarItem: 'rango'`) y no
+con la función directamente, porque **el catálogo viaja al panel como JSON y una
+función no sobrevive a `JSON.stringify`**.
+
+Se agregó también `temporadas.<id>.periodo`, el texto que se muestra ("Enero,
+febrero, Semana Santa…"). **Ese texto y los rangos pueden desincronizarse, y de
+hecho lo estaban**: decía "Semana Santa" cuando no había ningún rango para
+Semana Santa, y no mencionaba el 20 al 31 de diciembre, que sí es alta. Ahora
+que cada rango tiene nombre, ese texto se podría generar en vez de escribirlo
+aparte — queda pendiente.
 
 ### Colecciones: preguntas y opiniones (18/08/2026)
 

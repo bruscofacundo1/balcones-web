@@ -145,8 +145,12 @@ const CONFIG = {
       color: '#b4552f',
       destacada: true,
       rangos: [
-        { desde: '12-20', hasta: '02-28' },
-        { desde: '07-10', hasta: '07-25' }         // vacaciones de invierno
+        // El 'hasta' de verano dice 02-29 y no 02-28: en un año bisiesto ese
+        // día quedaba sin temporada y se cobraba al precio del fallback
+        // (media) en plena temporada alta. En los años no bisiestos el 02-29
+        // simplemente no existe y no molesta.
+        { nombre: 'Verano',                 desde: '12-20', hasta: '02-29' },
+        { nombre: 'Vacaciones de invierno', desde: '07-10', hasta: '07-25' }
       ],
       incluye: [
         ['Mínimo de noches', '3'],
@@ -167,8 +171,8 @@ const CONFIG = {
       color: '#d89a4a',
       destacada: false,
       rangos: [
-        { desde: '03-01', hasta: '04-30' },
-        { desde: '10-01', hasta: '12-19' }
+        { nombre: 'Otoño',     desde: '03-01', hasta: '04-30' },
+        { nombre: 'Primavera', desde: '10-01', hasta: '12-19' }
       ],
       incluye: [
         ['Mínimo de noches', '2'],
@@ -189,8 +193,8 @@ const CONFIG = {
       color: '#5c6b4a',
       destacada: false,
       rangos: [
-        { desde: '05-01', hasta: '07-09' },
-        { desde: '07-26', hasta: '09-30' }
+        { nombre: 'Invierno',         desde: '05-01', hasta: '07-09' },
+        { nombre: 'Fin del invierno', desde: '07-26', hasta: '09-30' }
       ],
       incluye: [
         ['Mínimo de noches', '2'],

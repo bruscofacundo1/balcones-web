@@ -99,16 +99,39 @@
 
   /* ---------------------------------------------------------- temporadas -- */
 
+  /** Un rango con año ('2027-03-25') vale sólo ese año; uno sin año
+      ('03-25') se repite todos. */
+  function rangoConAnio(r) {
+    return /^\d{4}-/.test(String(r.desde || ''));
+  }
+
   /**
    * Devuelve la temporada que corresponde a una fecha ISO.
-   * Los rangos se definen como 'MM-DD' y se repiten todos los años; si el
-   * rango termina antes de empezar (12-20 -> 02-28) se entiende que cruza el
-   * año.
+   *
+   * Hay dos clases de rango y **el más específico gana**:
+   *
+   * - **Con año** (`AAAA-MM-DD`): vale sólo ese año. Es para lo que se mueve —
+   *   Semana Santa, los fines de semana largos— que no se puede escribir como
+   *   `MM-DD` porque cambia de fecha cada año.
+   * - **Sin año** (`MM-DD`): se repite todos los años. Si el rango termina
+   *   antes de empezar (12-20 -> 02-29) se entiende que cruza el año.
+   *
+   * Se revisan primero los que tienen año, así una Semana Santa puede pisar un
+   * mes entero sin tener que partir el rango del mes en dos. No se le hace un
+   * agujero a julio: se le pone una excepción encima.
    */
   function temporadaDe(iso, config) {
     const md = iso.slice(5); // 'MM-DD'
+
     for (const t of config.temporadas) {
-      for (const r of t.rangos) {
+      for (const r of (t.rangos || [])) {
+        if (rangoConAnio(r) && iso >= r.desde && iso <= r.hasta) return t;
+      }
+    }
+
+    for (const t of config.temporadas) {
+      for (const r of (t.rangos || [])) {
+        if (rangoConAnio(r)) continue;
         const cruzaAnio = r.hasta < r.desde;
         const dentro = cruzaAnio
           ? (md >= r.desde || md <= r.hasta)
@@ -170,7 +193,7 @@
     aIso, deIso, sumarDias, nochesEntre, nochesLista,
     modalidadPorId, construirOcupadas, unirOcupadas,
     libre, libreAlguna, hayOcupadasEntre,
-    temporadaDe, temporadaFallback,
+    temporadaDe, temporadaFallback, rangoConAnio,
     precioNoche, cotizar
   };
 
