@@ -15,7 +15,7 @@
    alquiler y rompería el cálculo de disponibilidad.
    ============================================================================ */
 
-const { CONFIG } = require('../../js/config.js');
+const { CONFIG, FAQ, RESENAS } = require('../../js/config.js');
 const Contenido = require('../../js/contenido.js');
 const { exigirSesion } = require('../../lib/sesion.js');
 const {
@@ -36,9 +36,21 @@ module.exports = async (req, res) => {
       const efectivo = Contenido.aplicar(JSON.parse(JSON.stringify(CONFIG)), guardados);
       const campos = Contenido.catalogo(CONFIG);
 
+      // Las colecciones (FAQ, RESENAS) no viven adentro de CONFIG: son const
+      // sueltos de config.js. `leerCamino` no las encuentra, y `aplicar` acá no
+      // las toca a propósito — mutar esos arrays los dejaría cambiados para la
+      // próxima invocación, porque el módulo queda cacheado entre pedidos.
+      // Por eso se resuelven a mano y siempre copiando.
+      const base = { FAQ, RESENAS };
+
       const valores = {};
       for (const camino of Object.keys(campos)) {
-        valores[camino] = Contenido.leerCamino(efectivo, camino);
+        if (campos[camino].tipo === 'coleccion') {
+          valores[camino] = guardados[camino]
+            || (base[camino] || []).map(x => Object.assign({}, x));
+        } else {
+          valores[camino] = Contenido.leerCamino(efectivo, camino);
+        }
       }
       res.status(200).json({ campos, valores, guardados });
       return;

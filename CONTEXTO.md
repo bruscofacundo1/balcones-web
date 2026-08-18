@@ -22,7 +22,7 @@ y entrar a `http://localhost:5173`.
 > Con `file://` el navegador bloquea la navegación entre páginas y el flujo de
 > reserva se corta al pasar a `reserva.html`.
 
-**Caché:** los `<script>` y el CSS se cargan con `?v=39`. Cuando publiques un
+**Caché:** los `<script>` y el CSS se cargan con `?v=40`. Cuando publiques un
 cambio, **subí ese número** en todos los HTML (index, reserva, checkout,
 preguntas, legales, arrepentimiento) o los visitantes van a seguir viendo la
 versión vieja.
@@ -1068,6 +1068,60 @@ Detalles que no son cosméticos:
 campo con `closest('[data-caja]')` y no con `.campo-ed`. Las celdas de la tabla
 no son `.campo-ed`, y buscando esa clase `closest` devuelve `null` y rompe al
 tipear. Cualquier control nuevo tiene que llevar `data-caja` en su contenedor.
+
+### Colecciones: preguntas y opiniones (18/08/2026)
+
+Hasta acá el catálogo era un mapa plano de `camino → un valor` (un número, un
+texto, una lista de textos). Las preguntas frecuentes y las opiniones no entran
+en ese molde: cada ítem es un objeto con varios sub-campos, y además hay que
+poder **agregar, sacar y reordenar**.
+
+Se agregó el tipo **`coleccion`** (`COLECCIONES` en `js/contenido.js`), con su
+esquema de sub-campos. Hoy son `FAQ` (`p`, `r`) y `RESENAS` (`texto`, `autor`,
+`fuente`, `fecha`, `estrellas`); sumar `ACTIVIDADES` o `AMBIENTES` es agregar
+una entrada más a ese objeto.
+
+Lo que hizo falta resolver, y por qué:
+
+- **La base no se tocó.** La tabla `contenido` guarda `valor jsonb`, así que
+  una colección entera entra como un valor más. Fue suerte del diseño anterior,
+  pero conviene saberlo antes de inventar una tabla nueva.
+- **`validarValor()` se separó de `validar()`.** Los sub-campos se revisan con
+  exactamente las mismas reglas que un campo de primer nivel. Si fueran dos
+  implementaciones, un texto adentro de una pregunta aceptaría cosas que el
+  mismo texto suelto rechaza — incluido el saneo de `<` y `>`.
+- **`FAQ` y `RESENAS` no viven adentro de `CONFIG`**: son `const` sueltos de
+  `config.js`, y `app.js` y `preguntas-pagina.js` ya se quedaron con la
+  referencia al array. Por eso se leen y escriben con `leerCampo`/`escribirCampo`,
+  que para colecciones **mutan el array en su lugar** en vez de reasignarlo —
+  igual que `aplicarFotos` con `FOTOS`. Gracias a eso "volver al original"
+  también funciona para una colección.
+- **En Node `listaViva()` devuelve null**, porque `config.js` no está en el
+  ámbito de ese módulo. Está bien: el servidor sólo necesita **validar**
+  colecciones, no pintarlas.
+- **`api/admin/contenido.js` las resuelve aparte.** `leerCamino` no las
+  encuentra, así que se leen de los exports de `config.js` y **siempre
+  copiando**: en una función serverless el módulo queda cacheado entre
+  invocaciones, y devolver (o mutar) el array compartido filtraría los cambios
+  de un pedido al siguiente. Es el mismo cuidado que ya tenía `configEfectivo()`.
+
+En el panel van en la pestaña **Textos**, no en una propia: son contenido de
+lectura como el resto, y una cuarta pestaña no entra en el celular.
+
+Dos detalles de la interfaz que no son cosméticos:
+
+- **Escribir en un sub-campo no repinta.** Repintar en cada tecla le sacaría el
+  foco al campo. Sólo agregar, sacar y reordenar repintan, que son las que
+  cambian la cantidad de fichas o su orden.
+- **La marca de "modificado" es por ficha, no por colección.** Si se agregó una
+  al final, las de arriba no cambiaron y no tienen por qué verse tocadas.
+
+En la revisión previa una colección no se muestra como JSON —no le diría nada a
+nadie— sino como `13 preguntas → 14 preguntas` más un resumen (`1 agregada`,
+`2 modificadas`, `reordenadas`). El contador solo no alcanzaba: al editar el
+texto de una pregunta, "13 → 13" parecería que no cambió nada. Y el caso de
+sólo reordenar se detecta comparando el conjunto de fichas, porque si no se
+reportaría como "13 modificadas".
 
 ### Revisar antes de publicar (18/08/2026)
 

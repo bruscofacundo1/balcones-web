@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232b2621'/><path d='M20 58 L50 32 L80 58 v22 H20z' fill='%23d89a4a'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/estilos.css?v=39">
+<link rel="stylesheet" href="css/estilos.css?v=40">
 <style>
   body { background: var(--arena); }
 
@@ -277,6 +277,47 @@
     font-family: var(--texto); font-size: .74rem; text-decoration: underline; padding: 0; margin-left: auto;
   }
 
+  /* ------------------------------------------------------- colecciones -- */
+  /* Preguntas y opiniones: fichas repetidas, con agregar/sacar/reordenar. */
+  .item-col {
+    border: 1px solid var(--borde); border-radius: var(--radio-sm);
+    padding: 14px 16px; margin-bottom: 12px; background: #fff;
+  }
+  .item-col--sucio { border-color: var(--ocre); background: #fffdf5; }
+  .item-col__cab {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+  }
+  .item-col__n { font-size: .76rem; font-weight: 600; color: var(--piedra); }
+  .item-col__cab .crece { flex: 1 1 auto; }
+  .item-col__cab button {
+    border: 1px solid var(--borde); background: var(--crema); border-radius: var(--radio-sm);
+    padding: 5px 9px; font-size: .78rem; font-family: var(--texto); cursor: pointer;
+    color: var(--carbon-suave); line-height: 1;
+  }
+  .item-col__cab button:hover:not(:disabled) { border-color: var(--ocre); color: var(--terracota); }
+  .item-col__cab button:disabled { opacity: .4; cursor: default; }
+  .item-col__cab .peligro:hover { border-color: #b23b3b; color: #b23b3b; }
+  .item-col__campos { display: grid; gap: 10px; }
+  .item-col__campos--fila { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .sub-campo label {
+    display: block; font-size: .74rem; font-weight: 600;
+    color: var(--carbon-suave); margin-bottom: 4px;
+  }
+  .sub-campo input, .sub-campo textarea {
+    width: 100%; padding: 9px 11px; border: 1px solid var(--borde);
+    border-radius: var(--radio-sm); font-family: var(--texto); font-size: .88rem;
+    background: #fff; color: var(--carbon);
+  }
+  .sub-campo textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+  .sub-campo input:focus, .sub-campo textarea:focus { outline: 2px solid var(--ocre); outline-offset: -1px; }
+
+  .col-pie { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
+  .col-pie .crece { flex: 1 1 auto; }
+  .col-cuenta { font-size: .82rem; color: var(--piedra); }
+  @media (max-width: 520px) {
+    .item-col__cab button { min-height: 38px; padding: 5px 12px; }
+  }
+
   /* ------------------------------------------------ revisión de cambios -- */
   .dif { padding: 13px 0; border-bottom: 1px solid var(--borde); }
   .dif:last-of-type { border-bottom: 0; }
@@ -285,6 +326,10 @@
   .dif__antes { color: var(--piedra); text-decoration: line-through; }
   .dif__despues { color: var(--carbon); font-weight: 600; }
   .dif__flecha { color: var(--piedra); }
+  .dif__detalle {
+    font-size: .8rem; color: var(--terracota-osc); background: #fdf4e3;
+    padding: 2px 9px; border-radius: 20px;
+  }
   /* Los textos largos y las listas no entran en una línea: van uno arriba del
      otro y en bloques, donde el tachado sería ilegible. */
   .dif__valores--apilado { display: block; }
@@ -501,9 +546,9 @@
   </div>
 </div>
 
-<script src="js/config.js?v=39"></script>
-<script src="js/contenido.js?v=39"></script>
-<script src="js/precios.js?v=39"></script>
+<script src="js/config.js?v=40"></script>
+<script src="js/contenido.js?v=40"></script>
+<script src="js/precios.js?v=40"></script>
 <script>
 /* ============================================================================
    Panel de administración
@@ -1131,7 +1176,18 @@ const contenido = { campos: null, valores: {}, guardados: {}, pendientes: {}, su
 function seccionDe(camino) {
   if (camino.startsWith('temporadas.')) return 'precios';
   const campo = contenido.campos[camino];
-  return campo && campo.grupo === 'Textos' ? 'textos' : 'datos';
+  if (!campo) return 'datos';
+  // Las preguntas y las opiniones son contenido de lectura, igual que los
+  // textos: van juntas y no en una pestaña propia, que en el celular no entra.
+  if (campo.tipo === 'coleccion' || campo.grupo === 'Textos') return 'textos';
+  return 'datos';
+}
+
+/** El valor con el que trabajar: el pendiente si lo hay, o el publicado. */
+function valorVigente(camino) {
+  return camino in contenido.pendientes
+    ? contenido.pendientes[camino]
+    : contenido.valores[camino];
 }
 
 /** Un valor de lista se edita como texto, un renglón por ítem. */
@@ -1180,6 +1236,11 @@ function gruposHtml(seccion) {
 
   let html = '';
   for (const [grupo, caminos] of grupos) {
+    // Una colección es siempre un grupo con un solo campo, y se pinta distinto.
+    if (caminos.length === 1 && contenido.campos[caminos[0]].tipo === 'coleccion') {
+      html += coleccionHtml(caminos[0]);
+      continue;
+    }
     const anchos = caminos.some(c => ['lista', 'largo'].includes(contenido.campos[c].tipo));
     html += `<div class="grupo"><h3>${escapar(grupo)}</h3>
       <div class="grupo__campos ${anchos ? 'grupo__campos--ancho' : ''}">
@@ -1187,6 +1248,92 @@ function gruposHtml(seccion) {
       </div></div>`;
   }
   return html || '<p class="vacio">No hay nada para editar acá.</p>';
+}
+
+/* ---------------------------------------------------------- colecciones -- */
+
+function subCampoHtml(camino, i, clave, valor) {
+  const sub = contenido.campos[camino].campos[clave];
+  const id = `col-${camino}-${i}-${clave}`;
+  const attrs = `id="${id}" data-col="${camino}" data-i="${i}" data-clave="${clave}"`;
+  const v = escapar(valor === undefined || valor === null ? '' : valor);
+
+  const control = sub.tipo === 'largo'
+    ? `<textarea ${attrs}>${v}</textarea>`
+    : sub.tipo === 'entero'
+      ? `<input type="number" ${attrs} value="${v}" min="${sub.min}" max="${sub.max}" step="1">`
+      : `<input type="text" ${attrs} value="${v}" maxlength="${sub.max}">`;
+
+  return `<div class="sub-campo"><label for="${id}">${escapar(sub.etiqueta)}</label>${control}</div>`;
+}
+
+function coleccionHtml(camino) {
+  const campo = contenido.campos[camino];
+  const items = valorVigente(camino) || [];
+  const publicados = contenido.valores[camino] || [];
+  const claves = Object.keys(campo.campos);
+  // Si ningún sub-campo es un texto largo, entran todos en una fila.
+  const enFila = claves.every(k => campo.campos[k].tipo !== 'largo');
+
+  const fichas = items.map((item, i) => {
+    // Se marca ficha por ficha y no la colección entera: si se agregó una al
+    // final, las de arriba no cambiaron y no tienen por qué verse tocadas.
+    const cambiada = JSON.stringify(item) !== JSON.stringify(publicados[i]);
+    return `
+      <div class="item-col ${cambiada ? 'item-col--sucio' : ''}" data-item="${i}">
+        <div class="item-col__cab">
+          <span class="item-col__n">${escapar(campo.singular)} ${i + 1}</span>
+          <span class="crece"></span>
+          <button type="button" data-col-mover="${camino}" data-i="${i}" data-dir="-1"
+            ${i === 0 ? 'disabled' : ''} aria-label="Subir">&#8593;</button>
+          <button type="button" data-col-mover="${camino}" data-i="${i}" data-dir="1"
+            ${i === items.length - 1 ? 'disabled' : ''} aria-label="Bajar">&#8595;</button>
+          <button type="button" class="peligro" data-col-sacar="${camino}" data-i="${i}">Sacar</button>
+        </div>
+        <div class="item-col__campos ${enFila ? 'item-col__campos--fila' : ''}">
+          ${claves.map(k => subCampoHtml(camino, i, k, item[k])).join('')}
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="grupo" data-coleccion="${camino}">
+      <h3>${escapar(campo.etiqueta)}</h3>
+      ${fichas || '<p class="vacio" style="padding:14px 0">Todavía no hay ninguna.</p>'}
+      <div class="col-pie">
+        <button class="boton boton--linea" type="button" data-col-agregar="${camino}"
+          ${items.length >= campo.maxItems ? 'disabled' : ''}>+ Agregar ${escapar(campo.singular)}</button>
+        <span class="crece"></span>
+        <span class="col-cuenta">${items.length} de ${campo.maxItems}</span>
+      </div>
+    </div>`;
+}
+
+/** Una copia con la que trabajar, sin tocar lo que devolvió el servidor. */
+function copiaVigente(camino) {
+  return (valorVigente(camino) || []).map(x => Object.assign({}, x));
+}
+
+/** Deja la colección como pendiente, o la saca si volvió a lo publicado. */
+function fijarColeccion(camino, lista) {
+  if (JSON.stringify(lista) === JSON.stringify(contenido.valores[camino] || [])) {
+    delete contenido.pendientes[camino];
+  } else {
+    contenido.pendientes[camino] = lista;
+  }
+  actualizarBarra();
+  actualizarSubTabs();
+  programarPreview();
+}
+
+/** Un ítem nuevo, con todos sus sub-campos vacíos (o en su mínimo). */
+function itemVacio(camino) {
+  const campos = contenido.campos[camino].campos;
+  const item = {};
+  for (const clave of Object.keys(campos)) {
+    item[clave] = campos[clave].tipo === 'entero' ? campos[clave].max : '';
+  }
+  return item;
 }
 
 /* ------------------------------------------------------ tabla de precios -- */
@@ -1326,6 +1473,22 @@ function campoHtml(camino) {
 }
 
 $('contenido-campos').addEventListener('input', e => {
+  // Sub-campo de una colección: se actualiza el ítem y **no se repinta**, que
+  // le sacaría el foco al campo en el que se está escribiendo.
+  const sub = e.target.closest('[data-col]');
+  if (sub) {
+    const camino = sub.dataset.col;
+    const lista = copiaVigente(camino);
+    const i = Number(sub.dataset.i);
+    if (lista[i]) {
+      lista[i][sub.dataset.clave] = sub.value;
+      fijarColeccion(camino, lista);
+      const ficha = sub.closest('.item-col');
+      if (ficha) ficha.classList.add('item-col--sucio');
+    }
+    return;
+  }
+
   const control = e.target.closest('[data-camino]');
   if (!control) return;
   const camino = control.dataset.camino;
@@ -1349,6 +1512,49 @@ $('contenido-campos').addEventListener('input', e => {
 });
 
 $('contenido-campos').addEventListener('click', async e => {
+  // Agregar, sacar y reordenar sí repintan: cambian la cantidad de fichas o
+  // su orden, así que no alcanza con retocar una.
+  const agregar = e.target.closest('[data-col-agregar]');
+  if (agregar) {
+    const camino = agregar.dataset.colAgregar;
+    const lista = copiaVigente(camino);
+    if (lista.length >= contenido.campos[camino].maxItems) return;
+    lista.push(itemVacio(camino));
+    fijarColeccion(camino, lista);
+    pintarContenido();
+    // El primer campo de la ficha nueva, listo para escribir.
+    const nuevo = $('contenido-campos').querySelector(
+      `[data-col="${camino}"][data-i="${lista.length - 1}"]`);
+    if (nuevo) { nuevo.focus(); nuevo.scrollIntoView({ block: 'center' }); }
+    return;
+  }
+
+  const sacar = e.target.closest('[data-col-sacar]');
+  if (sacar) {
+    const camino = sacar.dataset.colSacar;
+    const i = Number(sacar.dataset.i);
+    const campo = contenido.campos[camino];
+    if (!confirm(`¿Sacar la ${campo.singular} ${i + 1}?`)) return;
+    const lista = copiaVigente(camino);
+    lista.splice(i, 1);
+    fijarColeccion(camino, lista);
+    pintarContenido();
+    return;
+  }
+
+  const mover = e.target.closest('[data-col-mover]');
+  if (mover) {
+    const camino = mover.dataset.colMover;
+    const i = Number(mover.dataset.i);
+    const j = i + Number(mover.dataset.dir);
+    const lista = copiaVigente(camino);
+    if (j < 0 || j >= lista.length) return;
+    const tmp = lista[i]; lista[i] = lista[j]; lista[j] = tmp;
+    fijarColeccion(camino, lista);
+    pintarContenido();
+    return;
+  }
+
   const boton = e.target.closest('[data-original]');
   if (!boton) return;
   const camino = boton.dataset.original;
@@ -1445,10 +1651,45 @@ function nombreCampo(camino) {
 /** El valor como se lee, no como se guarda. */
 function valorMostrable(camino, valor) {
   if (valor === undefined || valor === null) return '';
+  const campo = contenido.campos[camino];
+  // Una colección son fichas: mostrar el JSON no le diría nada a nadie.
+  if (campo && campo.tipo === 'coleccion') {
+    const n = Array.isArray(valor) ? valor.length : 0;
+    return `${n} ${n === 1 ? campo.singular : campo.plural}`;
+  }
   if (Array.isArray(valor)) return valor.join('\n');
   // Los precios son plata; el mínimo de noches y el % de seña no.
   if (/^temporadas\..+\.precios\./.test(camino)) return pesos(valor);
   return String(valor);
+}
+
+/**
+ * Qué pasó con una colección, en palabras.
+ *
+ * El contador solo no alcanza: si se editó el texto de una pregunta, "13 → 13"
+ * parecería que no cambió nada.
+ */
+function resumenColeccion(antes, despues) {
+  const a = Array.isArray(antes) ? antes : [];
+  const d = Array.isArray(despues) ? despues : [];
+  const partes = [];
+
+  const dif = d.length - a.length;
+  if (dif > 0) partes.push(`${dif} agregada${dif > 1 ? 's' : ''}`);
+  if (dif < 0) partes.push(`${-dif} sacada${dif < -1 ? 's' : ''}`);
+
+  // Sólo reordenadas: mismas fichas, distinto orden. Sin esta comprobación se
+  // reportarían como "modificadas", que confunde.
+  const huella = l => l.map(x => JSON.stringify(x)).sort().join('|');
+  if (!dif && huella(a) === huella(d)) return 'reordenadas';
+
+  let cambiadas = 0;
+  for (let i = 0; i < Math.min(a.length, d.length); i++) {
+    if (JSON.stringify(a[i]) !== JSON.stringify(d[i])) cambiadas++;
+  }
+  if (cambiadas) partes.push(`${cambiadas} modificada${cambiadas > 1 ? 's' : ''}`);
+
+  return partes.join(', ');
 }
 
 /**
@@ -1464,8 +1705,13 @@ function abrirRevision() {
   const filas = caminos.map(camino => {
     const antes = valorMostrable(camino, contenido.valores[camino]);
     const despues = valorMostrable(camino, contenido.pendientes[camino]);
-    const apilado = ['lista', 'largo'].includes(contenido.campos[camino].tipo)
-      || antes.length > 42 || despues.length > 42;
+    const esColeccion = contenido.campos[camino].tipo === 'coleccion';
+    const apilado = !esColeccion
+      && (['lista', 'largo'].includes(contenido.campos[camino].tipo)
+        || antes.length > 42 || despues.length > 42);
+    const detalle = esColeccion
+      ? resumenColeccion(contenido.valores[camino], contenido.pendientes[camino])
+      : '';
     return `
       <div class="dif">
         <p class="dif__campo">${escapar(nombreCampo(camino))}</p>
@@ -1473,6 +1719,7 @@ function abrirRevision() {
           <span class="dif__antes">${escapar(antes) || '<em>vacío</em>'}</span>
           <span class="dif__flecha">&#8594;</span>
           <span class="dif__despues">${escapar(despues) || '<em>vacío</em>'}</span>
+          ${detalle ? `<span class="dif__detalle">${escapar(detalle)}</span>` : ''}
         </div>
       </div>`;
   }).join('');

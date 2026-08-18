@@ -21,6 +21,63 @@
 
 (function (global) {
 
+  /* ---------------------------------------------------------- colecciones -- */
+
+  /**
+   * Las listas de fichas repetidas: preguntas frecuentes, opiniones.
+   *
+   * Son distintas del resto del catálogo, donde cada campo guarda **un** valor
+   * (un número, un texto, una lista de textos). Acá cada ítem es un objeto con
+   * varios sub-campos, y además se pueden agregar, sacar y reordenar.
+   *
+   * No viven adentro de CONFIG: son `const` sueltos de config.js (`FAQ`,
+   * `RESENAS`), y hay funciones que ya se quedaron con la referencia al array.
+   * Por eso se leen y se escriben como FOTOS —mutando el array en su lugar— y
+   * no con `leerCamino`/`escribirCamino`.
+   */
+  const COLECCIONES = {
+    FAQ: {
+      etiqueta: 'Preguntas frecuentes',
+      grupo: 'Preguntas frecuentes',
+      singular: 'pregunta',
+      plural: 'preguntas',
+      maxItems: 40,
+      campos: {
+        p: { tipo: 'texto', max: 200, etiqueta: 'Pregunta' },
+        r: { tipo: 'largo', max: 1500, etiqueta: 'Respuesta' }
+      }
+    },
+    RESENAS: {
+      etiqueta: 'Opiniones',
+      grupo: 'Opiniones',
+      singular: 'opinión',
+      plural: 'opiniones',
+      maxItems: 60,
+      campos: {
+        texto:     { tipo: 'largo', max: 900, etiqueta: 'Lo que escribió' },
+        autor:     { tipo: 'texto', max: 80, etiqueta: 'Quién' },
+        fuente:    { tipo: 'texto', max: 40, etiqueta: 'De dónde (Google, Booking…)' },
+        fecha:     { tipo: 'texto', max: 7, etiqueta: 'Cuándo (AAAA-MM)' },
+        estrellas: { tipo: 'entero', min: 1, max: 5, etiqueta: 'Estrellas' }
+      }
+    }
+  };
+
+  /**
+   * El array vivo de una colección, o null si no está cargado.
+   *
+   * Se referencian por identificador y no por `window[nombre]` porque un
+   * `const` en el tope de un script clásico no queda colgado de `window`. En
+   * Node devuelve null —config.js no está en este ámbito— y eso está bien:
+   * el servidor sólo necesita **validar** colecciones, no pintarlas. Es
+   * exactamente lo que ya pasaba con FOTOS.
+   */
+  function listaViva(nombre) {
+    if (nombre === 'FAQ') return typeof FAQ !== 'undefined' ? FAQ : null;
+    if (nombre === 'RESENAS') return typeof RESENAS !== 'undefined' ? RESENAS : null;
+    return null;
+  }
+
   /* ------------------------------------------------------------ catálogo -- */
 
   /**
@@ -66,6 +123,15 @@
       campos[`temporadas.${t.id}.minNoches`] = {
         tipo: 'entero', min: 1, max: 30,
         etiqueta: 'Mínimo de noches', grupo: `Precios · ${t.nombre}`
+      };
+    }
+
+    // Las colecciones entran al catálogo como un campo más, con tipo propio.
+    for (const nombre of Object.keys(COLECCIONES)) {
+      const c = COLECCIONES[nombre];
+      campos[nombre] = {
+        tipo: 'coleccion', etiqueta: c.etiqueta, grupo: c.grupo,
+        singular: c.singular, plural: c.plural, maxItems: c.maxItems, campos: c.campos
       };
     }
 
@@ -115,15 +181,22 @@
    * Revisa un valor contra el catálogo. Devuelve { ok: true, valor } con el
    * valor ya normalizado, o { ok: false, error }.
    */
-  function validar(camino, valor, config) {
-    const campo = catalogo(config)[camino];
-    if (!campo) return { ok: false, error: `"${camino}" no es un campo editable.` };
+  /**
+   * Valida **un valor suelto** contra su descripción.
+   *
+   * Está separado de `validar` porque los sub-campos de una colección se
+   * revisan con exactamente las mismas reglas que un campo de primer nivel: si
+   * fueran dos implementaciones, un texto adentro de una pregunta aceptaría
+   * cosas que el mismo texto suelto rechaza.
+   */
+  function validarValor(campo, valor, etiqueta) {
+    const nombre = etiqueta || campo.etiqueta;
 
     if (campo.tipo === 'entero') {
       const n = Math.round(Number(valor));
-      if (!Number.isFinite(n)) return { ok: false, error: `${campo.etiqueta}: tiene que ser un número.` };
+      if (!Number.isFinite(n)) return { ok: false, error: `${nombre}: tiene que ser un número.` };
       if (n < campo.min || n > campo.max) {
-        return { ok: false, error: `${campo.etiqueta}: tiene que estar entre ${campo.min} y ${campo.max}.` };
+        return { ok: false, error: `${nombre}: tiene que estar entre ${campo.min} y ${campo.max}.` };
       }
       return { ok: true, valor: n };
     }
@@ -132,13 +205,54 @@
       const lista = (Array.isArray(valor) ? valor : String(valor || '').split('\n'))
         .map(x => limpiarTexto(x, campo.max))
         .filter(Boolean);
-      if (!lista.length) return { ok: false, error: `${campo.etiqueta}: no puede quedar vacío.` };
+      if (!lista.length) return { ok: false, error: `${nombre}: no puede quedar vacío.` };
       return { ok: true, valor: lista };
     }
 
     const texto = limpiarTexto(valor, campo.max);
-    if (!texto && !campo.opcional) return { ok: false, error: `${campo.etiqueta}: no puede quedar vacío.` };
+    if (!texto && !campo.opcional) return { ok: false, error: `${nombre}: no puede quedar vacío.` };
     return { ok: true, valor: texto };
+  }
+
+  /**
+   * Una colección entera: la lista y cada uno de sus sub-campos.
+   *
+   * Puede quedar vacía a propósito — la sección de opiniones se esconde sola
+   * si no hay ninguna, que es mejor que mostrar un carrusel vacío.
+   *
+   * Los ítems se reconstruyen campo por campo, así que cualquier clave que no
+   * esté en el esquema se descarta. Eso saca de paso las notas `revisar` de las
+   * preguntas de ejemplo: si alguien la editó, ya no hay nada que revisar.
+   */
+  function validarColeccion(campo, valor) {
+    if (!Array.isArray(valor)) {
+      return { ok: false, error: `${campo.etiqueta}: se esperaba una lista.` };
+    }
+    if (valor.length > campo.maxItems) {
+      return { ok: false, error: `${campo.etiqueta}: no puede tener más de ${campo.maxItems}.` };
+    }
+
+    const limpios = [];
+    for (let i = 0; i < valor.length; i++) {
+      const item = valor[i] || {};
+      const salida = {};
+      for (const clave of Object.keys(campo.campos)) {
+        const sub = campo.campos[clave];
+        const r = validarValor(sub, item[clave], `${campo.singular} ${i + 1} — ${sub.etiqueta}`);
+        if (!r.ok) return r;
+        salida[clave] = r.valor;
+      }
+      limpios.push(salida);
+    }
+    return { ok: true, valor: limpios };
+  }
+
+  function validar(camino, valor, config) {
+    const campo = catalogo(config)[camino];
+    if (!campo) return { ok: false, error: `"${camino}" no es un campo editable.` };
+    return campo.tipo === 'coleccion'
+      ? validarColeccion(campo, valor)
+      : validarValor(campo, valor);
   }
 
   /* ------------------------------------------------------------- aplicar -- */
@@ -149,10 +263,36 @@
   // con el último valor que llegó a tener.
   let original = null;
 
+  /** Lee un campo del catálogo, venga de CONFIG o de una lista global. */
+  function leerCampo(config, camino) {
+    const campo = catalogo(config)[camino];
+    if (campo && campo.tipo === 'coleccion') {
+      const viva = listaViva(camino);
+      return viva ? viva.map(x => Object.assign({}, x)) : undefined;
+    }
+    return leerCamino(config, camino);
+  }
+
+  /** Escribe un campo del catálogo, vaya a CONFIG o a una lista global. */
+  function escribirCampo(config, camino, valor) {
+    const campo = catalogo(config)[camino];
+    if (campo && campo.tipo === 'coleccion') {
+      const viva = listaViva(camino);
+      if (!viva || !Array.isArray(valor)) return false;
+      // Se muta el array en su lugar en vez de reasignarlo: es un `const` de
+      // config.js y hay funciones que ya se quedaron con la referencia. Igual
+      // que con FOTOS.
+      viva.length = 0;
+      for (const item of valor) viva.push(item);
+      return true;
+    }
+    return escribirCamino(config, camino, valor);
+  }
+
   function guardarOriginal(config) {
     const copia = {};
     for (const camino of Object.keys(catalogo(config))) {
-      const valor = leerCamino(config, camino);
+      const valor = leerCampo(config, camino);
       copia[camino] = Array.isArray(valor) ? valor.slice() : valor;
     }
     return copia;
@@ -162,11 +302,11 @@
   function aplicar(config, overrides) {
     if (!original) original = guardarOriginal(config);
     for (const camino of Object.keys(original)) {
-      escribirCamino(config, camino, original[camino]);
+      escribirCampo(config, camino, original[camino]);
     }
     for (const camino of Object.keys(overrides || {})) {
       const r = validar(camino, overrides[camino], config);
-      if (r.ok) escribirCamino(config, camino, r.valor);
+      if (r.ok) escribirCampo(config, camino, r.valor);
     }
     return config;
   }
@@ -408,7 +548,8 @@
   }
 
   const Contenido = {
-    catalogo, leerCamino, escribirCamino, validar, aplicar, aplicarFotos,
+    catalogo, leerCamino, escribirCamino, leerCampo, escribirCampo,
+    validar, validarValor, aplicar, aplicarFotos, COLECCIONES,
     preparar, leerCache, guardarCache, CLAVE_CACHE, fotosDestacadas,
     enPreview, leerPreview, guardarPreview, borrarPreview, PREVIEW_CLAVE
   };
