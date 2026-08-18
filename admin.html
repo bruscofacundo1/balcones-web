@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232b2621'/><path d='M20 58 L50 32 L80 58 v22 H20z' fill='%23d89a4a'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/estilos.css?v=37">
+<link rel="stylesheet" href="css/estilos.css?v=38">
 <style>
   body { background: var(--arena); }
 
@@ -189,6 +189,15 @@
   .ayuda-contenido {
     font-size: .88rem; color: var(--piedra); margin: 0 0 22px; max-width: 62ch;
   }
+  .ayuda-fila { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+  .ayuda-fila .ayuda-contenido { flex: 1 1 320px; }
+  .ayuda-fila .boton { flex: none; white-space: nowrap; }
+  /* En el celular el botón va ancho completo: al lado del párrafo queda una
+     columna de 90px y el texto del botón se parte en tres renglones. */
+  @media (max-width: 520px) {
+    .ayuda-fila .boton { width: 100%; }
+    .ayuda-fila .ayuda-contenido { margin-bottom: 14px; }
+  }
   .grupo {
     background: var(--crema); border: 1px solid var(--borde);
     border-radius: var(--radio); padding: 20px 22px; margin-bottom: 16px;
@@ -199,6 +208,54 @@
   }
   .grupo__campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
   .grupo__campos--ancho { grid-template-columns: 1fr; }
+
+  /* Navegación de segundo nivel dentro de "Precios y textos". Reusa .tabs. */
+  .sub-tabs { margin-bottom: 20px; }
+  .sub-tabs button { position: relative; }
+  /* Punto en la pestaña que tiene cambios sin guardar: al cambiar de pestaña
+     los pendientes no se pierden, así que hace falta poder verlos desde acá. */
+  .sub-tabs button.con-cambios::after {
+    content: ''; position: absolute; top: 5px; right: 7px;
+    width: 6px; height: 6px; border-radius: 50%; background: var(--ocre);
+  }
+  @media (max-width: 520px) {
+    .sub-tabs { display: flex; width: 100%; }
+    .sub-tabs button { flex: 1 1 0; padding: 8px 6px; }
+  }
+
+  /* ------------------------------------------------------ tabla de precios -- */
+  /* Los precios se miran comparando: una temporada contra otra, una modalidad
+     contra otra. En cajas sueltas por temporada esa comparación no existía. */
+  .tabla-precios-caja { overflow-x: auto; margin: 0 -4px; padding: 0 4px; }
+  .tabla-precios { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 440px; }
+  .tabla-precios th, .tabla-precios td { padding: 7px 8px; text-align: left; }
+  .tabla-precios thead th {
+    font-size: .72rem; text-transform: uppercase; letter-spacing: .05em;
+    color: var(--piedra); font-weight: 600; white-space: nowrap;
+    border-bottom: 1px solid var(--borde); padding-bottom: 10px;
+  }
+  /* La primera columna queda fija: en el celular la tabla se desplaza a lo
+     ancho y sin esto se pierde de vista qué modalidad se está editando. */
+  .tabla-precios tbody th, .tabla-precios tfoot th {
+    font-weight: 600; font-size: .87rem; color: var(--carbon); white-space: nowrap;
+    position: sticky; left: 0; background: var(--crema); padding-left: 0;
+  }
+  .tabla-precios tfoot th, .tabla-precios tfoot td {
+    border-top: 1px solid var(--borde); padding-top: 14px;
+  }
+  .tabla-precios tfoot th { font-weight: 500; color: var(--carbon-suave); }
+
+  .celda-precio { display: flex; align-items: center; gap: 4px; }
+  .celda-precio input {
+    width: 100%; min-width: 96px; padding: 9px 10px; border: 1px solid var(--borde);
+    border-radius: var(--radio-sm); font-family: var(--texto); font-size: .9rem;
+    background: #fff; color: var(--carbon);
+  }
+  .celda-precio input:focus { outline: 2px solid var(--ocre); outline-offset: -1px; }
+  .volver-mini {
+    flex: none; border: 0; background: transparent; color: var(--terracota);
+    cursor: pointer; font-size: 1rem; line-height: 1; padding: 4px;
+  }
 
   .campo-ed label { display: flex; align-items: center; gap: 7px; font-size: .8rem; font-weight: 600; color: var(--carbon-suave); margin-bottom: 5px; }
   .campo-ed input, .campo-ed textarea {
@@ -220,6 +277,26 @@
     font-family: var(--texto); font-size: .74rem; text-decoration: underline; padding: 0; margin-left: auto;
   }
 
+  /* ------------------------------------------------ revisión de cambios -- */
+  .dif { padding: 13px 0; border-bottom: 1px solid var(--borde); }
+  .dif:last-of-type { border-bottom: 0; }
+  .dif__campo { font-size: .78rem; font-weight: 600; color: var(--piedra); margin: 0 0 7px; }
+  .dif__valores { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; font-size: .92rem; }
+  .dif__antes { color: var(--piedra); text-decoration: line-through; }
+  .dif__despues { color: var(--carbon); font-weight: 600; }
+  .dif__flecha { color: var(--piedra); }
+  /* Los textos largos y las listas no entran en una línea: van uno arriba del
+     otro y en bloques, donde el tachado sería ilegible. */
+  .dif__valores--apilado { display: block; }
+  .dif__valores--apilado .dif__antes,
+  .dif__valores--apilado .dif__despues {
+    display: block; white-space: pre-wrap; text-decoration: none; font-weight: 400;
+    padding: 9px 11px; border-radius: var(--radio-sm); line-height: 1.5;
+  }
+  .dif__valores--apilado .dif__antes { background: var(--arena-osc); color: var(--piedra); }
+  .dif__valores--apilado .dif__flecha { display: block; text-align: center; padding: 3px 0; }
+  .dif__valores--apilado .dif__despues { background: #e7f0e2; color: var(--carbon); }
+
   /* ---------------------------------------------------------------- fotos -- */
   .fotos-barra {
     display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px;
@@ -232,6 +309,15 @@
   .foto-tarjeta {
     background: var(--crema); border: 1px solid var(--borde);
     border-radius: var(--radio); overflow: hidden; display: flex; flex-direction: column;
+    position: relative;
+  }
+  /* Cuáles salen en el mosaico de la home. No se puede deducir del número de
+     orden: la selección es por categoría (ver Contenido.fotosDestacadas). */
+  .foto-tarjeta__portada {
+    position: absolute; top: 9px; left: 9px;
+    background: var(--terracota); color: #fff;
+    font-size: .64rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+    padding: 4px 9px; border-radius: 20px;
   }
   .foto-tarjeta img {
     width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: var(--arena-osc);
@@ -250,6 +336,12 @@
   }
   .foto-tarjeta__pie button:hover { border-color: var(--ocre); color: var(--terracota); }
   .foto-tarjeta__pie .peligro:hover { border-color: #b23b3b; color: #b23b3b; }
+  /* En el celular estos botones median 26px de alto, por debajo de lo que se
+     toca con confianza — y ahora son tres flechas pegadas, así que errarle a
+     la de al lado es fácil. */
+  @media (max-width: 520px) {
+    .foto-tarjeta__pie button { min-height: 40px; padding: 6px 12px; }
+  }
   .foto-tarjeta__pie .crece { flex: 1 1 auto; }
   .foto-tarjeta__orden { font-size: .74rem; color: var(--piedra); }
   .foto-tarjeta--subiendo { opacity: .5; }
@@ -357,11 +449,19 @@
 
     <!-- ------------------------------------------------ precios y textos -->
     <section id="vista-contenido" hidden>
-      <p class="ayuda-contenido">
-        Lo que cambies acá se ve en el sitio enseguida, sin volver a publicarlo.
-        Los campos con el punto naranja están modificados: podés volver al
-        valor original cuando quieras.
-      </p>
+      <div class="ayuda-fila">
+        <p class="ayuda-contenido">
+          Lo que cambies acá se ve en el sitio enseguida, sin volver a publicarlo.
+          Los campos con el punto naranja están modificados: podés volver al
+          valor original cuando quieras.
+        </p>
+        <button class="boton boton--linea" id="btn-preview" type="button">Ver cómo queda</button>
+      </div>
+      <div class="tabs sub-tabs" id="sub-tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-sub="precios">Precios</button>
+        <button role="tab" aria-selected="false" data-sub="textos">Textos</button>
+        <button role="tab" aria-selected="false" data-sub="datos">Datos</button>
+      </div>
       <div id="contenido-campos"><p class="vacio">Cargando…</p></div>
     </section>
 
@@ -376,7 +476,7 @@
     <span id="guardar-cuenta"></span>
     <span class="crece"></span>
     <button class="boton boton--linea" id="btn-descartar" type="button">Descartar</button>
-    <button class="boton boton--primario" id="btn-guardar" type="button">Guardar cambios</button>
+    <button class="boton boton--primario" id="btn-guardar" type="button">Revisar y publicar</button>
   </div>
 </div>
 
@@ -391,9 +491,9 @@
   </div>
 </div>
 
-<script src="js/config.js?v=37"></script>
-<script src="js/contenido.js?v=37"></script>
-<script src="js/precios.js?v=37"></script>
+<script src="js/config.js?v=38"></script>
+<script src="js/contenido.js?v=38"></script>
+<script src="js/precios.js?v=38"></script>
 <script>
 /* ============================================================================
    Panel de administración
@@ -489,6 +589,10 @@ $('form-login').addEventListener('submit', async e => {
 $('btn-salir').addEventListener('click', async () => {
   await fetch('/api/admin/sesion', { method: 'DELETE', credentials: 'same-origin' });
   estado.reservas = [];
+  // Al cerrar sesión no puede quedar un borrador dando vueltas en el navegador:
+  // es texto sin publicar, y una pestaña de preview olvidada lo seguiría
+  // mostrando después de haber salido.
+  Contenido.borrarPreview();
   mostrarLogin();
 });
 
@@ -1006,7 +1110,19 @@ async function guardarNueva(tipo, forzar) {
 
 /* --------------------------------------------------- precios y textos -- */
 
-const contenido = { campos: null, valores: {}, guardados: {}, pendientes: {} };
+const contenido = { campos: null, valores: {}, guardados: {}, pendientes: {}, sub: 'precios' };
+
+/**
+ * En qué pestaña va cada campo.
+ *
+ * Los precios se reconocen por el camino (`temporadas.…`) y no por la etiqueta
+ * del grupo: el grupo es texto para mostrar y podría cambiar, el camino no.
+ */
+function seccionDe(camino) {
+  if (camino.startsWith('temporadas.')) return 'precios';
+  const campo = contenido.campos[camino];
+  return campo && campo.grupo === 'Textos' ? 'textos' : 'datos';
+}
 
 /** Un valor de lista se edita como texto, un renglón por ítem. */
 const aTexto = v => Array.isArray(v) ? v.join('\n') : (v === undefined || v === null ? '' : String(v));
@@ -1025,6 +1141,9 @@ async function cargarContenido() {
     contenido.pendientes = {};
     pintarContenido();
     actualizarBarra();
+    // Cubre el guardado y el "volver al original": los dos recargan por acá,
+    // así que una pestaña de preview abierta se entera de los dos.
+    refrescarPreview();
   } catch (err) {
     if (err.message === 'sesion') return;
     $('contenido-campos').innerHTML = `<p class="vacio">${escapar(err.message)}</p>`;
@@ -1032,9 +1151,18 @@ async function cargarContenido() {
 }
 
 function pintarContenido() {
+  $('contenido-campos').innerHTML = contenido.sub === 'precios'
+    ? tablaPreciosHtml()
+    : gruposHtml(contenido.sub);
+  actualizarSubTabs();
+}
+
+/** Las secciones que no son precios: cajas con los campos uno abajo del otro. */
+function gruposHtml(seccion) {
   // Agrupar respetando el orden en que vienen del servidor.
   const grupos = new Map();
   for (const camino of Object.keys(contenido.campos)) {
+    if (seccionDe(camino) !== seccion) continue;
     const campo = contenido.campos[camino];
     if (!grupos.has(campo.grupo)) grupos.set(campo.grupo, []);
     grupos.get(campo.grupo).push(camino);
@@ -1048,8 +1176,117 @@ function pintarContenido() {
         ${caminos.map(campoHtml).join('')}
       </div></div>`;
   }
-  $('contenido-campos').innerHTML = html;
+  return html || '<p class="vacio">No hay nada para editar acá.</p>';
 }
+
+/* ------------------------------------------------------ tabla de precios -- */
+
+/**
+ * Las temporadas y modalidades que existen, sacadas de los caminos del propio
+ * catálogo y no de CONFIG. Así la tabla muestra exactamente lo que el servidor
+ * acepta editar: si algo no está en el catálogo, no aparece una celda muerta.
+ */
+function ejesPrecios() {
+  const temporadas = [];
+  const modalidades = [];
+  for (const camino of Object.keys(contenido.campos)) {
+    const m = camino.match(/^temporadas\.([^.]+)\.precios\.([^.]+)$/);
+    if (!m) continue;
+    if (!temporadas.includes(m[1])) temporadas.push(m[1]);
+    if (!modalidades.includes(m[2])) modalidades.push(m[2]);
+  }
+  return { temporadas, modalidades };
+}
+
+function tablaPreciosHtml() {
+  const { temporadas, modalidades } = ejesPrecios();
+  if (!temporadas.length || !modalidades.length) {
+    return '<p class="vacio">No hay precios para editar.</p>';
+  }
+
+  const nombreT = id => (CONFIG.temporadas.find(x => x.id === id) || {}).nombre || id;
+  const nombreM = id => (CONFIG.modalidades.find(x => x.id === id) || {}).nombre || id;
+
+  const cabecera = temporadas.map(t => `<th scope="col">${escapar(nombreT(t))}</th>`).join('');
+
+  const cuerpo = modalidades.map(m => `
+    <tr>
+      <th scope="row">${escapar(nombreM(m))}</th>
+      ${temporadas.map(t => `<td>${celdaHtml(
+        `temporadas.${t}.precios.${m}`, `${nombreM(m)}, ${nombreT(t)}`
+      )}</td>`).join('')}
+    </tr>`).join('');
+
+  // El mínimo de noches también es por temporada, pero no es plata: va abajo,
+  // separado por una línea, para que no se lea como una modalidad más.
+  const hayMinimos = temporadas.some(t => `temporadas.${t}.minNoches` in contenido.campos);
+  const pie = hayMinimos ? `
+    <tfoot>
+      <tr>
+        <th scope="row">Mínimo de noches</th>
+        ${temporadas.map(t => `<td>${celdaHtml(
+          `temporadas.${t}.minNoches`, `Mínimo de noches, ${nombreT(t)}`
+        )}</td>`).join('')}
+      </tr>
+    </tfoot>` : '';
+
+  return `
+    <div class="grupo">
+      <h3>Precios por noche</h3>
+      <div class="tabla-precios-caja">
+        <table class="tabla-precios">
+          <thead><tr><th></th>${cabecera}</tr></thead>
+          <tbody>${cuerpo}</tbody>
+          ${pie}
+        </table>
+      </div>
+    </div>`;
+}
+
+/**
+ * Una celda de la tabla. A diferencia de `campoHtml` no lleva etiqueta propia
+ * —se la dan los encabezados de fila y columna—, así que el nombre accesible
+ * va por `aria-label` y el "volver al original" queda como un icono chico.
+ */
+function celdaHtml(camino, etiquetaAccesible) {
+  const campo = contenido.campos[camino];
+  if (!campo) return '';
+  const editado = Object.prototype.hasOwnProperty.call(contenido.guardados, camino);
+  const valor = camino in contenido.pendientes
+    ? contenido.pendientes[camino]
+    : contenido.valores[camino];
+
+  return `
+    <div class="celda-precio ${camino in contenido.pendientes ? 'campo-ed--sucio' : ''}"
+         data-caja="${camino}">
+      <input type="number" id="c-${camino.replace(/\./g, '_')}" data-camino="${camino}"
+        value="${escapar(valor)}" min="${campo.min}" max="${campo.max}" step="1"
+        aria-label="${escapar(etiquetaAccesible)}">
+      ${editado ? `<button class="volver-mini" type="button" data-original="${camino}"
+        title="Volver al original" aria-label="Volver al original">&#8635;</button>` : ''}
+    </div>`;
+}
+
+/** Punto en la pestaña que tiene cambios sin guardar. */
+function actualizarSubTabs() {
+  const cuenta = { precios: 0, textos: 0, datos: 0 };
+  for (const camino of Object.keys(contenido.pendientes)) {
+    if (contenido.campos[camino]) cuenta[seccionDe(camino)]++;
+  }
+  for (const b of $('sub-tabs').querySelectorAll('[data-sub]')) {
+    b.setAttribute('aria-selected', String(b.dataset.sub === contenido.sub));
+    b.classList.toggle('con-cambios', cuenta[b.dataset.sub] > 0);
+  }
+}
+
+$('sub-tabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-sub]');
+  if (!b || b.dataset.sub === contenido.sub) return;
+  contenido.sub = b.dataset.sub;
+  // Los pendientes viven en el estado, no en el DOM: cambiar de pestaña no
+  // pierde nada de lo que se venía editando.
+  pintarContenido();
+});
 
 function campoHtml(camino) {
   const campo = contenido.campos[camino];
@@ -1092,15 +1329,20 @@ $('contenido-campos').addEventListener('input', e => {
   if (aTexto(valor) === aTexto(contenido.valores[camino])) delete contenido.pendientes[camino];
   else contenido.pendientes[camino] = valor;
 
-  control.closest('.campo-ed').classList.toggle('campo-ed--sucio', camino in contenido.pendientes);
+  // Por `data-caja` y no por `.campo-ed`: las celdas de la tabla de precios no
+  // son `.campo-ed`, y buscando esa clase `closest` devolvería null.
+  const caja = control.closest('[data-caja]');
+  if (caja) caja.classList.toggle('campo-ed--sucio', camino in contenido.pendientes);
   actualizarBarra();
+  actualizarSubTabs();
+  programarPreview();
 });
 
 $('contenido-campos').addEventListener('click', async e => {
   const boton = e.target.closest('[data-original]');
   if (!boton) return;
   const camino = boton.dataset.original;
-  if (!confirm(`¿Volver "${contenido.campos[camino].etiqueta}" al valor original?`)) return;
+  if (!confirm(`¿Volver "${nombreCampo(camino)}" al valor original?`)) return;
   // null borra la fila: el campo vuelve a salir de config.js.
   try {
     await api('/api/admin/contenido', {
@@ -1121,16 +1363,129 @@ function actualizarBarra() {
     : `${cuantos} cambios sin guardar`;
 }
 
+/* --------------------------------------------------------- vista previa -- */
+
+/**
+ * Lo que va a ver la pestaña de preview: lo ya publicado con los cambios sin
+ * guardar encima.
+ *
+ * Se manda el conjunto COMPLETO y no sólo lo que cambió, a propósito: así la
+ * otra pestaña aplica una sola cosa, en vez de tener que combinar el borrador
+ * con lo que le conteste el servidor — que es justo donde aparecerían las
+ * carreras entre las dos fuentes.
+ */
+function borradorActual() {
+  return { contenido: { ...contenido.guardados, ...contenido.pendientes } };
+}
+
+/**
+ * Reescribe el borrador, pero **sólo si ya existe**: o sea, sólo si alguien
+ * abrió la vista previa alguna vez. Sin esa condición el panel estaría
+ * dejando una clave en el navegador de alguien que nunca la pidió.
+ */
+function refrescarPreview() {
+  try {
+    if (localStorage.getItem(Contenido.PREVIEW_CLAVE)) {
+      Contenido.guardarPreview(borradorActual());
+    }
+  } catch (e) { /* modo privado: el preview no se actualiza y ya */ }
+}
+
+// Con retardo: sin esto se reescribiría —y la otra pestaña se recargaría— en
+// cada tecla.
+let relojPreview = null;
+function programarPreview() {
+  clearTimeout(relojPreview);
+  relojPreview = setTimeout(refrescarPreview, 400);
+}
+
+$('btn-preview').addEventListener('click', () => {
+  // Si el contenido todavía no cargó, el borrador saldría vacío y el preview
+  // mostraría los valores de config.js en lugar de los publicados. Mejor no
+  // escribir nada: sin borrador, la vista previa muestra lo que está publicado.
+  if (contenido.campos) Contenido.guardarPreview(borradorActual());
+  // Con nombre de ventana para que al tocarlo de nuevo se reuse la misma
+  // pestaña, en vez de ir abriendo una atrás de otra.
+  window.open('/?preview=1', 'bda-preview');
+});
+
 $('btn-descartar').addEventListener('click', () => {
   contenido.pendientes = {};
   pintarContenido();
   actualizarBarra();
+  // No se borra la clave: se reescribe sin los cambios descartados. Así la
+  // pestaña de preview vuelve a lo publicado pero sigue viva, y el próximo
+  // cambio se ve ahí sin tener que volver a abrirla.
+  refrescarPreview();
 });
 
-$('btn-guardar').addEventListener('click', async () => {
-  const boton = $('btn-guardar');
+/* ------------------------------------------------- revisión antes de publicar -- */
+
+/** El nombre del campo para mostrarle a una persona. */
+function nombreCampo(camino) {
+  const campo = contenido.campos[camino];
+  if (!campo) return camino;
+  // La etiqueta de un precio es sólo la modalidad, y se repite en las tres
+  // temporadas: sin decir cuál, no identifica nada.
+  return camino.startsWith('temporadas.')
+    ? `${campo.etiqueta} · ${campo.grupo.replace(/^Precios · /, '')}`
+    : campo.etiqueta;
+}
+
+/** El valor como se lee, no como se guarda. */
+function valorMostrable(camino, valor) {
+  if (valor === undefined || valor === null) return '';
+  if (Array.isArray(valor)) return valor.join('\n');
+  // Los precios son plata; el mínimo de noches y el % de seña no.
+  if (/^temporadas\..+\.precios\./.test(camino)) return pesos(valor);
+  return String(valor);
+}
+
+/**
+ * Antes se guardaba directo y la única señal era el contador ("3 cambios sin
+ * guardar"), que no dice **qué** cambió. Acá se ve viejo → nuevo, campo por
+ * campo, antes de tocar la base. Reusa la hoja que ya existe, así que no hay
+ * pantalla nueva que mantener.
+ */
+function abrirRevision() {
+  const caminos = Object.keys(contenido.pendientes);
+  if (!caminos.length) return;
+
+  const filas = caminos.map(camino => {
+    const antes = valorMostrable(camino, contenido.valores[camino]);
+    const despues = valorMostrable(camino, contenido.pendientes[camino]);
+    const apilado = ['lista', 'largo'].includes(contenido.campos[camino].tipo)
+      || antes.length > 42 || despues.length > 42;
+    return `
+      <div class="dif">
+        <p class="dif__campo">${escapar(nombreCampo(camino))}</p>
+        <div class="dif__valores ${apilado ? 'dif__valores--apilado' : ''}">
+          <span class="dif__antes">${escapar(antes) || '<em>vacío</em>'}</span>
+          <span class="dif__flecha">&#8594;</span>
+          <span class="dif__despues">${escapar(despues) || '<em>vacío</em>'}</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  abrirHoja(caminos.length === 1 ? 'Revisar 1 cambio' : `Revisar ${caminos.length} cambios`, `
+    ${filas}
+    <div class="acciones-hoja" style="margin-top:20px">
+      <button class="boton boton--linea" id="rev-volver" type="button">Seguir editando</button>
+      <button class="boton boton--primario" id="rev-publicar" type="button">Publicar</button>
+    </div>
+    <p class="estado-form" id="rev-estado"></p>`);
+
+  $('rev-volver').addEventListener('click', cerrarHoja);
+  $('rev-publicar').addEventListener('click', publicarCambios);
+}
+
+async function publicarCambios() {
+  const boton = $('rev-publicar');
+  const caja = $('rev-estado');
   boton.disabled = true;
-  boton.textContent = 'Guardando…';
+  boton.textContent = 'Publicando…';
+  caja.className = 'estado-form';
+  caja.textContent = '';
   try {
     await api('/api/admin/contenido', {
       method: 'POST',
@@ -1145,15 +1500,21 @@ $('btn-guardar').addEventListener('click', async () => {
     // evita un tercer viaje a la base y que el panel muestre por unos
     // segundos los precios anteriores a lo que uno mismo acaba de guardar.
     Contenido.aplicar(CONFIG, contenido.guardados);
-    boton.textContent = 'Guardado';
-    setTimeout(() => { boton.textContent = 'Guardar cambios'; }, 1200);
+    caja.className = 'estado-form estado-form--bien';
+    caja.textContent = 'Publicado.';
+    setTimeout(cerrarHoja, 700);
   } catch (err) {
-    if (err.message !== 'sesion') alert(err.message);
-    boton.textContent = 'Guardar cambios';
-  } finally {
+    if (err.message === 'sesion') return;
+    // El error va en la hoja y no en un alert: así queda a la vista junto a la
+    // lista de lo que se estaba por publicar.
+    caja.className = 'estado-form estado-form--mal';
+    caja.textContent = err.message;
     boton.disabled = false;
+    boton.textContent = 'Publicar';
   }
-});
+}
+
+$('btn-guardar').addEventListener('click', abrirRevision);
 
 // Aviso del navegador si se intenta salir con cambios a medio hacer.
 window.addEventListener('beforeunload', e => {
@@ -1238,6 +1599,10 @@ function pintarFotos() {
   const opciones = cat => galeria.categorias.map(c =>
     `<option value="${c}" ${c === cat ? 'selected' : ''}>${NOMBRE_CATEGORIA[c] || c}</option>`).join('');
 
+  // La misma cuenta que hace el sitio, no una copia: si fueran dos, la marca
+  // de acá y lo que se ve en la home se separarían al primer cambio.
+  const enPortada = new Set(Contenido.fotosDestacadas(galeria.fotos).map(f => f.id));
+
   cuerpo.innerHTML = `
     <div class="fotos-barra">
       <button class="boton boton--primario" id="btn-subir" type="button"
@@ -1256,12 +1621,20 @@ function pintarFotos() {
         cambiar epígrafes y sacar fotos.
       </div>`}
 
+    <div class="aviso-caja">
+      Las <strong>${enPortada.size} marcadas “en la portada”</strong> son las que
+      salen en el mosaico del inicio. No son las primeras de la lista: se eligen
+      hasta 3 de cada categoría, empezando por el entorno y las de afuera. Por eso
+      cambiar la categoría de una foto puede meterla o sacarla de la portada.
+    </div>
+
     <p class="progreso" id="fotos-progreso"></p>
 
     <div class="fotos-grid" id="fotos-grid">
       ${galeria.fotos.map((foto, i) => `
         <div class="foto-tarjeta" data-id="${foto.id}">
           <img src="${escapar(miniaturaDe(foto))}" alt="" loading="lazy">
+          ${enPortada.has(foto.id) ? '<span class="foto-tarjeta__portada">En la portada</span>' : ''}
           <div class="foto-tarjeta__cuerpo">
             <input type="text" value="${escapar(foto.t)}" data-titulo="${foto.id}"
               placeholder="Epígrafe" maxlength="120">
@@ -1269,6 +1642,8 @@ function pintarFotos() {
             <div class="foto-tarjeta__pie">
               <button type="button" data-mover="${foto.id}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Subir">&#8593;</button>
               <button type="button" data-mover="${foto.id}" data-dir="1" ${i === galeria.fotos.length - 1 ? 'disabled' : ''} aria-label="Bajar">&#8595;</button>
+              <button type="button" data-principio="${foto.id}" ${i === 0 ? 'disabled' : ''}
+                title="Llevar al principio" aria-label="Llevar al principio">&#8607;</button>
               <span class="foto-tarjeta__orden">${i + 1}</span>
               <span class="crece"></span>
               <button type="button" class="peligro" data-borrar="${foto.id}">Sacar</button>
@@ -1351,6 +1726,9 @@ $('fotos-cuerpo').addEventListener('click', async e => {
   const mover = e.target.closest('[data-mover]');
   if (mover) { await moverFoto(mover.dataset.mover, Number(mover.dataset.dir)); return; }
 
+  const principio = e.target.closest('[data-principio]');
+  if (principio) { await alPrincipio(principio.dataset.principio); return; }
+
   const borrar = e.target.closest('[data-borrar]');
   if (borrar) {
     const foto = galeria.fotos.find(f => f.id === borrar.dataset.borrar);
@@ -1390,19 +1768,15 @@ $('fotos-cuerpo').addEventListener('change', async e => {
   }
 });
 
-async function moverFoto(id, dir) {
-  const i = galeria.fotos.findIndex(f => f.id === id);
-  const j = i + dir;
-  if (i < 0 || j < 0 || j >= galeria.fotos.length) return;
-
-  // Se mueve primero en pantalla y después se avisa al servidor: mover una
-  // foto tiene que sentirse instantáneo aunque la base tarde.
-  const copia = galeria.fotos.slice();
-  copia[i] = galeria.fotos[j];
-  copia[j] = galeria.fotos[i];
+/**
+ * Deja ese orden y avisa al servidor.
+ *
+ * Se mueve primero en pantalla y después se manda: mover una foto tiene que
+ * sentirse instantáneo aunque la base tarde.
+ */
+async function guardarOrden(copia) {
   galeria.fotos = copia;
   pintarFotos();
-
   try {
     await api('/api/admin/fotos', {
       method: 'POST',
@@ -1411,6 +1785,29 @@ async function moverFoto(id, dir) {
   } catch (err) {
     if (err.message !== 'sesion') { avisoFotos('No se pudo guardar el orden: ' + err.message); }
   }
+}
+
+async function moverFoto(id, dir) {
+  const i = galeria.fotos.findIndex(f => f.id === id);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= galeria.fotos.length) return;
+  const copia = galeria.fotos.slice();
+  copia[i] = galeria.fotos[j];
+  copia[j] = galeria.fotos[i];
+  await guardarOrden(copia);
+}
+
+/**
+ * Con 56 fotos, llevar una del final al principio con las flechas son
+ * cincuenta y pico de toques — en el celular, que es donde se usa esto,
+ * directamente no se hace.
+ */
+async function alPrincipio(id) {
+  const i = galeria.fotos.findIndex(f => f.id === id);
+  if (i <= 0) return;
+  const copia = galeria.fotos.slice();
+  copia.unshift(copia.splice(i, 1)[0]);
+  await guardarOrden(copia);
 }
 
 async function restaurarGaleria() {

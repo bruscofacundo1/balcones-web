@@ -201,6 +201,90 @@
     }
   }
 
+  /* ---------------------------------------------------------- vista previa -- */
+
+  /*
+     Entrando a /?preview=1 el sitio se pinta con el borrador que el panel dejó
+     en localStorage, en vez de con lo que está publicado. Es el mismo mecanismo
+     que cualquier CMS llama "draft mode": la página se comporta distinto cuando
+     el flag está puesto.
+
+     Dos decisiones que importan:
+
+     - **No se lee el caché.** Si se aplicara primero lo cacheado y encima el
+       borrador, se vería un parpadeo justo en el momento en que alguien está
+       mirando si su cambio quedó bien. Sí se sigue pidiendo /api/contenido,
+       porque de ahí salen las fotos: el borrador sólo lleva los textos y los
+       precios, que es lo que se edita en la pestaña "Precios y textos".
+
+     - **Es seguro por construcción.** El borrador vive en el localStorage de
+       quien edita, así que un visitante cualquiera que entre a /?preview=1 no
+       tiene nada guardado y ve el sitio normal. No hay nada que proteger acá.
+  */
+
+  const PREVIEW_CLAVE = 'bda-contenido-preview';
+
+  function enPreview() {
+    try { return new URLSearchParams(location.search).has('preview'); }
+    catch (e) { return false; }
+  }
+
+  function leerPreview() {
+    try { return JSON.parse(localStorage.getItem(PREVIEW_CLAVE) || 'null'); }
+    catch (e) { return null; }
+  }
+
+  function guardarPreview(borrador) {
+    try { localStorage.setItem(PREVIEW_CLAVE, JSON.stringify(borrador)); }
+    catch (e) { /* modo privado o sin espacio */ }
+  }
+
+  function borrarPreview() {
+    try { localStorage.removeItem(PREVIEW_CLAVE); }
+    catch (e) { /* da igual */ }
+  }
+
+  /**
+   * Cuando el panel guarda un borrador nuevo, esta pestaña se RECARGA entera
+   * en vez de repintar la parte que cambió.
+   *
+   * Es a propósito, y es lo que más problemas evita: el sitio no tiene
+   * framework ni estado que se pueda perder, así que recargar desde el caché
+   * del navegador es instantáneo y vuelve a pasar por el mismo camino de
+   * siempre. Un repintado parcial reviviría el bug del IntersectionObserver de
+   * `.revelar` (ver CONTEXTO.md §3, "Animaciones"): un elemento pintado después
+   * de que corrió `iniciarRevelado()` no lo observa nadie y se queda invisible
+   * para siempre. Ese bug ya apareció dos veces; no hace falta una tercera.
+   */
+  function escucharPreview() {
+    window.addEventListener('storage', e => {
+      if (e.key === PREVIEW_CLAVE) location.reload();
+    });
+  }
+
+  /** Cinta fija para que nadie confunda el preview con el sitio publicado. */
+  function marcarPreview() {
+    const poner = () => {
+      if (document.getElementById('cinta-preview')) return;
+      const cinta = document.createElement('div');
+      cinta.id = 'cinta-preview';
+      cinta.textContent = 'Vista previa — cambios sin publicar';
+      // Va con estilos propios y no en estilos.css porque es una pieza del
+      // panel que se cuela en el sitio, no parte del sitio.
+      cinta.style.cssText = [
+        'position:fixed', 'left:0', 'right:0', 'bottom:0', 'z-index:2147483647',
+        'background:#b4552f', 'color:#fff', 'text-align:center',
+        'font:600 .78rem/1 system-ui,sans-serif', 'letter-spacing:.04em',
+        'padding:9px 12px',
+        // Sin esto taparía el botón de variantes, que vive en la misma esquina.
+        'pointer-events:none'
+      ].join(';');
+      document.body.appendChild(cinta);
+    };
+    if (document.body) poner();
+    else document.addEventListener('DOMContentLoaded', poner);
+  }
+
   /* ---------------------------------------------------------- la galería -- */
 
   // Igual que con el resto del contenido, hay que poder VOLVER: si se vacía
@@ -215,6 +299,27 @@
    * Muta el array en lugar de reasignarlo porque `FOTOS` es un `const` de
    * config.js y hay funciones que ya se quedaron con la referencia.
    */
+  /**
+   * Las fotos que van en el mosaico de la home.
+   *
+   * **No son las primeras 8 de la lista**: se toman hasta 3 de cada categoría
+   * en un orden fijo (primero el entorno y las de afuera) y recién ahí se corta
+   * en 8. Reordenar una foto en el panel puede sacarla o meterla en el mosaico
+   * sin que su número de orden lo explique.
+   *
+   * Vive acá y no en app.js porque el panel necesita la misma cuenta para poder
+   * marcar cuáles salen en la portada. Si fueran dos copias, la marca del panel
+   * y lo que se ve en el sitio se desincronizarían al primer cambio.
+   */
+  function fotosDestacadas(lista) {
+    const orden = ['entorno', 'aire-libre', 'casa', 'interiores'];
+    const elegidas = [];
+    orden.forEach(cat => {
+      lista.filter(f => f.c === cat).slice(0, 3).forEach(f => elegidas.push(f));
+    });
+    return (elegidas.length ? elegidas : lista).slice(0, 8);
+  }
+
   function aplicarFotos(lista) {
     if (typeof FOTOS === 'undefined') return;
     if (!fotosOriginales) fotosOriginales = FOTOS.slice();
@@ -243,6 +348,22 @@
    */
   async function preparar(config, opciones) {
     const { repintar, esperar } = opciones || {};
+
+    // Draft mode: cortocircuita el caché y la lógica de espera de más abajo.
+    // Se espera la respuesta sí o sí (las fotos salen de ahí) y no importa que
+    // tarde: acá no hay un visitante esperando, hay alguien mirando su cambio.
+    if (enPreview()) {
+      escucharPreview();
+      const borrador = leerPreview();
+      const fresco = await traer(ESPERA_MAX);
+      aplicar(config, (borrador && borrador.contenido) || (fresco && fresco.contenido) || {});
+      aplicarFotos((fresco && fresco.fotos) || []);
+      marcarPreview();
+      // No se llama a `repintar`: todas las páginas esperan a `preparar()`
+      // antes de pintar nada, así que acá todavía no hay nada pintado.
+      return config;
+    }
+
     const cache = leerCache();
     if (cache) {
       aplicar(config, cache.contenido || cache);
@@ -288,7 +409,8 @@
 
   const Contenido = {
     catalogo, leerCamino, escribirCamino, validar, aplicar, aplicarFotos,
-    preparar, leerCache, guardarCache, CLAVE_CACHE
+    preparar, leerCache, guardarCache, CLAVE_CACHE, fotosDestacadas,
+    enPreview, leerPreview, guardarPreview, borrarPreview, PREVIEW_CLAVE
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = Contenido;

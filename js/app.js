@@ -391,14 +391,11 @@ function iniciarFiltros() {
    fotos chiquitas. Nivel 3: una por una. Así la home no se hace eterna,
    que es el problema que tenía con 56 fotos en fila. */
 
-/** Las que van en el mosaico: primero el entorno y las de afuera. */
+/** Las que van en el mosaico: primero el entorno y las de afuera.
+    La cuenta vive en contenido.js porque el panel la necesita igual, para
+    marcar qué fotos salen en la portada (ver Contenido.fotosDestacadas). */
 function fotosDestacadas() {
-  const orden = ['entorno', 'aire-libre', 'casa', 'interiores'];
-  const elegidas = [];
-  orden.forEach(cat => {
-    FOTOS.filter(f => f.c === cat).slice(0, 3).forEach(f => elegidas.push(f));
-  });
-  return (elegidas.length ? elegidas : FOTOS).slice(0, 8);
+  return Contenido.fotosDestacadas(FOTOS);
 }
 
 function pintarMosaico() {

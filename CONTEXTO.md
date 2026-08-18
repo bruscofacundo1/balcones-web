@@ -22,7 +22,7 @@ y entrar a `http://localhost:5173`.
 > Con `file://` el navegador bloquea la navegación entre páginas y el flujo de
 > reserva se corta al pasar a `reserva.html`.
 
-**Caché:** los `<script>` y el CSS se cargan con `?v=32`. Cuando publiques un
+**Caché:** los `<script>` y el CSS se cargan con `?v=38`. Cuando publiques un
 cambio, **subí ese número** en todos los HTML (index, reserva, checkout,
 preguntas, legales, arrepentimiento) o los visitantes van a seguir viendo la
 versión vieja.
@@ -1021,6 +1021,153 @@ vencer el tope, y con una conexión lenta el visitante se quedaba con los
 precios viejos sin enterarse nunca — se descubrió probando en local, donde el
 pedido tardaba 1184 ms contra un tope de 900. Ahora el pedido sigue vivo y se
 aplica (repintando) cuando llega.
+
+### Tres pestañas, no una lista larga (18/08/2026)
+
+"Precios y textos" era una sola columna con los 26 campos del catálogo, uno
+abajo del otro, agrupados nada más que por la etiqueta de `grupo`. Un precio y
+el título de la home pesaban lo mismo en la pantalla.
+
+Ahora se parte en tres, con un segundo nivel de pestañas dentro de la vista:
+
+| Pestaña | Qué lleva | Cómo se muestra |
+|---|---|---|
+| **Precios** | los 12 campos `temporadas.*` | una tabla |
+| **Textos** | los 5 de prosa | campos anchos, uno abajo del otro |
+| **Datos** | contacto y reglas (9) | campos angostos en grilla |
+
+**La tabla es el cambio que más se nota.** Los precios se miran comparando —una
+temporada contra otra, una modalidad contra otra— y en cajas sueltas por
+temporada esa comparación no existía: había que recordar el número de arriba
+mientras se leía el de abajo. Filas = modalidades, columnas = temporadas, y el
+mínimo de noches abajo separado por una línea, porque no es plata y no tiene
+que leerse como una modalidad más.
+
+Detalles que no son cosméticos:
+
+- **`seccionDe()` clasifica por el camino (`temporadas.…`), no por la etiqueta
+  del grupo.** El grupo es texto para mostrar y podría cambiar; el camino no.
+- **Los ejes de la tabla salen del catálogo, no de CONFIG** (`ejesPrecios()`
+  los saca de los propios caminos). Así la tabla muestra exactamente lo que el
+  servidor acepta editar, y no aparece una celda muerta si algo quedó afuera.
+- **La primera columna es `sticky`.** En el celular la tabla se desplaza a lo
+  ancho dentro de su caja —la página nunca desborda— y sin eso se perdería de
+  vista qué modalidad se está editando.
+- **En la tabla no hay etiqueta visible**: se la dan los encabezados de fila y
+  columna, así que el nombre accesible va por `aria-label` con las dos cosas
+  ("Casa completa, Temporada alta") y el "volver al original" queda como un
+  icono chico. Por lo mismo, el `confirm` de volver al original agrega la
+  temporada: la etiqueta sola ("Casa completa") se repite en las tres columnas
+  y no diría cuál.
+- **El punto naranja en la pestaña** marca dónde quedaron cambios sin guardar.
+  Cambiar de pestaña **no** los pierde (los pendientes viven en el estado, no
+  en el DOM), y sin ese punto no habría forma de saber que quedó algo tocado en
+  otra pestaña.
+
+**Cuidado si se agregan campos:** el listener de edición ubica la caja del
+campo con `closest('[data-caja]')` y no con `.campo-ed`. Las celdas de la tabla
+no son `.campo-ed`, y buscando esa clase `closest` devuelve `null` y rompe al
+tipear. Cualquier control nuevo tiene que llevar `data-caja` en su contenedor.
+
+### Revisar antes de publicar (18/08/2026)
+
+"Guardar cambios" guardaba directo, y la única señal era el contador de la
+barra ("3 cambios sin guardar") — que dice **cuántos**, no **cuáles**. En una
+pantalla con 26 campos, tocar un precio de más y no enterarse es fácil.
+
+Ahora el botón dice **"Revisar y publicar"** y abre la hoja con la lista de
+viejo → nuevo, campo por campo, antes de tocar la base. Reusa `abrirHoja()`,
+así que no hay pantalla nueva que mantener.
+
+- Los **precios se muestran con formato de plata** y con la temporada al lado
+  ("Casa completa · Temporada alta"); el mínimo de noches y el % de seña, no,
+  porque no son plata.
+- Los **textos largos y las listas van apilados**, con el viejo y el nuevo en
+  bloques de color, porque un tachado sobre un párrafo entero es ilegible.
+- El error de publicación va **dentro de la hoja** y ya no en un `alert`: así
+  queda a la vista junto a la lista de lo que se estaba por publicar.
+
+### Las fotos de la portada (18/08/2026)
+
+Se agregó una marca **"En la portada"** en las fotos que salen en el mosaico
+del inicio, y un botón **"llevar al principio"** además de las flechas.
+
+**La marca no es un adorno, y la idea original era otra.** Se había pensado
+poner una línea divisoria después de la posición 8 ("hasta acá se ven en la
+portada"), dando por sentado que el mosaico eran las 8 primeras de la lista. No
+lo son: `fotosDestacadas()` toma hasta 3 de cada categoría en un orden fijo
+(entorno, aire libre, casa, interiores) y recién ahí corta en 8. Con la galería
+de hoy, las 8 de la portada están en las posiciones **1, 2, 25, 26, 27, 40, 41
+y 42**. La línea habría sido activamente engañosa.
+
+Por eso la función **se mudó de `app.js` a `contenido.js`**
+(`Contenido.fotosDestacadas(lista)`): el panel necesita exactamente la misma
+cuenta para marcar bien, y dos copias se desincronizan al primer cambio — el
+mismo criterio por el que `precios.js` es dual. `app.js` la sigue llamando con
+el mismo nombre, pasándole `FOTOS`.
+
+El botón "llevar al principio" existe porque con 56 fotos moverlas con las
+flechas son cincuenta y pico de toques; en el celular, que es donde se usa
+esto, directamente no se hace. De paso, en el celular los botones del pie de
+cada tarjeta pasaron de 26px a 40px de alto: con tres flechas pegadas, errarle
+a la de al lado era muy fácil.
+
+### La vista previa (`/?preview=1`, 18/08/2026)
+
+Editar precios y textos a ciegas era el reclamo concreto: los campos del panel
+("Bajada del inicio", "Aclaraciones debajo de las tarifas") no dicen nada si no
+se ve dónde caen en el sitio.
+
+Se resolvió con lo que cualquier CMS llama **draft mode**: entrando a
+`/?preview=1`, el sitio se pinta con un borrador que el panel deja en
+`localStorage` (`bda-contenido-preview`) en vez de con lo publicado. El botón
+**"Ver cómo queda"** de la pestaña "Precios y textos" escribe ese borrador y
+abre la vista previa en otra pestaña (siempre la misma, por el nombre de
+ventana). Mientras se sigue editando, el borrador se reescribe con 400 ms de
+retardo y la otra pestaña se entera por el evento `storage`.
+
+Cuatro decisiones que conviene no deshacer sin pensarlas:
+
+- **Se recarga entera, no se repinta.** Es lo que más problemas evita. El
+  sitio no tiene framework ni estado que perder, así que recargar desde caché
+  es instantáneo y vuelve a pasar por el mismo camino de siempre. Un repintado
+  parcial reviviría el bug del `IntersectionObserver` de `.revelar` (§3,
+  "Animaciones"), que ya apareció dos veces.
+- **No se lee el caché de `bda-contenido`.** Si se aplicara primero lo
+  cacheado y encima el borrador, habría un parpadeo justo en el momento en que
+  alguien está mirando si su cambio quedó bien. Es la misma regla que sigue
+  Next.js en draft mode: saltear el caché, no invalidarlo. Sí se sigue pidiendo
+  `/api/contenido`, porque de ahí salen las fotos — el borrador lleva sólo
+  textos y precios.
+- **El borrador es el conjunto completo, no el diff.** El panel manda
+  `{...guardados, ...pendientes}`. Así la otra pestaña aplica una sola cosa en
+  vez de combinar el borrador con lo que conteste el servidor, que es
+  exactamente donde aparecerían las carreras.
+- **Es seguro por construcción, no por permisos.** El borrador vive en el
+  `localStorage` de quien edita, así que un visitante cualquiera que entre a
+  `/?preview=1` no tiene nada guardado y ve el sitio normal. No hay endpoint
+  nuevo ni nada que proteger. La cinta naranja fija abajo está para que nadie
+  confunda la vista previa con el sitio publicado.
+
+El borrador se reescribe al guardar, al descartar y al volver un campo al
+original (todos pasan por `cargarContenido()`), y **se borra al cerrar
+sesión** — es texto sin publicar, y una pestaña olvidada lo seguiría mostrando
+después de haber salido. `refrescarPreview()` sólo reescribe si la clave ya
+existe: si nadie abrió nunca la vista previa, el panel no deja nada en el
+navegador.
+
+Esto es a propósito **el escalón más bajo** de las cuatro capas que usa la
+industria (formulario pelado → preview en otra pestaña → panel partido con
+iframe → clic-para-editar sobre la página). Se eligió así porque las capas de
+arriba se construyen todas encima de ésta: si algún día se quiere el iframe al
+costado, no hay que tirar nada. Y porque de los ~20 campos del catálogo sólo
+cinco son prosa (`heroTitulo`, `heroBajada`, `casaTitulo`, `casaTexto`,
+`notasTarifas`); a un precio o a un email no se le previsualiza nada. Ningún
+CMS grande le puso preview a la pantalla de configuración.
+
+Si alguna vez se pasa al iframe embebido, revisar antes las cabeceras de
+`vercel.json`: una CSP estricta bloquea el embebido, que es el problema con el
+que se choca todo el mundo al hacer esto.
 
 ### Y del lado del servidor
 
