@@ -22,7 +22,7 @@ y entrar a `http://localhost:5173`.
 > Con `file://` el navegador bloquea la navegación entre páginas y el flujo de
 > reserva se corta al pasar a `reserva.html`.
 
-**Caché:** los `<script>` y el CSS se cargan con `?v=42`. Cuando publiques un
+**Caché:** los `<script>` y el CSS se cargan con `?v=43`. Cuando publiques un
 cambio, **subí ese número** en todos los HTML (index, reserva, checkout,
 preguntas, legales, arrepentimiento) o los visitantes van a seguir viendo la
 versión vieja.
@@ -733,9 +733,57 @@ del detalle del día, las filas de datos, la nota dentro del `textarea` y el
 `title` de las celdas del calendario (que escapaba sólo las comillas). **Si se
 agrega algo nuevo que muestre datos de una reserva, va con `escapar()`.**
 
-Queda pendiente lo otro que hace falta ahí: `/api/reservar` no tiene ningún
-tope, así que cualquiera puede bloquear la agenda entera con un bucle, y las
-reservas `pendiente` de WhatsApp no expiran solas.
+### El resto de la revisión del flujo de reservas (18/08/2026)
+
+**Tope en `/api/reservar`.** Es público —lo usa el visitante, no puede pedir
+sesión— y cada llamada bloquea noches de verdad. Sin tope, un bucle dejaba el
+año entero reservado y había que limpiarlo a mano, una por una. Ahora son
+**5 por hora por IP**, que deja pasar de sobra a alguien que reserva, se
+arrepiente y prueba otras fechas. Reusa la tabla `intentos_login`, que ganó una
+columna `tipo`: una tabla y una sola limpieza para los dos frenos. **El cupo se
+gasta recién con la reserva ya hecha**, no al intentar: un pedido que rebotó
+por fecha ocupada no debería penalizar a quien está buscando de buena fe.
+
+**Las pendientes de WhatsApp expiran a los 14 días** (`expirarPendientes()`).
+El panel ya avisaba a los 7, pero avisar no alcanza si nadie mira. Toca **sólo**
+las de origen `whatsapp` en estado `pendiente`: nunca las pagadas, ni las
+cargadas a mano, ni los bloqueos. Y no borra: las marca `cancelada` con una nota
+que explica por qué, así quedan a la vista en el filtro "Canceladas" y se pueden
+volver a cargar. El barrido va colgado del pedido más frecuente del sitio
+(`nochesOcupadasPublicas`), como mucho una vez cada diez minutos por instancia,
+para no sumar un cron por algo que se mide en días.
+
+**El orden de escritura de `guardarReserva` se dio vuelta.** El driver HTTP de
+Neon manda cada sentencia en su propia transacción, así que entre las dos
+escrituras la función puede morir. Con el orden anterior —noches primero— eso
+dejaba **noches bloqueadas sin ninguna reserva asociada**: invisibles en el
+panel (que lista desde `reservas`) e imposibles de liberar sin entrar a la base
+a mano. Ahora se anota la reserva primero, así lo que puede quedar huérfano es
+una reserva que no bloquea sus noches: se ve en el panel y se da de baja de un
+clic. De los dos, es el único que se arregla sin ayuda. (Un `transaction()` de
+verdad no sirve acá: hay que mirar el resultado del primer INSERT para decidir
+si se sigue.)
+
+**El esquema se crea en un solo viaje.** Eran once sentencias con su `await`
+cada una: once round-trips a Neon en cada arranque en frío, justo antes de la
+primera reserva del día. Ahora van en un `db.transaction([...])`.
+
+**`nochesPagadas()` filtra a `noche >= current_date - 1`.** `ocupadas` no se
+limpia nunca; sin el filtro esa consulta crecía para siempre.
+
+Y en `index.html`, el `<img id="lb-img" src="">` del visor perdió el `src`
+vacío: con la cadena vacía el navegador pide la URL de la propia página, un
+pedido de más en cada visita.
+
+### Lo que se revisó y está bien
+
+Vale dejarlo escrito para no volver a dudarlo: **la carrera de dos personas
+reservando la misma noche está resuelta**, y `CONTEXTO.md` era más pesimista
+que el código. La clave primaria `(planta, noche)` **es** el lock atómico:
+Postgres serializa los dos INSERT, el segundo recibe menos filas de las que
+mandó, deshace lo suyo y responde 409. No hay sobreventa. Con Mercado Pago es
+distinto a propósito: si dos pagan a la vez se cobran las dos (`forzar`) porque
+la plata no se des-cobra, y el panel muestra la superpuesta.
 
 `lib/reservas.js` usa `@neondatabase/serverless`, que habla por HTTP en vez
 de mantener una conexión TCP abierta — lo que conviene en una función

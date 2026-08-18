@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232b2621'/><path d='M20 58 L50 32 L80 58 v22 H20z' fill='%23d89a4a'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/estilos.css?v=42">
+<link rel="stylesheet" href="css/estilos.css?v=43">
 <style>
   body { background: var(--arena); }
 
@@ -569,9 +569,9 @@
   </div>
 </div>
 
-<script src="js/config.js?v=42"></script>
-<script src="js/contenido.js?v=42"></script>
-<script src="js/precios.js?v=42"></script>
+<script src="js/config.js?v=43"></script>
+<script src="js/contenido.js?v=43"></script>
+<script src="js/precios.js?v=43"></script>
 <script>
 /* ============================================================================
    Panel de administración
@@ -592,6 +592,8 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto'
 const DIAS_SEM = ['L','M','M','J','V','S','D'];
 /** A partir de cuántos días una reserva sin seña ya merece que alguien la mire. */
 const DIAS_PARA_INSISTIR = 7;
+/** A los cuántos días el servidor las da de baja solo (lib/reservas.js). */
+const DIAS_PARA_EXPIRAR = 14;
 
 const estado = {
   reservas: [],
@@ -727,7 +729,9 @@ function pintarAvisos() {
     <div class="aviso-caja">
       <strong>${viejas.length} ${viejas.length === 1 ? 'reserva lleva' : 'reservas llevan'}
       más de ${DIAS_PARA_INSISTIR} días sin confirmar la seña.</strong>
-      Están bloqueando fechas. <button type="button" id="ir-pendientes">Verlas</button>
+      Están bloqueando fechas. Si nadie las toca, a los ${DIAS_PARA_EXPIRAR} días
+      se dan de baja solas y las fechas se liberan.
+      <button type="button" id="ir-pendientes">Verlas</button>
     </div>` : '';
 
   if (viejas.length) {

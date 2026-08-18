@@ -13,8 +13,11 @@
 
 const { DISPONIBILIDAD } = require('../js/disponibilidad.js');
 const Precios = require('../js/precios.js');
-const { nochesPagadas, marcarPendienteWhatsapp } = require('../lib/reservas.js');
+const {
+  nochesPagadas, marcarPendienteWhatsapp, puedeReservar, anotarReserva
+} = require('../lib/reservas.js');
 const { configEfectivo } = require('../lib/contenido.js');
+const { ipDe } = require('../lib/sesion.js');
 
 function idExterno() {
   return `wsp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -35,6 +38,16 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // Este endpoint es público y cada llamada bloquea noches de verdad: sin un
+    // tope, un bucle deja el año entero reservado y hay que limpiarlo a mano.
+    const ip = ipDe(req);
+    if (!(await puedeReservar(ip))) {
+      res.status(429).json({
+        error: 'Recibimos varios pedidos seguidos desde tu conexión. Esperá un rato y volvé a intentar, o escribinos por WhatsApp.'
+      });
+      return;
+    }
+
     // Con los precios que rigen ahora (config.js + lo editado en el panel),
     // no con los que tenga cacheados el navegador del visitante.
     const CONFIG = await configEfectivo();
@@ -86,6 +99,11 @@ module.exports = async (req, res) => {
       res.status(409).json({ error: 'Uy, justo se ocupó una de esas fechas. Elegí otras y probá de nuevo.' });
       return;
     }
+
+    // Se anota recién acá, con la reserva ya hecha: un pedido que rebotó por
+    // fecha ocupada o por mínimo de noches no debería gastarle el cupo a
+    // alguien que está buscando fechas de buena fe.
+    await anotarReserva(ip).catch(e => console.error('anotarReserva:', e));
 
     res.status(200).json({ ok: true, id, sena, total: cotizacion.total });
   } catch (err) {
