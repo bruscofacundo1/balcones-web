@@ -22,7 +22,7 @@ y entrar a `http://localhost:5173`.
 > Con `file://` el navegador bloquea la navegación entre páginas y el flujo de
 > reserva se corta al pasar a `reserva.html`.
 
-**Caché:** los `<script>` y el CSS se cargan con `?v=41`. Cuando publiques un
+**Caché:** los `<script>` y el CSS se cargan con `?v=42`. Cuando publiques un
 cambio, **subí ese número** en todos los HTML (index, reserva, checkout,
 preguntas, legales, arrepentimiento) o los visitantes van a seguir viendo la
 versión vieja.
@@ -686,6 +686,56 @@ sumándose por si alguna vez hace falta bloquear algo sin base de datos.
 El motivo no es prolijidad: dos listas que se actualizan por caminos
 distintos —una necesita deploy y la otra no— terminan desincronizándose, y en
 un sistema de reservas eso se llama sobreventa.
+
+**Faltaba la mitad de esa unificación (arreglado el 18/08/2026).** Al vaciar
+`disponibilidad.js` quedó bien el lado del servidor —`api/reservar.js` y
+`api/crear-pago.js` cruzan el archivo con la base antes de aceptar— pero
+**nadie reemplazó el lado del navegador**: `js/calendario.js` armaba `OCUPADAS`
+sólo desde ese archivo vacío, y ningún pedido traía las noches tomadas. El
+calendario mostraba **todo libre siempre**. El visitante elegía fechas ya
+vendidas, completaba el checkout y se enteraba recién al confirmar, con un
+mensaje ("Uy, justo se ocupó una de esas fechas") escrito para una carrera rara
+que en realidad era el camino normal de toda fecha ocupada.
+
+Ahora `/api/contenido` devuelve también `ocupadas` (`nochesOcupadasPublicas()`
+en `lib/reservas.js`) y `Contenido.aplicarOcupadas()` lo vuelca en `OCUPADAS`.
+Detalles que importan:
+
+- **Va en el pedido que ya se hacía**, no en uno nuevo: se necesita en el mismo
+  momento, antes de pintar. Que quede cacheado 60s en el borde es aceptable
+  porque el chequeo de verdad lo sigue haciendo la base al confirmar.
+- **Sólo de hoy en adelante y como arrays.** `ocupadas` no se limpia nunca; sin
+  el filtro, el pedido de cada visitante crecería para siempre.
+- **La disponibilidad cacheada en `localStorage` no se aplica.** Es lo único
+  del contenido que caduca de verdad: una noche libre ayer puede estar vendida
+  hoy. Los textos y los precios sí se pintan del caché al instante.
+- **`ocupadas: null` significa "no se pudo saber"**, distinto de
+  `{alta:[],baja:[]}` ("no hay ninguna ocupada"). Con `null` el sitio no
+  promete una disponibilidad que no pudo verificar.
+- La leyenda debajo del calendario decía *"Disponibilidad actualizada al
+  11/08/2026"*, una fecha congelada dentro del archivo que ya no se edita.
+  Mentía dos veces. Ahora sólo afirma algo si el servidor contestó.
+
+### El panel escapaba el contenido pero no las reservas (18/08/2026)
+
+`admin.html` pintaba el nombre del huésped, el teléfono y la nota con
+`innerHTML` **sin escapar**, mientras que las secciones de contenido y de fotos
+sí usaban `escapar()`. Y los datos del huésped entran por `/api/reservar`, que
+es **público**: no pide sesión y guarda `datos` tal como llega.
+
+O sea que un `POST` con `datos.nombre = "<img src=x onerror=…>"` ejecutaba
+código en el navegador de quien abriera el panel. La cookie es `httpOnly` y no
+se podía robar, pero el script actuaba *como* la administradora: cancelar
+reservas, leer los datos de todos los huéspedes, mandarlos afuera.
+
+Se escapó todo lo que viene del huésped: las tarjetas de la lista, los bloques
+del detalle del día, las filas de datos, la nota dentro del `textarea` y el
+`title` de las celdas del calendario (que escapaba sólo las comillas). **Si se
+agrega algo nuevo que muestre datos de una reserva, va con `escapar()`.**
+
+Queda pendiente lo otro que hace falta ahí: `/api/reservar` no tiene ningún
+tope, así que cualquiera puede bloquear la agenda entera con un bucle, y las
+reservas `pendiente` de WhatsApp no expiran solas.
 
 `lib/reservas.js` usa `@neondatabase/serverless`, que habla por HTTP en vez
 de mantener una conexión TCP abierta — lo que conviene en una función

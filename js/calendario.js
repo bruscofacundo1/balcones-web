@@ -853,9 +853,15 @@ function iniciarReservas() {
       window.open(enlaceWsp(mensajeReserva()), '_blank', 'noopener');
     });
 
+    // Antes decía "Disponibilidad actualizada al <fecha de disponibilidad.js>",
+    // una fecha congelada en un archivo que ya no se edita: mentía dos veces,
+    // porque además el calendario ni siquiera estaba mirando las reservas.
+    // Ahora sólo se afirma algo si el servidor pudo contestar de verdad.
     const act = document.getElementById('disp-actualizado');
-    if (act && DISPONIBILIDAD.actualizado) {
-      act.textContent = `Disponibilidad actualizada al ${formatoFechaLarga(DISPONIBILIDAD.actualizado)}.`;
+    if (act) {
+      act.textContent = Contenido.hayDisponibilidadFresca()
+        ? 'Disponibilidad al día. Confirmamos la fecha al recibir la seña.'
+        : 'No pudimos confirmar la disponibilidad en este momento: escribinos y te decimos enseguida.';
     }
   }
 

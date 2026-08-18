@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232b2621'/><path d='M20 58 L50 32 L80 58 v22 H20z' fill='%23d89a4a'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/estilos.css?v=41">
+<link rel="stylesheet" href="css/estilos.css?v=42">
 <style>
   body { background: var(--arena); }
 
@@ -569,9 +569,9 @@
   </div>
 </div>
 
-<script src="js/config.js?v=41"></script>
-<script src="js/contenido.js?v=41"></script>
-<script src="js/precios.js?v=41"></script>
+<script src="js/config.js?v=42"></script>
+<script src="js/contenido.js?v=42"></script>
+<script src="js/precios.js?v=42"></script>
 <script>
 /* ============================================================================
    Panel de administración
@@ -770,7 +770,7 @@ function mesHtml(anio, mes) {
 
     const quien = involucradas.map(nombreDe).join(', ');
     celdas += `<div class="${clases.join(' ')}" data-dia="${iso}"
-      title="${iso}${quien ? ' — ' + quien.replace(/"/g, '') : ' — libre'}">${d}</div>`;
+      title="${iso}${quien ? ' — ' + escapar(quien) : ' — libre'}">${d}</div>`;
   }
 
   return `
@@ -816,15 +816,15 @@ function tarjetaHtml(r) {
   const origen = { manual: 'a mano', whatsapp: 'WhatsApp', mercadopago: 'Mercado Pago', bloqueo: 'bloqueo' }[r.origen] || r.origen;
 
   return `
-    <button class="rsv ${r.estado === 'cancelada' ? 'rsv--cancelada' : ''}" data-id="${r.id}" type="button">
+    <button class="rsv ${r.estado === 'cancelada' ? 'rsv--cancelada' : ''}" data-id="${escapar(r.id)}" type="button">
       <div class="rsv__cab">
-        <span class="rsv__nombre">${nombreDe(r)}</span>
-        <span class="badge badge--${r.estado}">${r.estado}</span>
-        <span class="badge badge--suave">${origen}</span>
+        <span class="rsv__nombre">${escapar(nombreDe(r))}</span>
+        <span class="badge badge--${escapar(r.estado)}">${escapar(r.estado)}</span>
+        <span class="badge badge--suave">${escapar(origen)}</span>
       </div>
       <p class="rsv__meta">
         ${fechaCorta(r.entrada)} → ${fechaCorta(r.salida)} · ${noches} ${noches === 1 ? 'noche' : 'noches'}
-        · ${modalidad ? modalidad.nombre : r.modalidad}
+        · ${escapar(modalidad ? modalidad.nombre : r.modalidad)}
         ${r.origen !== 'bloqueo' ? ` · ${pesos(r.total)}` : ''}
       </p>
     </button>`;
@@ -895,10 +895,10 @@ function abrirDia(iso) {
   const unicas = [...new Set([ocupa.alta, ocupa.baja].filter(Boolean))];
 
   const bloques = unicas.map(r => `
-    <button class="rsv" data-id="${r.id}" type="button" style="margin-bottom:10px">
+    <button class="rsv" data-id="${escapar(r.id)}" type="button" style="margin-bottom:10px">
       <div class="rsv__cab">
-        <span class="rsv__nombre">${nombreDe(r)}</span>
-        <span class="badge badge--${r.estado}">${r.estado}</span>
+        <span class="rsv__nombre">${escapar(nombreDe(r))}</span>
+        <span class="badge badge--${escapar(r.estado)}">${escapar(r.estado)}</span>
       </div>
       <p class="rsv__meta">${fechaCorta(r.entrada)} → ${fechaCorta(r.salida)}</p>
     </button>`).join('');
@@ -949,7 +949,7 @@ function abrirDetalle(id) {
 
   abrirHoja(nombreDe(r), `
     <dl class="datos-dl">
-      ${filas.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}
+      ${filas.map(([k, v]) => `<div><dt>${escapar(k)}</dt><dd>${escapar(v)}</dd></div>`).join('')}
     </dl>
 
     ${r.estado === 'cancelada' ? '' : `
@@ -966,7 +966,7 @@ function abrirDetalle(id) {
       </div>`}
       <div class="campo-ad">
         <label for="ed-nota">Nota interna</label>
-        <textarea id="ed-nota" placeholder="Lo que quieras recordar de esta reserva">${r.nota || ''}</textarea>
+        <textarea id="ed-nota" placeholder="Lo que quieras recordar de esta reserva">${escapar(r.nota || '')}</textarea>
       </div>
       <div class="acciones-hoja">
         <button class="boton boton--linea" id="ed-guardar" type="button">Guardar cambios</button>

@@ -468,7 +468,13 @@
       clearTimeout(reloj);
       if (!r.ok) return null;
       const datos = await r.json();
-      return { contenido: datos.contenido || {}, fotos: datos.fotos || [] };
+      return {
+        contenido: datos.contenido || {},
+        fotos: datos.fotos || [],
+        // null = "no se pudo saber". Distinto de {alta:[],baja:[]}, que
+        // significa "no hay ninguna noche ocupada".
+        ocupadas: datos.ocupadas === undefined ? null : datos.ocupadas
+      };
     } catch (e) {
       return null;   // sin conexión, tardó demasiado o no hay base
     }
@@ -601,6 +607,59 @@
     for (const foto of nuevas) FOTOS.push(foto);
   }
 
+  /* --------------------------------------------------- disponibilidad -- */
+
+  // Si alguna vez llegó la lista del servidor, aunque después falle un pedido.
+  // Evita que un error de red vuelva a mostrar el calendario entero libre.
+  let ocupadasConocidas = false;
+
+  /**
+   * Vuelca en `OCUPADAS` las noches que están tomadas.
+   *
+   * **Sin esto el calendario mostraba todo libre siempre.** `OCUPADAS` se
+   * armaba sólo desde `disponibilidad.js`, que quedó vacío a propósito cuando
+   * la disponibilidad pasó a vivir en la base — pero del lado del navegador
+   * nadie la reemplazó. El visitante elegía fechas ya vendidas y se enteraba
+   * recién al confirmar, con un mensaje pensado para una carrera rara.
+   *
+   * Se vacía y se vuelve a llenar el Set en su lugar en vez de reasignarlo:
+   * `OCUPADAS` es un `const` de calendario.js y varias funciones ya se
+   * quedaron con la referencia. Igual que con FOTOS.
+   *
+   * Lo que quede en `disponibilidad.js` se suma, no se pisa: ese archivo sigue
+   * siendo la red de seguridad para bloquear algo sin base de datos.
+   */
+  function aplicarOcupadas(ocupadas) {
+    if (!ocupadas) return false;
+    let destino;
+    try {
+      if (typeof OCUPADAS === 'undefined') return false;
+      destino = OCUPADAS;
+    } catch (e) {
+      return false;   // calendario.js no está cargado en esta página
+    }
+
+    let base = { alta: [], baja: [] };
+    try {
+      if (typeof DISPONIBILIDAD !== 'undefined') base = DISPONIBILIDAD;
+    } catch (e) { /* tampoco pasa nada */ }
+
+    for (const planta of ['alta', 'baja']) {
+      if (!destino[planta]) continue;
+      destino[planta].clear();
+      for (const n of (base[planta] || [])) destino[planta].add(n);
+      for (const n of (ocupadas[planta] || [])) destino[planta].add(n);
+    }
+    ocupadasConocidas = true;
+    return true;
+  }
+
+  /** ¿Se pudo confirmar la disponibilidad con el servidor? Lo usa el sitio
+      para no prometer una fecha que no pudo verificar. */
+  function hayDisponibilidadFresca() {
+    return ocupadasConocidas;
+  }
+
   /**
    * Deja `config` listo para pintar.
    *
@@ -631,6 +690,7 @@
       const fresco = await traer(ESPERA_MAX);
       aplicar(config, (borrador && borrador.contenido) || (fresco && fresco.contenido) || {});
       aplicarFotos((fresco && fresco.fotos) || []);
+      aplicarOcupadas(fresco && fresco.ocupadas);
       marcarPreview();
       // No se llama a `repintar`: todas las páginas esperan a `preparar()`
       // antes de pintar nada, así que acá todavía no hay nada pintado.
@@ -641,6 +701,10 @@
     if (cache) {
       aplicar(config, cache.contenido || cache);
       aplicarFotos(cache.fotos);
+      // La disponibilidad cacheada NO se aplica: es lo único de acá que
+      // caduca de verdad (una noche libre ayer puede estar vendida hoy).
+      // Se espera la del servidor y hasta entonces `hayDisponibilidadFresca()`
+      // devuelve false.
     }
 
     const pedido = traer(ESPERA_MAX).then(fresco => {
@@ -650,7 +714,13 @@
 
     const usarLoQueLlegue = fresco => {
       if (!fresco) return;
-      if (cache && JSON.stringify(fresco) === JSON.stringify(cache)) return;
+      // La disponibilidad se aplica siempre, aunque el resto no haya cambiado:
+      // el calendario arranca sin ella y es el dato que no puede quedar viejo.
+      const cambioDisponibilidad = aplicarOcupadas(fresco.ocupadas);
+      if (cache && JSON.stringify(fresco) === JSON.stringify(cache)) {
+        if (cambioDisponibilidad && typeof repintar === 'function') repintar();
+        return;
+      }
       aplicar(config, fresco.contenido);
       aplicarFotos(fresco.fotos);
       if (typeof repintar === 'function') repintar();
@@ -685,6 +755,7 @@
     validar, validarValor, aplicar, aplicarFotos, COLECCIONES,
     revisarCobertura, revisarRango,
     preparar, leerCache, guardarCache, CLAVE_CACHE, fotosDestacadas,
+    aplicarOcupadas, hayDisponibilidadFresca,
     enPreview, leerPreview, guardarPreview, borrarPreview, PREVIEW_CLAVE
   };
 

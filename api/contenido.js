@@ -24,6 +24,7 @@
 
 const { obtenerOverrides } = require('../lib/contenido.js');
 const { listarFotos } = require('../lib/fotos.js');
+const { nochesOcupadasPublicas } = require('../lib/reservas.js');
 
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
@@ -31,7 +32,13 @@ module.exports = async (req, res) => {
     return;
   }
   try {
-    const [contenido, fotos] = await Promise.all([obtenerOverrides(), listarFotos()]);
+    // `ocupadas` va en el mismo pedido y no en uno aparte: se necesita en el
+    // mismo momento (antes de pintar el calendario) y así el visitante hace un
+    // viaje en vez de dos. Que quede cacheado 60s en el borde es aceptable —
+    // el chequeo de verdad lo hace igual la base al confirmar la reserva.
+    const [contenido, fotos, ocupadas] = await Promise.all([
+      obtenerOverrides(), listarFotos(), nochesOcupadasPublicas()
+    ]);
     // `max-age=0, must-revalidate` es para el navegador del visitante: que
     // pregunte siempre (le sale un 304 barato) en vez de quedarse con una
     // copia vieja por un rato indeterminado. Sin esto, al no haber max-age,
@@ -40,10 +47,13 @@ module.exports = async (req, res) => {
     // `s-maxage` sí es para el borde de Vercel, que es quien absorbe el
     // tráfico y evita que cada visita golpee la base.
     res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate, s-maxage=60, stale-while-revalidate=600');
-    res.status(200).json({ contenido, fotos });
+    res.status(200).json({ contenido, fotos, ocupadas });
   } catch (err) {
     console.error('contenido:', err);
     // Nunca un error: el sitio tiene que poder seguir con lo de config.js.
-    res.status(200).json({ contenido: {}, fotos: [] });
+    // `ocupadas: null` es "no se pudo saber", distinto de "no hay ninguna
+    // ocupada": con null el calendario no promete una disponibilidad que no
+    // pudo confirmar, y el choque lo sigue frenando la base al reservar.
+    res.status(200).json({ contenido: {}, fotos: [], ocupadas: null });
   }
 };
