@@ -275,7 +275,7 @@ function tarjetasActividades(lista, conRevelado) {
 }
 
 function pintarActividades() {
-  document.getElementById('actividades').innerHTML = tarjetasActividades(ACTIVIDADES.slice(0, 4), true);
+  document.getElementById('actividades').innerHTML = tarjetasActividades(ACTIVIDADES.slice(0, 4), !animacionesListas);
   document.getElementById('todas-actividades-grid').innerHTML = tarjetasActividades(ACTIVIDADES, false);
 }
 
@@ -635,7 +635,10 @@ function pintarTarifas(idContenedor) {
   // está cerrado nunca cruza el umbral del IntersectionObserver, así que si
   // arrancara en opacity:0 quedaría invisible para siempre aunque se abra
   // el desplegable. Sólo la grilla que se ve de entrada usa la cascada.
-  const conRevelado = idContenedor === 'tarifas-grid';
+  // `&& !animacionesListas`: si esto se repinta después de que corrió
+  // iniciarRevelado(), un .revelar nuevo no lo observa nadie y la tarjeta
+  // queda en opacity:0 PARA SIEMPRE. Un repintado tardío aparece sin animar.
+  const conRevelado = idContenedor === 'tarifas-grid' && !animacionesListas;
 
   cont.innerHTML = CONFIG.temporadas.map(t => `
     <article class="tarifa ${conRevelado ? 'revelar' : ''} ${t.destacada ? 'tarifa--destacada' : ''}">
@@ -665,8 +668,9 @@ function pintarUnidades() {
   const cont = document.getElementById('unidades-tira');
   if (!cont) return;
 
+  const rev = animacionesListas ? '' : ' revelar revelar--foto';
   cont.innerHTML = CONFIG.modalidades.map((m, i) => `
-    <article class="unidad revelar revelar--foto${i === 0 ? ' unidad--principal' : ''}">
+    <article class="unidad${rev}${i === 0 ? ' unidad--principal' : ''}">
       <img class="unidad__foto" src="${FOTO_UNIDAD[m.id]}" alt="" loading="lazy">
       <div class="unidad__cuerpo">
         <h3>${m.nombre}</h3>
@@ -681,8 +685,9 @@ function pintarBandas() {
   const cont = document.getElementById('bandas-unidades');
   if (!cont) return;
 
+  const rev = animacionesListas ? '' : ' revelar revelar--foto';
   cont.innerHTML = CONFIG.modalidades.map((m, i) => `
-    <article class="banda revelar revelar--foto${i === 0 ? ' banda--principal' : ''}">
+    <article class="banda${rev}${i === 0 ? ' banda--principal' : ''}">
       <img class="banda__foto" src="${FOTO_UNIDAD[m.id]}" alt="${m.nombre}" loading="lazy">
       <div class="banda__cuerpo">
         <h3>${m.nombre}</h3>

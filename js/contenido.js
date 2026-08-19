@@ -691,6 +691,20 @@
   }
 
   /**
+   * Vuelve a dibujar el calendario si ya está en pantalla.
+   *
+   * Es lo único que hay que actualizar cuando llegan las fechas ocupadas —
+   * no la página entera. El modal las toma solo porque se dibuja al abrirlo;
+   * el panel de la home (variante `b` de "Reservas en el inicio") se dibuja al
+   * cargar y sin esto se quedaría con el calendario vacío.
+   */
+  function redibujarCalendario() {
+    try {
+      if (typeof dibujarCalendario === 'function') dibujarCalendario();
+    } catch (e) { /* la página no tiene calendario */ }
+  }
+
+  /**
    * Deja `config` listo para pintar.
    *
    * `opciones.repintar` — función que vuelve a dibujar lo que sale de CONFIG,
@@ -746,11 +760,18 @@
       if (!fresco) return;
       // La disponibilidad se aplica siempre, aunque el resto no haya cambiado:
       // el calendario arranca sin ella y es el dato que no puede quedar viejo.
-      const cambioDisponibilidad = aplicarOcupadas(fresco.ocupadas);
-      if (cache && JSON.stringify(fresco) === JSON.stringify(cache)) {
-        if (cambioDisponibilidad && typeof repintar === 'function') repintar();
-        return;
-      }
+      //
+      // Pero NO dispara `repintar`. `repintar` vuelve a pintar la página
+      // entera, y las fechas ocupadas no cambian nada de lo que ahí se dibuja:
+      // el calendario se dibuja aparte, al abrirlo. Llamarlo acá hacía que
+      // media home se repintara en cada visita sin necesidad — y eso destapó
+      // el bug de `.revelar` en las tarjetas de tarifas y unidades, que
+      // quedaban invisibles.
+      aplicarOcupadas(fresco.ocupadas);
+      redibujarCalendario();
+
+      if (cache && JSON.stringify(fresco) === JSON.stringify(cache)) return;
+
       aplicar(config, fresco.contenido);
       aplicarFotos(fresco.fotos);
       if (typeof repintar === 'function') repintar();

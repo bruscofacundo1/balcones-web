@@ -52,6 +52,42 @@ la cancelación que devuelve las noches a la reserva que sigue en pie, la
 expiración y el tope por IP. **No hay sobreventa**: la clave primaria
 `(planta, noche)` es el lock atómico.
 
+### El bug que se destapó al final (19/08/2026)
+
+En el sitio publicado, las tarjetas de "Cómo se alquila" **quedaban invisibles**:
+la sección aparecía con el título, un hueco enorme en blanco y las notas de
+"Bueno a saber" abajo.
+
+Es el bug del `IntersectionObserver` de `.revelar` otra vez, por tercera vez, y
+esta vez llegó desde el otro lado. `iniciarRevelado()` escanea el DOM **una sola
+vez**; lo que se pinte con `.revelar` después queda en `opacity: 0` y nadie lo
+vuelve visible. `pintarMosaico()` ya consultaba `animacionesListas` para
+evitarlo, pero **otros cuatro pintores no**: `pintarTarifas`, `pintarUnidades`,
+`pintarBandas` y `pintarActividades` agregaban la clase siempre.
+
+Eso era una bomba con la mecha larga: sólo estallaba si la página se repintaba
+tarde, que pasaba rara vez. **Y el cambio de la disponibilidad le prendió la
+mecha**: `usarLoQueLlegue` llamaba a `repintar()` cuando llegaban las fechas
+ocupadas, o sea prácticamente en cada visita.
+
+Se arreglaron las dos puntas:
+
+- **Los cuatro pintores consultan `animacionesListas`**, como ya hacía
+  `pintarMosaico`. Un repintado tardío pinta visible, sin animar.
+- **Las fechas ocupadas ya no disparan `repintar()`.** No hacía falta: no
+  cambian nada de lo que esa función dibuja. Lo único que sí hay que actualizar
+  es el calendario, y para eso está `redibujarCalendario()`, que es puntual.
+
+**Por qué no se veía en local:** sin `/api/contenido` (que el `http.server` de
+Python no sirve) el pedido falla, `usarLoQueLlegue` no corre nunca y no hay
+repintado tardío. El bug sólo aparece donde la API contesta.
+
+**Y una trampa al medirlo:** `.revelar` tiene `transition: opacity .7s`. Si se
+le saca la clase `visible` a un elemento que ya está en pantalla y se lee
+`getComputedStyle` en el acto, devuelve **1**, porque la transición recién
+arranca. Parece que no reproduce. Para verlo hay que pintar el HTML de cero
+—como hace el código real— y ahí sí da `opacity: 0` enseguida.
+
 ### Qué quedó pendiente
 
 **Para hacer sí o sí:**
@@ -98,7 +134,7 @@ y entrar a `http://localhost:8788` (el puerto sale de `.claude/launch.json`).
 > Con `file://` el navegador bloquea la navegación entre páginas y el flujo de
 > reserva se corta al pasar a `reserva.html`.
 
-**Caché:** los `<script>` y el CSS se cargan con `?v=45`. Cuando publiques un
+**Caché:** los `<script>` y el CSS se cargan con `?v=46`. Cuando publiques un
 cambio, **subí ese número** en **los siete** HTML (index, reserva, checkout,
 preguntas, legales, arrepentimiento y admin) o los visitantes van a seguir
 viendo la versión vieja.
