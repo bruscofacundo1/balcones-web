@@ -22,7 +22,7 @@ y entrar a `http://localhost:5173`.
 > Con `file://` el navegador bloquea la navegación entre páginas y el flujo de
 > reserva se corta al pasar a `reserva.html`.
 
-**Caché:** los `<script>` y el CSS se cargan con `?v=44`. Cuando publiques un
+**Caché:** los `<script>` y el CSS se cargan con `?v=45`. Cuando publiques un
 cambio, **subí ese número** en todos los HTML (index, reserva, checkout,
 preguntas, legales, arrepentimiento) o los visitantes van a seguir viendo la
 versión vieja.
@@ -1253,10 +1253,17 @@ las fechas ya puestas — así no hay que volver a cargarlas a mano cada año.
 Compara **por solapamiento y no por fecha exacta**: un rango cargado a mano
 puede arrancar antes (como el de 2027) y sigue siendo la misma Semana Santa.
 
-**Un efecto que conviene mirar:** temporada alta pide un mínimo de 3 noches, así
-que un finde largo de sábado a lunes (2 noches) queda rechazado. Si se quieren
-vender esos findes, hay que bajar el mínimo de alta o poner esos rangos en
-media.
+**El mínimo de temporada alta bajó de 3 a 2 noches**, justamente por esto: con
+3, un finde largo de sábado a lunes (2 noches) quedaba rechazado — en las fechas
+que más se piden. Ahora las tres temporadas piden 2.
+
+Y al tocarlo apareció una duplicación: el número estaba escrito **dos veces**,
+en `minNoches` y a mano dentro de `incluye`, que es lo que pinta la tarjeta de
+tarifas. Como `minNoches` ahora se edita desde el panel y `incluye` no está en
+el catálogo, cambiarlo desde /admin habría dejado la tarjeta mostrando el número
+viejo para siempre. Se sacó de `incluye` en las tres temporadas y la tarjeta lo
+lee de `minNoches` (`pintarTarifas`, `js/app.js`). **Si se agregan más datos a
+`incluye`, que ninguno repita algo que ya viva en otro campo.**
 
 Y los textos de `periodo` se corrigieron: decían "Semana Santa" cuando no había
 ningún rango de Semana Santa, y no mencionaban el 20 al 31 de diciembre.

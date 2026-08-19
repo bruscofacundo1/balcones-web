@@ -650,6 +650,10 @@ function pintarTarifas(idContenedor) {
       </ul>
       <p class="tarifa__unidad">por noche</p>
       <ul class="tarifa__detalle">
+        <!-- El mínimo sale de minNoches, no de incluye: es editable desde
+             /admin, y tenerlo escrito dos veces hacía que la tarjeta siguiera
+             mostrando el número viejo después de cambiarlo. -->
+        <li>Mínimo de noches<span>${t.minNoches}</span></li>
         ${t.incluye.map(([k, v]) => `<li>${k}<span>${v}</span></li>`).join('')}
       </ul>
       <a class="boton boton--linea" href="#reservas" data-reservar>Ver disponibilidad</a>

@@ -141,7 +141,9 @@ const CONFIG = {
         alta: 110000,
         baja: 90000
       },
-      minNoches: 3,
+      // 2 y no 3: con 3, un finde largo de sábado a lunes (2 noches) quedaba
+      // rechazado, justo en las fechas que más se piden. Ver CONTEXTO.md.
+      minNoches: 2,
       color: '#b4552f',
       destacada: true,
       rangos: [
@@ -178,7 +180,6 @@ const CONFIG = {
         { nombre: 'Finde largo de octubre',   desde: '2027-10-09', hasta: '2027-10-11' }
       ],
       incluye: [
-        ['Mínimo de noches', '3'],
         ['Ropa blanca', 'Incluida'],
         ['Servicios', 'Todo incluido']
       ]
@@ -200,7 +201,6 @@ const CONFIG = {
         { nombre: 'Primavera', desde: '10-01', hasta: '12-19' }
       ],
       incluye: [
-        ['Mínimo de noches', '2'],
         ['Ropa blanca', 'Incluida'],
         ['Servicios', 'Todo incluido']
       ]
@@ -222,7 +222,6 @@ const CONFIG = {
         { nombre: 'Fin del invierno', desde: '07-26', hasta: '09-30' }
       ],
       incluye: [
-        ['Mínimo de noches', '2'],
         ['Ropa blanca', 'Incluida'],
         ['Estadías largas', 'Consultar descuento']
       ]
