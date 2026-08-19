@@ -8,24 +8,104 @@ proyecto (vos, otra persona o Claude en otra sesión), leé esto primero.
 
 ---
 
+## Lo último: la revisión del 18/08/2026
+
+El detalle de cada cosa está en su sección temática; esto es sólo el mapa. La
+sesión arrancó por el panel de edición y terminó revisando el flujo de reservas
+entero.
+
+**Dos problemas serios que aparecieron revisando, y que no eran el pedido
+original:**
+
+| Qué | Dónde está contado |
+|---|---|
+| **El calendario público mostraba todo libre siempre.** Al unificar la disponibilidad en la base se vació `disponibilidad.js`, pero del lado del navegador nadie lo reemplazó. El visitante elegía fechas ya vendidas y se enteraba al confirmar | §6 · *Disponibilidad: una sola capa* |
+| **XSS almacenado en el panel** desde `/api/reservar`, que es público. El nombre del huésped se pintaba con `innerHTML` sin escapar | §6 · *El panel escapaba el contenido pero no las reservas* |
+
+**Errores de cálculo encontrados:**
+
+- **El 29 de febrero no caía en ninguna temporada** y se cobraba al precio del
+  fallback en plena temporada alta (§6.d · *Cuándo rige cada temporada*).
+- **El mínimo de 3 noches de temporada alta** rechazaba los findes largos de
+  sábado a lunes. Bajó a 2 (§6.d · *Las fechas móviles ya cargadas*).
+- **El mínimo de noches estaba escrito dos veces** — en `minNoches` y a mano en
+  `incluye`— y sólo uno era editable desde el panel.
+
+**El panel de edición, que era el pedido original:**
+
+- Vista previa del sitio mientras se edita (`/?preview=1`), §6.d
+- Precios en tabla, y las cuatro pestañas Precios · Fechas · Textos · Datos, §6.d
+- Revisión con el viejo → nuevo antes de publicar, §6.d
+- Preguntas y opiniones: agregar, sacar y reordenar, §6.d
+- Rangos de temporada editables, con nombre y con excepciones por año, §6.d
+- Semana Santa y findes largos ya cargados; el panel calcula las próximas, §6.d
+- En fotos, cuáles salen en la portada y un "llevar al principio", §6.d
+
+**Robustez del flujo de reservas** (§6 · *El resto de la revisión*): tope de 5
+reservas por hora y por IP, expiración de las pendientes a los 14 días, y el
+orden de escritura invertido para que un fallo a mitad de camino no deje noches
+bloqueadas invisibles.
+
+**Lo que se probó contra la base real** (§6 · *Lo que se revisó y está bien*):
+las dos personas reservando la misma noche, el pago de Mercado Pago superpuesto,
+la cancelación que devuelve las noches a la reserva que sigue en pie, la
+expiración y el tope por IP. **No hay sobreventa**: la clave primaria
+`(planta, noche)` es el lock atómico.
+
+### Qué quedó pendiente
+
+**Para hacer sí o sí:**
+
+- **Rotar la contraseña de Neon.** Se compartió para poder probar contra la base
+  real. Dashboard → Roles → Reset password, y actualizar `DATABASE_URL` en
+  Vercel **con un deployment nuevo** (guardar la variable sola no alcanza).
+- **Completar lo marcado `<< REVISAR >>` en `config.js`**: CUIT y titular reales
+  (sin eso `legales.html` muestra un aviso y el pie no dibuja la línea fiscal),
+  coordenadas exactas del mapa, precios reales, y las reseñas verdaderas en
+  lugar de las tres de ejemplo. **No inventar ninguno de esos datos.**
+
+**Deuda conocida, ninguna urgente:**
+
+- **21 noches en `ocupadas` no tienen `reserva_id`** (son de antes de que
+  existiera esa columna) y las 3 reservas cargadas figuran con cero noches.
+  `cancelarReserva` las cubre por el camino viejo, así que funciona; emparejarlas
+  con un script las dejaría prolijas.
+- **Los fines de semana largos hay que cargarlos a mano cada año**: los fija el
+  gobierno por decreto y no se pueden calcular. La Semana Santa sí la calcula el
+  panel sola.
+- **El texto de `periodo` se podría generar** a partir de los nombres de los
+  rangos, en vez de escribirse aparte. Hoy hay que acordarse de mantener los dos.
+- **`abrirDia()` en `admin.html` suma un listener por cada día que se abre** y
+  nunca los saca. Hoy no hace daño porque los viejos buscan atributos que otras
+  hojas no tienen, pero es una trampa para la próxima hoja que los use.
+- **`actualizarReserva` lee y escribe sin transacción**: dos personas editando la
+  misma reserva a la vez pisarían una a la otra. Riesgo bajo con una sola
+  administradora.
+
+---
+
 ## 1. Cómo se levanta
 
 No hay build. Para verlo en el navegador alcanza con abrir `index.html`, pero
 para que funcione el paso de una página a otra conviene levantar un servidor:
 
 ```bash
-python -m http.server 5173 --directory "Nueva WEB Balcones del arroyo"
+python -m http.server 8788
 ```
 
-y entrar a `http://localhost:5173`.
+y entrar a `http://localhost:8788` (el puerto sale de `.claude/launch.json`).
 
 > Con `file://` el navegador bloquea la navegación entre páginas y el flujo de
 > reserva se corta al pasar a `reserva.html`.
 
 **Caché:** los `<script>` y el CSS se cargan con `?v=45`. Cuando publiques un
-cambio, **subí ese número** en todos los HTML (index, reserva, checkout,
-preguntas, legales, arrepentimiento) o los visitantes van a seguir viendo la
-versión vieja.
+cambio, **subí ese número** en **los siete** HTML (index, reserva, checkout,
+preguntas, legales, arrepentimiento y admin) o los visitantes van a seguir
+viendo la versión vieja.
+
+> `admin.html` tiene el grueso de su código *adentro* del propio archivo, así
+> que el `?v=` no lo cubre: para ver un cambio del panel a veces hace falta
+> recarga forzada (Ctrl+Shift+R). Pasó mientras se probaba el arreglo del XSS.
 
 **Funciones serverless (`api/`):** necesitan sus dependencias instaladas una
 vez:
@@ -70,11 +150,12 @@ entorno y conectar la base de Neon (los dos pasos están detallados en §6).
 | `preguntas.html` | Las 13 preguntas frecuentes completas (en el inicio sólo se ven algunas, según la variante) |
 | `legales.html` | Términos y condiciones, privacidad y cancelación |
 | `arrepentimiento.html` | Botón de arrepentimiento (Res. 424/2020) |
-| `admin.html` | Panel para cargar la disponibilidad. Genera el texto de `disponibilidad.js` |
+| `admin.html` | El panel entero: calendario, reservas, precios y textos, fotos (§6.c y §6.d) |
 | `css/estilos.css` | Todos los estilos |
-| `js/config.js` | **Los datos del negocio**: precios, temporadas, textos, contacto, FAQ, Public Key de Mercado Pago |
-| `js/disponibilidad.js` | Qué noches están ocupadas, por planta (la base cargada a mano) |
-| `js/precios.js` | Fechas, disponibilidad y cotización — funciones puras, sin DOM. Las usa tanto el navegador como el servidor (ver §6) |
+| `js/config.js` | **Los datos del negocio**: precios, temporadas y sus rangos, textos, contacto, FAQ, opiniones, Public Key de Mercado Pago |
+| `js/disponibilidad.js` | **Vacío a propósito.** Quedó como red de seguridad; las noches ocupadas viven en la base (§6) |
+| `js/precios.js` | Fechas, temporadas y cotización — funciones puras, sin DOM. Las usa el navegador y el servidor (§6) |
+| `js/contenido.js` | **Qué se puede editar desde el panel y cómo se valida.** Dual como `precios.js`. También la vista previa, las colecciones y el cálculo de Semana Santa (§6.d) |
 | `js/variantes.js` | Sistema de variantes (provisorio, ver §5) |
 | `js/calendario.js` | Calendario, drawer y modal de reserva (usa `precios.js` para las cuentas) |
 | `js/app.js` | Arma el resto de la página: galería, carrusel, ambientes, FAQ… |
@@ -85,11 +166,18 @@ entorno y conectar la base de Neon (los dos pasos están detallados en §6).
 | `js/legales.js` | Rellena los datos variables de `legales.html` y `arrepentimiento.html` |
 | `js/arrepentimiento.js` | Formulario y código de trámite del botón de arrepentimiento |
 | `lib/mercadopago.js` | Cliente de Mercado Pago del lado del servidor |
-| `lib/reservas.js` | Disponibilidad "en vivo" en Postgres (Neon): lo que ya se pagó online |
+| `lib/reservas.js` | Reservas y noches ocupadas en Postgres (Neon). También el tope por IP y la expiración de pendientes |
+| `lib/contenido.js` | Lee y guarda lo editado desde el panel. `configEfectivo()` es lo que tiene que usar todo lo que cotiza o cobra |
+| `lib/fotos.js` | La galería editable, en la base y en Vercel Blob (§6.e) |
+| `lib/sesion.js` | Cookie de sesión firmada del panel, y `ipDe()` (§6.c) |
+| `api/contenido.js` | **Público.** Textos, fotos y **noches ocupadas** — todo en un pedido, antes de pintar |
 | `api/crear-pago.js` | Cobra la seña (recalcula todo del lado del servidor) |
 | `api/webhook-mercadopago.js` | Recibe los avisos de Mercado Pago cuando cambia el estado de un pago |
-| `api/reservar.js` | Bloquea la fecha sin cobrar (variante WhatsApp de "Cómo se paga") |
-| `api/admin/reservas.js` | Lista, confirma y cancela reservas — lo usa el panel nuevo de `admin.html` |
+| `api/reservar.js` | **Público.** Bloquea la fecha sin cobrar (variante WhatsApp), con tope por IP |
+| `api/admin/reservas.js` | Lista, crea, confirma y cancela reservas |
+| `api/admin/contenido.js` | Guarda precios y textos; valida contra el mismo catálogo que el panel |
+| `api/admin/fotos.js` | Subir, reordenar, editar y sacar fotos |
+| `api/admin/sesion.js` | Entrar y salir del panel, con freno de fuerza bruta |
 | `package.json` | Dependencias de `api/` y `lib/` (no hay build del sitio) |
 
 **Todo lo que se toca seguido está en `js/config.js`.** Precios, temporadas,
@@ -902,8 +990,6 @@ al abrir la página, con la pregunta concreta que hay que responder.
 
 ### Otras cosas menores
 
-- `admin.html` no tiene contraseña. No es grave porque sólo genera texto para
-  copiar y pegar, pero cualquiera con la URL lo abre.
 - Las fotos pesan 18 MB en total. Ninguna llega al mega, pero si en algún
   momento va a un hosting con límite de tráfico, conviene comprimirlas.
 
@@ -1528,3 +1614,32 @@ actualizaba pero la grilla seguía mostrando el orden viejo hasta recargar.
 - **El calendario dibuja el mismo componente en tres lugares** (sección, drawer
   y modal) desde una sola función. Si agregás un cuarto, pasale los ids a
   `dibujarEn()`.
+
+### Del panel y las reservas (18/08/2026)
+
+- **Todo lo que muestre datos de una reserva va con `escapar()`.** Los datos del
+  huésped entran por `/api/reservar`, que es público y no los valida. Ahí ya
+  hubo un XSS.
+- **`guardarReserva` escribe la reserva ANTES que las noches.** Al revés, un
+  fallo entre las dos escrituras deja noches bloqueadas que no se ven ni se
+  pueden liberar desde el panel.
+- **La vista previa recarga la página entera en vez de repintar.** Un repintado
+  parcial revive el bug del `IntersectionObserver` de `.revelar`, que ya
+  apareció dos veces.
+- **La disponibilidad no se toma del caché de `localStorage`.** Es lo único del
+  contenido que caduca de verdad: una noche libre ayer puede estar vendida hoy.
+- **En el panel, escribir en un sub-campo de una colección no repinta** — se
+  perdería el foco. Sólo agregar, sacar y reordenar repintan.
+- **El listener de edición busca la caja con `closest('[data-caja]')`**, no con
+  `.campo-ed`: las celdas de la tabla de precios no llevan esa clase y `closest`
+  devolvería `null`.
+- **`revisarItem` se nombra con un string, no con la función.** El catálogo
+  viaja al panel como JSON y una función no sobrevive a `JSON.stringify`.
+- **Los rangos fijos tienen que cubrir el año exactamente una vez.**
+  `revisarCobertura()` lo comprueba en el panel y en el servidor. Una noche sin
+  temporada se cobra al fallback; una en dos, la primera del array.
+- **Nada en `incluye` debe repetir un dato que ya viva en otro campo.** El
+  mínimo de noches estaba en los dos lados y sólo uno era editable.
+- **El mosaico de la portada no son las primeras 8 fotos**: se eligen hasta 3
+  por categoría. Por eso la cuenta vive en `contenido.js` y la usan el sitio y
+  el panel.

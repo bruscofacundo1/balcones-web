@@ -19,15 +19,22 @@ Y entrar a `http://localhost:5173`.
 
 ## Dónde se tocan las cosas
 
-| Quiero cambiar… | Archivo |
+| Quiero cambiar… | Dónde |
 |---|---|
-| Precios, textos del inicio, contacto, seña, horarios | El panel: `/admin` → "Precios y textos" |
-| La galería (agregar, sacar, reordenar, epígrafes) | El panel: `/admin` → "Fotos" |
-| Qué fechas están ocupadas | El panel: `/admin` (ya no se edita `js/disponibilidad.js`) |
-| Preguntas frecuentes, comodidades, actividades, ambientes | `js/config.js` |
+| Precios por temporada y mínimo de noches | `/admin` → Precios y textos → **Precios** |
+| Cuándo rige cada temporada, Semana Santa, findes largos | `/admin` → Precios y textos → **Fechas** |
+| Textos del inicio, preguntas frecuentes, opiniones | `/admin` → Precios y textos → **Textos** |
+| Contacto, seña, horarios de ingreso y salida | `/admin` → Precios y textos → **Datos** |
+| La galería (agregar, sacar, reordenar, epígrafes) | `/admin` → **Fotos** |
+| Qué fechas están ocupadas | `/admin` → Calendario o Reservas (ya no se edita `js/disponibilidad.js`) |
+| Comodidades, actividades, ambientes | `js/config.js` |
 | Los valores de arranque de todo lo editable | `js/config.js` (el panel los pisa) |
 | Las fotos que vienen con el sitio | `img/` y `img/thumb/` |
 | Estilos | `css/estilos.css` |
+
+Antes de publicar un cambio de precios o textos, el botón **"Ver cómo queda"**
+abre el sitio con lo que estás editando, sin publicar nada; y **"Revisar y
+publicar"** te muestra el viejo → nuevo campo por campo antes de tocar la base.
 
 Todo lo marcado con `<< REVISAR >>` en `js/config.js` tiene datos de ejemplo y
 hay que reemplazarlo por los reales.
