@@ -74,6 +74,13 @@ online:
      *Storage → Create Database → Blob* y Vercel inyecta la variable solo. Es
      lo que permite subir fotos nuevas desde el panel; sin esto el resto de la
      galería (reordenar, epígrafes, sacar) igual funciona.
+
+     > **El store va PÚBLICO, no privado.** Las fotos las carga el navegador
+     > del visitante con `<img src>`; un store privado entrega URLs
+     > `*.private.blob.vercel-storage.com` que sólo se pueden leer con el SDK
+     > y un token, así que las fotos no se verían. El código ya las sube con
+     > `access: 'public'`. Acá no hay nada sensible: son las fotos de la casa
+     > que se muestran en el sitio.
    - `MP_ACCESS_TOKEN` — el Access Token de
      [mercadopago.com.ar/developers/panel](https://www.mercadopago.com.ar/developers/panel)
      (empezá con el de prueba, `TEST-...`). Sólo hace falta si van a prender

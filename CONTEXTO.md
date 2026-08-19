@@ -1599,6 +1599,14 @@ código. Requiere crear un Blob store en el proyecto (Storage → Create Databas
 dice con esa instrucción exacta y **deja igual reordenar, editar y sacar** —
 sólo se bloquea subir.
 
+**El store va público, no privado.** Vercel agregó los blobs privados después
+de que se escribió esto, y al crear el store ahora hay que elegir. Las fotos
+las carga el navegador del visitante con `<img src>`, y un store privado
+entrega URLs `*.private.blob.vercel-storage.com` que sólo se leen con el SDK y
+un token: las fotos no se verían. Por eso `api/admin/fotos.js` las sube con
+`access: 'public'`. Acá no hay nada sensible que proteger — son las fotos de la
+casa que se muestran en el sitio.
+
 Se eligió Blob antes que guardar las imágenes en Postgres: son binarios
 grandes, inflan los backups y Neon sirve para datos, no para archivos. Y antes
 que commitearlas a GitHub, por lo mismo del token (ver §6.d).
