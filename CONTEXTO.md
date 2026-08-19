@@ -1595,9 +1595,19 @@ galería original" tiene que ser un botón, no una restauración desde un backup
 
 En **Vercel Blob**, no en `img/`: el servidor no puede escribir en su propio
 código. Requiere crear un Blob store en el proyecto (Storage → Create Database
-→ Blob), lo que inyecta `BLOB_READ_WRITE_TOKEN` solo. Si falta, el panel lo
-dice con esa instrucción exacta y **deja igual reordenar, editar y sacar** —
-sólo se bloquea subir.
+→ Blob), lo que inyecta las variables solo. Si faltan, el panel lo dice con esa
+instrucción exacta y **deja igual reordenar, editar y sacar** — sólo se bloquea
+subir.
+
+**Qué variables inyecta cambió (19/08/2026), y `haySubidaDeFotos()` (`lib/fotos.js`)
+tiene que reconocer las dos formas.** Antes Vercel ponía `BLOB_READ_WRITE_TOKEN`
+al conectar un store; ahora usa OIDC por defecto (token de corta vida, más
+seguro) y pone `VERCEL_OIDC_TOKEN` + `BLOB_STORE_ID`. El SDK de `@vercel/blob`
+entiende las dos —`put()`/`del()` no cambian—, pero el chequeo sólo buscaba la
+variable vieja: el panel decía "no se puede subir" con la subida en realidad
+andando. Se vio en vivo, con un store recién conectado que traía las dos
+variables nuevas. El chequeo ahora es
+`BLOB_READ_WRITE_TOKEN || (VERCEL_OIDC_TOKEN && BLOB_STORE_ID)`.
 
 **El store va público, no privado.** Vercel agregó los blobs privados después
 de que se escribió esto, y al crear el store ahora hay que elegir. Las fotos

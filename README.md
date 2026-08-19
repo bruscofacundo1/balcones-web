@@ -70,10 +70,12 @@ online:
      y al azar, y guardala en un gestor de contraseñas: con esa clave se
      cancelan reservas y se ven los datos de los huéspedes. Cambiarla cierra
      todas las sesiones abiertas.
-   - `BLOB_READ_WRITE_TOKEN` — **no se carga a mano**. Se crea el store desde
-     *Storage → Create Database → Blob* y Vercel inyecta la variable solo. Es
-     lo que permite subir fotos nuevas desde el panel; sin esto el resto de la
-     galería (reordenar, epígrafes, sacar) igual funciona.
+   - El acceso a **Vercel Blob** — **no se carga a mano**. Se crea el store
+     desde *Storage → Create Database → Blob* y Vercel inyecta las variables
+     solo (`VERCEL_OIDC_TOKEN` + `BLOB_STORE_ID`, o el viejo
+     `BLOB_READ_WRITE_TOKEN` según cómo se haya conectado — el código acepta
+     las dos formas). Es lo que permite subir fotos nuevas desde el panel; sin
+     esto el resto de la galería (reordenar, epígrafes, sacar) igual funciona.
 
      > **El store va PÚBLICO, no privado.** Las fotos las carga el navegador
      > del visitante con `<img src>`; un store privado entrega URLs
