@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232b2621'/><path d='M20 58 L50 32 L80 58 v22 H20z' fill='%23d89a4a'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/estilos.css?v=43">
+<link rel="stylesheet" href="css/estilos.css?v=44">
 <style>
   body { background: var(--arena); }
 
@@ -569,9 +569,9 @@
   </div>
 </div>
 
-<script src="js/config.js?v=43"></script>
-<script src="js/contenido.js?v=43"></script>
-<script src="js/precios.js?v=43"></script>
+<script src="js/config.js?v=44"></script>
+<script src="js/contenido.js?v=44"></script>
+<script src="js/precios.js?v=44"></script>
 <script>
 /* ============================================================================
    Panel de administración
@@ -1399,9 +1399,38 @@ function coleccionCuerpoHtml(camino) {
     <div class="col-pie">
       <button class="boton boton--linea" type="button" data-col-agregar="${camino}"
         ${items.length >= campo.maxItems ? 'disabled' : ''}>+ Agregar ${escapar(campo.singular)}</button>
+      ${esRangos && proximaSemanaSanta(camino) ? `
+        <button class="boton boton--linea" type="button" data-semana-santa="${camino}">
+          + ${escapar(proximaSemanaSanta(camino).nombre)}</button>` : ''}
       <span class="crece"></span>
       <span class="col-cuenta">${items.length} de ${campo.maxItems}</span>
     </div>`;
+}
+
+/**
+ * La primera Semana Santa que todavía no esté cargada en esa temporada.
+ *
+ * La fecha de Pascua se calcula (`Contenido.semanaSanta`), así que esto no hay
+ * que actualizarlo cada año a mano — que es justo lo que sí pasa con los fines
+ * de semana largos, que los fija el gobierno por decreto y no se pueden deducir.
+ */
+function proximaSemanaSanta(camino) {
+  const items = valorVigente(camino) || [];
+  const hoy = new Date().toISOString().slice(0, 10);
+  const desde = new Date().getFullYear();
+  for (let a = desde; a < desde + 10; a++) {
+    const ss = Contenido.semanaSanta(a);
+    if (ss.hasta < hoy) continue;   // ya pasó
+    // Se compara por solapamiento y no por fecha exacta: un rango cargado a
+    // mano puede arrancar antes (en 2027 la Semana Santa argentina son cinco
+    // días, porque le entran el 24 de Memoria y el jueves no laborable) y
+    // seguiría siendo la misma Semana Santa.
+    const yaEsta = items.some(x =>
+      /^\d{4}-/.test(String(x.desde || '')) && x.desde <= ss.hasta && x.hasta >= ss.desde);
+    if (yaEsta) continue;
+    return ss;
+  }
+  return null;
 }
 
 /** Una copia con la que trabajar, sin tocar lo que devolvió el servidor. */
@@ -1621,6 +1650,18 @@ $('contenido-campos').addEventListener('click', async e => {
     const nuevo = $('contenido-campos').querySelector(
       `[data-col="${camino}"][data-i="${lista.length - 1}"]`);
     if (nuevo) { nuevo.focus(); nuevo.scrollIntoView({ block: 'center' }); }
+    return;
+  }
+
+  const ss = e.target.closest('[data-semana-santa]');
+  if (ss) {
+    const camino = ss.dataset.semanaSanta;
+    const rango = proximaSemanaSanta(camino);
+    if (!rango) return;
+    const lista = copiaVigente(camino);
+    lista.push(rango);
+    fijarColeccion(camino, lista);
+    pintarContenido();
     return;
   }
 

@@ -135,7 +135,7 @@ const CONFIG = {
     {
       id: 'alta',
       nombre: 'Temporada alta',
-      periodo: 'Enero, febrero, Semana Santa y vacaciones de invierno',
+      periodo: 'Verano, vacaciones de invierno, Semana Santa y fines de semana largos',
       precios: {                                   // << REVISAR >>
         completa: 180000,
         alta: 110000,
@@ -150,7 +150,32 @@ const CONFIG = {
         // (media) en plena temporada alta. En los años no bisiestos el 02-29
         // simplemente no existe y no molesta.
         { nombre: 'Verano',                 desde: '12-20', hasta: '02-29' },
-        { nombre: 'Vacaciones de invierno', desde: '07-10', hasta: '07-25' }
+        { nombre: 'Vacaciones de invierno', desde: '07-10', hasta: '07-25' },
+
+        // ---- Fechas móviles: se cargan con año porque cambian de lugar cada
+        // año, y por eso le ganan al rango fijo que tengan encima.  << REVISAR >>
+        // Las FECHAS están verificadas (Pascua es calculable y los feriados
+        // salen del calendario oficial), pero que estos días sean temporada
+        // ALTA es una decisión de precio: cambialos o sacalos desde /admin →
+        // Fechas, sin tocar el código.
+        //
+        // OJO con el mínimo de noches: temporada alta pide 3, así que un finde
+        // largo de sábado a lunes (2 noches) queda rechazado. Si querés vender
+        // esos findes, bajá el mínimo de alta o poné estos rangos en media.
+
+        // Semana Santa. En 2027 son 5 días seguidos: el miércoles 24 es el Día
+        // de la Memoria y el jueves 25 no laborable, pegados al Viernes Santo.
+        { nombre: 'Semana Santa 2027',        desde: '2027-03-24', hasta: '2027-03-28' },
+        { nombre: 'Semana Santa 2028',        desde: '2028-04-13', hasta: '2028-04-16' },
+
+        // Fines de semana largos que caen fuera de los rangos fijos.
+        { nombre: 'Finde largo de octubre',   desde: '2026-10-10', hasta: '2026-10-12' },
+        { nombre: 'Finde largo de noviembre', desde: '2026-11-21', hasta: '2026-11-23' },
+        { nombre: 'Finde largo de diciembre', desde: '2026-12-05', hasta: '2026-12-08' },
+        { nombre: 'Finde largo de junio',     desde: '2027-06-19', hasta: '2027-06-21' },
+        { nombre: 'Finde largo del 9 de julio', desde: '2027-07-09', hasta: '2027-07-11' },
+        { nombre: 'Finde largo de agosto',    desde: '2027-08-14', hasta: '2027-08-16' },
+        { nombre: 'Finde largo de octubre',   desde: '2027-10-09', hasta: '2027-10-11' }
       ],
       incluye: [
         ['Mínimo de noches', '3'],
@@ -161,7 +186,7 @@ const CONFIG = {
     {
       id: 'media',
       nombre: 'Temporada media',
-      periodo: 'Marzo, abril, octubre, noviembre y fines de semana largos',
+      periodo: 'Marzo, abril, y de octubre al 19 de diciembre',
       precios: {                                   // << REVISAR >>
         completa: 140000,
         alta: 85000,
@@ -183,7 +208,7 @@ const CONFIG = {
     {
       id: 'baja',
       nombre: 'Temporada baja',
-      periodo: 'Mayo, junio, agosto y septiembre',
+      periodo: 'De mayo a principios de julio, y del 26 de julio a septiembre',
       precios: {                                   // << REVISAR >>
         completa: 110000,
         alta: 70000,

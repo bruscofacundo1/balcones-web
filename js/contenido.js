@@ -103,6 +103,36 @@
 
   const REVISORES = { rango: revisarRango };
 
+  /* ------------------------------------------------------- Semana Santa -- */
+
+  /**
+   * Domingo de Pascua (Meeus/Jones/Butcher, calendario gregoriano).
+   *
+   * Está acá porque es la única fecha móvil del calendario argentino que se
+   * puede calcular: los feriados trasladables y los "puentes" los fija el
+   * gobierno por decreto cada año y hay que cargarlos a mano.
+   */
+  function domingoDePascua(anio) {
+    const a = anio % 19, b = Math.floor(anio / 100), c = anio % 100;
+    const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4), k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const mes = Math.floor((h + l - 7 * m + 114) / 31);
+    const dia = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(Date.UTC(anio, mes - 1, dia));
+  }
+
+  /** Semana Santa de ese año como rango listo para cargar: jueves a domingo. */
+  function semanaSanta(anio) {
+    const iso = f => f.toISOString().slice(0, 10);
+    const pascua = domingoDePascua(anio);
+    const jueves = new Date(pascua);
+    jueves.setUTCDate(pascua.getUTCDate() - 3);
+    return { nombre: `Semana Santa ${anio}`, desde: iso(jueves), hasta: iso(pascua) };
+  }
+
   /* ------------------------------------------------------------ catálogo -- */
 
   /**
@@ -753,7 +783,7 @@
   const Contenido = {
     catalogo, leerCamino, escribirCamino, leerCampo, escribirCampo,
     validar, validarValor, aplicar, aplicarFotos, COLECCIONES,
-    revisarCobertura, revisarRango,
+    revisarCobertura, revisarRango, semanaSanta, domingoDePascua,
     preparar, leerCache, guardarCache, CLAVE_CACHE, fotosDestacadas,
     aplicarOcupadas, hayDisponibilidadFresca,
     enPreview, leerPreview, guardarPreview, borrarPreview, PREVIEW_CLAVE

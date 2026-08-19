@@ -22,7 +22,7 @@ y entrar a `http://localhost:5173`.
 > Con `file://` el navegador bloquea la navegación entre páginas y el flujo de
 > reserva se corta al pasar a `reserva.html`.
 
-**Caché:** los `<script>` y el CSS se cargan con `?v=43`. Cuando publiques un
+**Caché:** los `<script>` y el CSS se cargan con `?v=44`. Cuando publiques un
 cambio, **subí ese número** en todos los HTML (index, reserva, checkout,
 preguntas, legales, arrepentimiento) o los visitantes van a seguir viendo la
 versión vieja.
@@ -1225,6 +1225,41 @@ hecho lo estaban**: decía "Semana Santa" cuando no había ningún rango para
 Semana Santa, y no mencionaba el 20 al 31 de diciembre, que sí es alta. Ahora
 que cada rango tiene nombre, ese texto se podría generar en vez de escribirlo
 aparte — queda pendiente.
+
+### Las fechas móviles ya cargadas (18/08/2026)
+
+Quedaron cargadas en temporada alta, con año, las Semanas Santas de 2027 y 2028
+y los fines de semana largos de lo que queda de 2026 y de 2027. **Las fechas
+están verificadas; que esos días sean temporada alta es una decisión de precio**
+y se cambia desde /admin → Fechas sin tocar código.
+
+Cómo se verificó cada cosa, porque no todas se comprueban igual:
+
+- **Semana Santa se calcula.** Es la única fecha móvil del calendario argentino
+  que se puede deducir. `Contenido.semanaSanta(año)` usa el algoritmo de
+  Meeus/Jones/Butcher y devuelve de jueves santo a domingo de Pascua. Contrastado
+  contra años conocidos (2024: 31/3, 2025: 20/4, 2026: 5/4, 2027: 28/3).
+- **Los feriados trasladables y los "puentes" no se pueden calcular**: los fija
+  el gobierno por decreto cada año. Salieron del calendario oficial y se
+  verificó que cada fecha caiga en el día de la semana que corresponde.
+
+**En 2027 la Semana Santa son cinco días**, no cuatro: el miércoles 24 es el Día
+de la Memoria y el jueves 25 no laborable, pegados al Viernes Santo. Por eso ese
+rango arranca el 24 y no el 25 que devuelve el cálculo.
+
+**El panel calcula la próxima Semana Santa solo.** En la pestaña Fechas hay un
+botón "+ Semana Santa AAAA" que ofrece el primer año que falte y lo agrega con
+las fechas ya puestas — así no hay que volver a cargarlas a mano cada año.
+Compara **por solapamiento y no por fecha exacta**: un rango cargado a mano
+puede arrancar antes (como el de 2027) y sigue siendo la misma Semana Santa.
+
+**Un efecto que conviene mirar:** temporada alta pide un mínimo de 3 noches, así
+que un finde largo de sábado a lunes (2 noches) queda rechazado. Si se quieren
+vender esos findes, hay que bajar el mínimo de alta o poner esos rangos en
+media.
+
+Y los textos de `periodo` se corrigieron: decían "Semana Santa" cuando no había
+ningún rango de Semana Santa, y no mencionaban el 20 al 31 de diciembre.
 
 ### Colecciones: preguntas y opiniones (18/08/2026)
 
