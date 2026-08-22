@@ -151,7 +151,7 @@ recuperar.
 
 ### La contraseña
 
-La configura quien administra el sitio (variable `ADMIN_PASSWORD` en Vercel).
+La configura quien administra el sitio (variable `ADMIN_PASSWORD` en Cloudflare).
 Si la escribís mal muchas veces seguidas, el panel se traba 15 minutos — es a
 propósito, para que nadie la saque probando.
 

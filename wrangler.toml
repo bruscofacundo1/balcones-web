@@ -1,0 +1,27 @@
+# ============================================================================
+# Configuración de Cloudflare Pages para Balcones del Arroyo.
+# ----------------------------------------------------------------------------
+# El proyecto se conecta desde el dashboard de Cloudflare importando este
+# repo de GitHub — no hace falta `wrangler pages deploy` a mano, cada
+# `git push` a `main` publica solo. Este archivo sirve para dos cosas:
+#
+#   1. Probar en la computadora con `npx wrangler pages dev .` (necesita
+#      además un archivo `.dev.vars` en la raíz, fuera de git, con
+#      DATABASE_URL / ADMIN_PASSWORD / MP_ACCESS_TOKEN / MP_WEBHOOK_SECRET /
+#      FOTOS_PUBLIC_URL — mismo formato que `.env.example`).
+#   2. Dejar documentado en el repo qué bindings necesita el proyecto. Igual
+#      hay que cargarlos una vez a mano en el dashboard (Settings →
+#      Functions), este archivo no los crea solo ahí.
+# ============================================================================
+
+name = "balcones-web"
+compatibility_date = "2026-08-22"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "."
+
+# El bucket de R2 donde se suben las fotos nuevas desde /admin (ver
+# lib/fotos.js). Creá el bucket en Cloudflare (R2 → Create bucket) y
+# conectalo acá y en el dashboard con el mismo nombre de binding.
+[[r2_buckets]]
+binding = "FOTOS_BUCKET"
+bucket_name = "balcones-fotos"

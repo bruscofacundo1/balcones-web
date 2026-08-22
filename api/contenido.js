@@ -14,7 +14,7 @@
    se necesitan en el mismo momento (antes de pintar). Nada de esto es
    secreto: son los mismos precios, textos y fotos que se ven en pantalla.
 
-   Va cacheado en el borde de Vercel: `s-maxage=60` hace que la mayoría de las
+   Va cacheado en el borde de Cloudflare: `s-maxage=60` hace que la mayoría de las
    visitas ni toquen la base, y `stale-while-revalidate` permite servir la
    copia anterior mientras se busca la nueva, así nadie espera. El costo es
    que un cambio del panel puede tardar hasta un minuto en verse en todos
@@ -44,7 +44,7 @@ module.exports = async (req, res) => {
     // copia vieja por un rato indeterminado. Sin esto, al no haber max-age,
     // los navegadores aplican un plazo propio y un cambio de precio podría
     // tardar en llegarle a quien ya visitó el sitio.
-    // `s-maxage` sí es para el borde de Vercel, que es quien absorbe el
+    // `s-maxage` sí es para el borde de Cloudflare, que es quien absorbe el
     // tráfico y evita que cada visita golpee la base.
     res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate, s-maxage=60, stale-while-revalidate=600');
     res.status(200).json({ contenido, fotos, ocupadas });

@@ -8,6 +8,27 @@ proyecto (vos, otra persona o Claude en otra sesión), leé esto primero.
 
 ---
 
+## La migración de Vercel a Cloudflare Pages (22/08/2026)
+
+El sitio se mudó de hosting: repo, Neon y todo lo demás pasaron a la cuenta
+de Enrique (antes estaban en una cuenta de prueba). De paso, el hosting pasó
+de Vercel a Cloudflare Pages + R2 — con el tráfico esperado (boca en boca,
+sin picos) los dos son gratis, pero Cloudflare no cobra nunca por
+transferencia de datos, que es lo primero que se gasta en una galería de
+fotos si hay un pico de visitas, y su plan pago de respaldo es más barato.
+
+El detalle completo de qué cambió en el código, qué hay que configurar a
+mano en el dashboard de Cloudflare (el bucket de R2, su dominio público, las
+variables de entorno) y qué conviene probar antes de dar la migración por
+cerrada está en **`MIGRACION-CLOUDFLARE.md`**, aparte de este archivo porque
+es una migración de infraestructura, no un cambio de producto. Resumen para
+quien no vaya a leerlo entero: la lógica de negocio (precios, disponibilidad,
+el lock atómico de reservas, el escapado contra XSS) no se tocó — sólo cómo
+entra el pedido y sale la respuesta, y cómo se suben las fotos. La única
+pieza reescrita a mano sin poder probarla contra Mercado Pago real es la
+validación de firma del webhook (antes la hacía el SDK oficial); conviene
+confirmarla con un pago de prueba antes de darla por buena del todo.
+
 ## Lo último: la revisión del 18/08/2026
 
 El detalle de cada cosa está en su sección temática; esto es sólo el mapa. La
@@ -150,29 +171,35 @@ vez:
 npm install
 ```
 
-Eso sólo afecta a `api/` y `lib/` — el sitio en sí sigue sin build. Para
-probar el pago de verdad en tu compu hace falta además `vercel dev` (que lee
-las variables de un `.env.local`, ver §6) en vez del `python -m http.server`
-de arriba, porque ese servidor no sabe correr las funciones de `api/`.
+Eso sólo afecta a `api/`, `lib/` y `functions/` — el sitio en sí sigue sin
+build. Para probar el pago de verdad en tu compu hace falta además
+`npx wrangler pages dev .` (que lee las variables de un `.dev.vars`, ver §6)
+en vez del `python -m http.server` de arriba, porque ese servidor no sabe
+correr las funciones de `functions/`.
 
-## 1.b Publicación (Vercel)
+## 1.b Publicación (Cloudflare Pages)
 
-El repo está listo para importar en Vercel sin configurar nada: no hay build ni
-dependencias. Los pasos están en el `README.md`.
+Desde el 22/08/2026 el sitio se publica en Cloudflare Pages (antes era
+Vercel; ver `MIGRACION-CLOUDFLARE.md` para el detalle de qué cambió). El
+repo está listo para importar sin configurar nada de build: no hay build ni
+dependencias del lado del sitio. Los pasos están en el `README.md`.
 
-`vercel.json` define dos cosas:
+`_headers` y `_redirects` definen lo mismo que antes hacía `vercel.json`:
 
 - **Caché**: las fotos de `img/` se guardan un año (nunca cambian de nombre);
   el HTML, el CSS y el JS se revalidan en cada visita, así un cambio se ve al
   toque aunque te olvides de subir el `?v=`.
-- **`cleanUrls`**: las páginas quedan en `/reserva` en vez de `/reserva.html`.
+- **URLs limpias**: las páginas quedan en `/reserva` en vez de `/reserva.html`.
   Los links del código siguen apuntando a `reserva.html` a propósito, para que
-  también funcionen abriendo los archivos localmente; Vercel redirige solo.
+  también funcionen abriendo los archivos localmente; `_redirects` reescribe
+  solo.
 
-Las funciones serverless del pago (§6) viven en `api/` y Vercel las toma
-automáticamente por estar ahí — no hace falta tocar `vercel.json` para eso.
-Lo que sí hay que hacer a mano en el panel de Vercel: cargar las variables de
-entorno y conectar la base de Neon (los dos pasos están detallados en §6).
+Las funciones del pago (§6) viven en `functions/api/` (que a su vez importan
+la lógica de `api/`) y Cloudflare las toma automáticamente por estar ahí — no
+hace falta tocar nada para eso. Lo que sí hay que hacer a mano en el
+dashboard de Cloudflare: cargar las variables de entorno, conectar la base de
+Neon y el bucket de R2 (los tres pasos están detallados en §6 y en
+`MIGRACION-CLOUDFLARE.md`).
 
 ---
 

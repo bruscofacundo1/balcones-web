@@ -1,0 +1,17 @@
+# Cache, equivalente al bloque "headers" que tenía vercel.json.
+# Las fotos no cambian de nombre nunca (ver js/config.js y lib/fotos.js, que
+# suben con sufijo al azar), así que se guardan un año. El HTML, CSS y JS se
+# revalidan siempre: así un cambio se ve al toque sin depender de acordarse
+# de subir el ?v= de CONTEXTO.md.
+
+/img/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.css
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate

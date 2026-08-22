@@ -10,11 +10,13 @@ desktop.ini
 *.MOV
 
 # claves: el Access Token de Mercado Pago vive acá para probar en la compu.
-# NUNCA se sube — en Vercel se carga aparte, como variable de entorno.
+# NUNCA se sube — en Cloudflare se carga aparte, como variable de entorno.
 .env
 .env.local
 .env*.local
+.dev.vars
 
-# dependencias de las funciones serverless (api/) y carpeta de Vercel
+# dependencias de las funciones (functions/, lib/) y carpetas locales de build
 node_modules/
 .vercel/
+.wrangler/

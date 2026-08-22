@@ -283,7 +283,7 @@ const CONFIG = {
      La clave pública (Public Key) va acá porque no es secreta: viaja igual
      al navegador de cualquier visitante. El Access Token, que sí es secreto
      y es el que puede cobrar de verdad, NUNCA va en este archivo — vive sólo
-     en Vercel, como variable de entorno del lado del servidor.             */
+     en Cloudflare, como variable de entorno del lado del servidor.         */
   mercadoPago: {
     publicKey: 'TEST-4324afda-d432-41be-b11d-3a1e1e3be4a2'   // clave de PRUEBA — cambiar por la real antes de publicar
   }

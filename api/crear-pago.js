@@ -20,7 +20,7 @@
 const { configEfectivo } = require('../lib/contenido.js');
 const { DISPONIBILIDAD } = require('../js/disponibilidad.js');
 const Precios = require('../js/precios.js');
-const { clientePago } = require('../lib/mercadopago.js');
+const { crearPago } = require('../lib/mercadopago.js');
 const { nochesPagadas, marcarPagada } = require('../lib/reservas.js');
 
 function origenDe(req) {
@@ -83,35 +83,32 @@ module.exports = async (req, res) => {
     const sena = Math.round(cotizacion.total * pctSena / 100);
 
     const externalRef = idExterno();
-    const pagoApi = clientePago();
 
-    const resultado = await pagoApi.create({
-      body: {
-        transaction_amount: sena,
-        token,
-        description: `Seña ${modalidad.nombre} · Balcones del Arroyo`,
-        installments: Number(installments) || 1,
-        payment_method_id,
-        issuer_id: issuer_id || undefined,
-        payer: payer || {},
-        external_reference: externalRef,
-        statement_descriptor: 'BALCONES ARROYO',
-        notification_url: `${origenDe(req)}/api/webhook-mercadopago`,
-        metadata: {
-          modalidad: modalidad.id,
-          entrada: reserva.entrada,
-          salida: reserva.salida,
-          huespedes,
-          total: cotizacion.total,
-          sena,
-          nombre: (datos && datos.nombre) || '',
-          telefono: (datos && datos.telefono) || '',
-          email: (datos && datos.email) || '',
-          localidad: (datos && datos.localidad) || '',
-          mensaje: (datos && datos.mensaje) || ''
-        }
+    const resultado = await crearPago({
+      transaction_amount: sena,
+      token,
+      description: `Seña ${modalidad.nombre} · Balcones del Arroyo`,
+      installments: Number(installments) || 1,
+      payment_method_id,
+      issuer_id: issuer_id || undefined,
+      payer: payer || {},
+      external_reference: externalRef,
+      statement_descriptor: 'BALCONES ARROYO',
+      notification_url: `${origenDe(req)}/api/webhook-mercadopago`,
+      metadata: {
+        modalidad: modalidad.id,
+        entrada: reserva.entrada,
+        salida: reserva.salida,
+        huespedes,
+        total: cotizacion.total,
+        sena,
+        nombre: (datos && datos.nombre) || '',
+        telefono: (datos && datos.telefono) || '',
+        email: (datos && datos.email) || '',
+        localidad: (datos && datos.localidad) || '',
+        mensaje: (datos && datos.mensaje) || ''
       }
-    });
+    }, externalRef);
 
     // A esta altura Mercado Pago YA le cobró (o no) al huésped: eso no se
     // puede deshacer. Si guardar el registro en la base falla acá (por ejemplo

@@ -16,8 +16,7 @@
 
 const { CONFIG } = require('../js/config.js');
 const Precios = require('../js/precios.js');
-const { WebhookSignatureValidator } = require('mercadopago');
-const { clientePago } = require('../lib/mercadopago.js');
+const { obtenerPago, firmaValida: firmaValidaMP } = require('../lib/mercadopago.js');
 const { marcarPagada, pagoYaProcesado, marcarPagoProcesado } = require('../lib/reservas.js');
 
 function idDelPago(req) {
@@ -26,22 +25,12 @@ function idDelPago(req) {
 }
 
 function firmaValida(req, dataId) {
-  const secreto = process.env.MP_WEBHOOK_SECRET;
-  if (!secreto) return true; // no configurado todavía: se sigue validando por API
-
-  try {
-    WebhookSignatureValidator.validate({
-      xSignature: req.headers['x-signature'],
-      xRequestId: req.headers['x-request-id'],
-      dataId,
-      secret: secreto,
-      toleranceSeconds: 300
-    });
-    return true;
-  } catch (err) {
-    console.error('webhook-mercadopago: firma inválida', err.message);
-    return false;
-  }
+  return firmaValidaMP({
+    xSignature: req.headers['x-signature'],
+    xRequestId: req.headers['x-request-id'],
+    dataId,
+    secreto: process.env.MP_WEBHOOK_SECRET
+  });
 }
 
 module.exports = async (req, res) => {
@@ -57,7 +46,7 @@ module.exports = async (req, res) => {
   try {
     if (await pagoYaProcesado(dataId)) { res.status(200).send('ya procesado'); return; }
 
-    const pago = await clientePago().get({ id: dataId });
+    const pago = await obtenerPago(dataId);
 
     if (pago.status === 'approved') {
       const meta = pago.metadata || {};

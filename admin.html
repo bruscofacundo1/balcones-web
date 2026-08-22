@@ -1931,8 +1931,7 @@ const LADO_CHICA = 760;
  * Achica la foto ANTES de subirla.
  *
  * Naty va a subir desde el celular, donde una foto pesa tranquilamente 8 MB
- * y mide 4000px de lado: sin esto tardaría muchísimo, no entraría en el
- * límite de 4,5 MB que tiene el cuerpo de un pedido en Vercel, y el sitio
+ * y mide 4000px de lado: sin esto tardaría muchísimo en subir y el sitio
  * terminaría sirviendo imágenes enormes a los visitantes.
  *
  * `imageOrientation: 'from-image'` respeta la rotación que guarda la cámara;
@@ -2009,9 +2008,10 @@ function pintarFotos() {
     ${galeria.puedeSubir ? '' : `
       <div class="aviso-caja aviso-caja--mal">
         <strong>Todavía no se pueden subir fotos.</strong>
-        Falta conectar el almacenamiento: en Vercel, <em>Storage → Create Database → Blob</em>,
-        y después volvé a desplegar el sitio. Mientras tanto sí podés reordenar,
-        cambiar epígrafes y sacar fotos.
+        Falta conectar el almacenamiento: en Cloudflare, creá un bucket de
+        <em>R2</em> y conectalo al proyecto (Settings → Functions → R2 bucket
+        bindings). Mientras tanto sí podés reordenar, cambiar epígrafes y
+        sacar fotos.
       </div>`}
 
     <p class="nota-fotos">
@@ -2234,7 +2234,7 @@ async function restaurarGaleria() {
         <div class="login"><div class="login__caja">
           <h1>Falta configurar el panel</h1>
           <p>No hay contraseña cargada en el servidor. Agregá la variable
-          <code>ADMIN_PASSWORD</code> en Vercel y volvé a desplegar el sitio.</p>
+          <code>ADMIN_PASSWORD</code> en Cloudflare y volvé a desplegar el sitio.</p>
         </div></div>`;
       return;
     }

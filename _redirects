@@ -1,0 +1,20 @@
+# URLs limpias, equivalente al `cleanUrls: true` que tenía vercel.json.
+# Los links del código siguen apuntando a "reserva.html" etc a propósito
+# (para que también funcionen abriendo los archivos localmente); estas reglas
+# hacen que en el sitio publicado se vea sin el .html y que quien entre con
+# el .html quede en la URL limpia.
+
+/index.html /  301
+/reserva.html /reserva  301
+/checkout.html /checkout  301
+/preguntas.html /preguntas  301
+/legales.html /legales  301
+/arrepentimiento.html /arrepentimiento  301
+/admin.html /admin  301
+
+/reserva /reserva.html  200
+/checkout /checkout.html  200
+/preguntas /preguntas.html  200
+/legales /legales.html  200
+/arrepentimiento /arrepentimiento.html  200
+/admin /admin.html  200

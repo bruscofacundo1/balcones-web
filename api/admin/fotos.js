@@ -10,16 +10,17 @@
      POST {accion:'restaurar'} -> vacía la tabla y vuelve a la de config.js
 
    La imagen llega como data URL en el JSON. Es un 33% más pesado que mandar
-   los bytes crudos, pero como el navegador ya la redujo a tamaño web queda
-   MUY por debajo del límite de 4,5 MB que tiene el cuerpo de un pedido en
-   Vercel, y a cambio no hace falta parsear multipart a mano.
+   los bytes crudos, pero como el navegador ya la redujo a tamaño web (ver
+   admin.html) el pedido queda liviano igual, y a cambio no hace falta
+   parsear multipart a mano.
    ============================================================================ */
 
 const { FOTOS } = require('../../js/config.js');
 const { exigirSesion } = require('../../lib/sesion.js');
 const {
   hayBaseDatos, haySubidaDeFotos, listarFotos, importarDeConfig,
-  agregarFoto, actualizarFoto, borrarFoto, reordenarFotos, vaciarFotos
+  agregarFoto, actualizarFoto, borrarFoto, reordenarFotos, vaciarFotos,
+  subirArchivo, borrarArchivosPorUrl
 } = require('../../lib/fotos.js');
 
 const CATEGORIAS = ['casa', 'interiores', 'aire-libre', 'entorno'];
@@ -42,8 +43,9 @@ function limpiar(texto, max) {
 async function subir(req, res) {
   if (!haySubidaDeFotos()) {
     res.status(503).json({
-      error: 'Falta conectar el almacenamiento de fotos. En Vercel: Storage → ' +
-             'Create Database → Blob, y volvé a desplegar el sitio.'
+      error: 'Falta conectar el almacenamiento de fotos. En Cloudflare: creá un ' +
+             'bucket de R2, conectalo al proyecto (Settings → Functions → R2 bucket ' +
+             'bindings, nombre FOTOS_BUCKET) y cargá FOTOS_PUBLIC_URL con su dominio público.'
     });
     return;
   }
@@ -59,36 +61,15 @@ async function subir(req, res) {
   const categoria = CATEGORIAS.includes(b.categoria) ? b.categoria : 'casa';
   const titulo = limpiar(b.titulo, 120) || 'Balcones del Arroyo';
 
-  // El nombre lleva un sufijo al azar (`addRandomSuffix`) para que subir dos
-  // veces un archivo que se llama igual no pise al anterior.
-  const { put } = require('@vercel/blob');
-  const base = `fotos/${Date.now()}`;
-  const [puestaGrande, puestaChica] = await Promise.all([
-    put(`${base}.jpg`, grande.buffer, {
-      access: 'public', contentType: grande.tipo, addRandomSuffix: true
-    }),
-    put(`${base}-chica.jpg`, chica.buffer, {
-      access: 'public', contentType: chica.tipo, addRandomSuffix: true
-    })
+  // Cada nombre lleva un sufijo al azar (ver `subirArchivo` en lib/fotos.js)
+  // para que subir dos veces un archivo que se llama igual no pise al anterior.
+  const [urlGrande, urlChica] = await Promise.all([
+    subirArchivo(grande.buffer, grande.tipo, '.jpg'),
+    subirArchivo(chica.buffer, chica.tipo, '-chica.jpg')
   ]);
 
-  const id = await agregarFoto({
-    url: puestaGrande.url, thumb: puestaChica.url, categoria, titulo
-  });
-  res.status(200).json({ ok: true, id, url: puestaGrande.url });
-}
-
-/** Saca los archivos de Blob. Que falle no es grave: la foto ya no se muestra,
-    sólo queda ocupando lugar. Por eso no se corta la operación por esto. */
-async function borrarArchivos(urls) {
-  const limpias = urls.filter(u => u && /^https?:/.test(u));
-  if (!limpias.length || !haySubidaDeFotos()) return;
-  try {
-    const { del } = require('@vercel/blob');
-    await del(limpias);
-  } catch (err) {
-    console.error('fotos/borrar archivo:', err);
-  }
+  const id = await agregarFoto({ url: urlGrande, thumb: urlChica, categoria, titulo });
+  res.status(200).json({ ok: true, id, url: urlGrande });
 }
 
 module.exports = async (req, res) => {
@@ -136,7 +117,7 @@ module.exports = async (req, res) => {
     if (accion === 'borrar') {
       const fila = await borrarFoto(id);
       if (!fila) { res.status(404).json({ error: 'No existe esa foto.' }); return; }
-      await borrarArchivos([fila.url, fila.thumb]);
+      await borrarArchivosPorUrl([fila.url, fila.thumb]);
       res.status(200).json({ ok: true });
       return;
     }
@@ -151,7 +132,7 @@ module.exports = async (req, res) => {
 
     if (accion === 'restaurar') {
       const filas = await vaciarFotos();
-      await borrarArchivos(filas.flatMap(f => [f.url, f.thumb]));
+      await borrarArchivosPorUrl(filas.flatMap(f => [f.url, f.thumb]));
       res.status(200).json({ ok: true, borradas: filas.length });
       return;
     }
