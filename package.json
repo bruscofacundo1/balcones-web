@@ -1,7 +1,7 @@
 {
   "name": "balcones-web",
   "private": true,
-  "description": "Sitio de Balcones del Arroyo. No hay build: es HTML/CSS/JS plano. Este package.json existe sólo para las funciones de functions/api/ (Cloudflare Pages las detecta y les instala estas dependencias). El pago (Mercado Pago) y las fotos (R2) hablan por fetch y por binding nativo, sin SDK aparte.",
+  "description": "Sitio de Balcones del Arroyo. No hay build: es HTML/CSS/JS plano. Este package.json existe sólo para worker.js y lo que importa (api/, lib/) — Cloudflare instala estas dependencias al desplegar. El pago (Mercado Pago) y las fotos (R2) hablan por fetch y por binding nativo, sin SDK aparte.",
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0"
   }

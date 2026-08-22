@@ -1,23 +1,35 @@
 # ============================================================================
-# Configuración de Cloudflare Pages para Balcones del Arroyo.
+# Configuración de Cloudflare para Balcones del Arroyo.
 # ----------------------------------------------------------------------------
-# El proyecto se conecta desde el dashboard de Cloudflare importando este
-# repo de GitHub — no hace falta `wrangler pages deploy` a mano, cada
-# `git push` a `main` publica solo. Este archivo sirve para dos cosas:
+# Se despliega como un Worker con assets: `worker.js` sólo atiende /api/*
+# (ver `run_worker_first`), todo lo demás (el sitio estático, _headers,
+# _redirects) lo sirve el binding de assets solo. El proyecto se conecta
+# desde el dashboard de Cloudflare importando este repo de GitHub — no hace
+# falta `wrangler deploy` a mano, cada `git push` a `main` publica solo.
 #
-#   1. Probar en la computadora con `npx wrangler pages dev .` (necesita
-#      además un archivo `.dev.vars` en la raíz, fuera de git, con
-#      DATABASE_URL / ADMIN_PASSWORD / MP_ACCESS_TOKEN / MP_WEBHOOK_SECRET /
-#      FOTOS_PUBLIC_URL — mismo formato que `.env.example`).
-#   2. Dejar documentado en el repo qué bindings necesita el proyecto. Igual
-#      hay que cargarlos una vez a mano en el dashboard (Settings →
-#      Functions), este archivo no los crea solo ahí.
+# Para probar en la computadora: `npx wrangler dev` (necesita además un
+# archivo `.dev.vars` en la raíz, fuera de git, con DATABASE_URL /
+# ADMIN_PASSWORD / MP_ACCESS_TOKEN / MP_WEBHOOK_SECRET / FOTOS_PUBLIC_URL —
+# mismo formato que `.env.example`).
+#
+# El "name" tiene que coincidir con el nombre del proyecto que se eligió en
+# el dashboard al conectar el repo.
 # ============================================================================
 
-name = "balcones-web"
+name = "balconesdelarroyo-web"
+main = "worker.js"
 compatibility_date = "2026-08-22"
 compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = "."
+
+[assets]
+directory = "."
+binding = "ASSETS"
+# Sin esto, una visita a /api/lo-que-sea que no coincida con ningún archivo
+# estático caería en el 404 del binding de assets antes de llegar a
+# worker.js. Con esto, /api/* siempre pasa por el Worker primero — el resto
+# del sitio sigue sirviéndose como archivos estáticos, con _headers y
+# _redirects funcionando igual que antes.
+run_worker_first = ["/api/*"]
 
 # El bucket de R2 donde se suben las fotos nuevas desde /admin (ver
 # lib/fotos.js). Creá el bucket en Cloudflare (R2 → Create bucket) y

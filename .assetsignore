@@ -1,0 +1,26 @@
+# Qué NO subir como archivo estático público al desplegar el Worker.
+# Mismo formato que .gitignore. Sin esto, el binding de assets serviría el
+# código fuente del servidor (lib/, api/) como archivos descargables en
+# cualquier URL que coincida con su ruta — nada secreto ahí (las claves están
+# en variables de entorno, no en el código), pero no hay motivo para
+# exponerlo, y es más plata de transferencia servida de más.
+
+.git
+.github
+node_modules
+api
+lib
+worker.js
+wrangler.toml
+package.json
+package-lock.json
+.assetsignore
+.gitignore
+.env
+.env.example
+.dev.vars
+.claude
+CONTEXTO.md
+GUIA.md
+MIGRACION-CLOUDFLARE.md
+README.md

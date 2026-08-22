@@ -8,11 +8,11 @@ proyecto (vos, otra persona o Claude en otra sesión), leé esto primero.
 
 ---
 
-## La migración de Vercel a Cloudflare Pages (22/08/2026)
+## La migración de Vercel a Cloudflare (22/08/2026)
 
 El sitio se mudó de hosting: repo, Neon y todo lo demás pasaron a la cuenta
 de Enrique (antes estaban en una cuenta de prueba). De paso, el hosting pasó
-de Vercel a Cloudflare Pages + R2 — con el tráfico esperado (boca en boca,
+de Vercel a Cloudflare (Worker + R2) — con el tráfico esperado (boca en boca,
 sin picos) los dos son gratis, pero Cloudflare no cobra nunca por
 transferencia de datos, que es lo primero que se gasta en una galería de
 fotos si hay un pico de visitas, y su plan pago de respaldo es más barato.
@@ -171,20 +171,23 @@ vez:
 npm install
 ```
 
-Eso sólo afecta a `api/`, `lib/` y `functions/` — el sitio en sí sigue sin
+Eso sólo afecta a `api/`, `lib/` y `worker.js` — el sitio en sí sigue sin
 build. Para probar el pago de verdad en tu compu hace falta además
-`npx wrangler pages dev .` (que lee las variables de un `.dev.vars`, ver §6)
-en vez del `python -m http.server` de arriba, porque ese servidor no sabe
-correr las funciones de `functions/`.
+`npx wrangler dev` (que lee las variables de un `.dev.vars`, ver §6) en vez
+del `python -m http.server` de arriba, porque ese servidor no sabe correr
+`worker.js`.
 
-## 1.b Publicación (Cloudflare Pages)
+## 1.b Publicación (Cloudflare)
 
-Desde el 22/08/2026 el sitio se publica en Cloudflare Pages (antes era
-Vercel; ver `MIGRACION-CLOUDFLARE.md` para el detalle de qué cambió). El
-repo está listo para importar sin configurar nada de build: no hay build ni
-dependencias del lado del sitio. Los pasos están en el `README.md`.
+Desde el 22/08/2026 el sitio se publica en Cloudflare (antes era Vercel; ver
+`MIGRACION-CLOUDFLARE.md` para el detalle de qué cambió). Cloudflare unificó
+Pages y Workers: el proyecto se crea como un **Worker con Git conectado**, no
+como el "Pages clásico" de antes — `wrangler.toml` declara el punto de
+entrada (`worker.js`) y los bindings, así que no hay nada de build que
+configurar a mano. Los pasos están en el `README.md`.
 
-`_headers` y `_redirects` definen lo mismo que antes hacía `vercel.json`:
+`_headers` y `_redirects` definen lo mismo que antes hacía `vercel.json`, y
+el binding de assets de `wrangler.toml` los sigue soportando igual que Pages:
 
 - **Caché**: las fotos de `img/` se guardan un año (nunca cambian de nombre);
   el HTML, el CSS y el JS se revalidan en cada visita, así un cambio se ve al
@@ -194,12 +197,13 @@ dependencias del lado del sitio. Los pasos están en el `README.md`.
   también funcionen abriendo los archivos localmente; `_redirects` reescribe
   solo.
 
-Las funciones del pago (§6) viven en `functions/api/` (que a su vez importan
-la lógica de `api/`) y Cloudflare las toma automáticamente por estar ahí — no
-hace falta tocar nada para eso. Lo que sí hay que hacer a mano en el
-dashboard de Cloudflare: cargar las variables de entorno, conectar la base de
-Neon y el bucket de R2 (los tres pasos están detallados en §6 y en
-`MIGRACION-CLOUDFLARE.md`).
+Las funciones del pago (§6) viven en `api/` — `worker.js` las importa y las
+despacha según la URL para las rutas `/api/*` (`run_worker_first` en
+`wrangler.toml` asegura que esas rutas siempre lleguen ahí). Lo que sí hay
+que hacer a mano en el dashboard de Cloudflare: crear el bucket de R2 (antes
+del primer deploy, porque el binding necesita que ya exista), cargar las
+variables de entorno y conectar la base de Neon (los pasos están detallados
+en §6 y en `MIGRACION-CLOUDFLARE.md`).
 
 ---
 

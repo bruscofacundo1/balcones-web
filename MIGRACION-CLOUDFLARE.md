@@ -1,9 +1,15 @@
-# Migración de Vercel a Cloudflare Pages — 22/08/2026
+# Migración de Vercel a Cloudflare — 22/08/2026
 
 Este documento cuenta qué se cambió para mudar el backend de Vercel a
-Cloudflare Pages + R2, y sobre todo **qué falta configurar a mano** del lado
-de Cloudflare para que funcione. Neon sigue siendo la base de datos en los
-dos casos — no cambia nada ahí.
+Cloudflare (un Worker con Git conectado + R2 para las fotos), y sobre todo
+**qué falta configurar a mano** del lado de Cloudflare para que funcione.
+Neon sigue siendo la base de datos en los dos casos — no cambia nada ahí.
+
+Nota sobre el nombre: Cloudflare venía ofreciendo dos productos separados,
+Pages y Workers. Los unificó — los proyectos nuevos con Git conectado se
+crean como Worker, no como el "Pages clásico" de antes (que enrutaba solo por
+una carpeta `functions/`). Este documento y el resto del repo ya están
+escritos para el modelo nuevo (`worker.js` + `wrangler.toml`).
 
 ## Por qué
 
@@ -15,12 +21,15 @@ $20/mes de Vercel Pro) por si algún día hiciera falta.
 
 ## Qué cambió en el código
 
-- **`functions/`** — nueva carpeta. Cloudflare Pages Functions no entiende el
-  formato de Vercel (`module.exports = async (req, res) => {}`); acá hay 8
-  archivos, uno por endpoint, que son sólo un `import` del handler original
-  de `api/` envuelto por `functions/_shim.js`. **La lógica de negocio de
-  `api/*.js` y `lib/*.js` no se tocó** salvo lo que sigue — sólo cambió cómo
-  entra el pedido y sale la respuesta.
+- **`worker.js`** (nuevo, en la raíz) — el punto de entrada. Cloudflare
+  unificó Pages y Workers: los proyectos nuevos se crean como un Worker con
+  un binding de "assets" para el sitio estático, no como el "Pages clásico"
+  (Connect to Git → Functions por carpeta) que existía antes. `worker.js`
+  sólo atiende `/api/*` (el resto lo sirve el binding de assets solo, ver
+  `wrangler.toml`); para cada ruta importa el handler original de `api/` y lo
+  envuelve con `lib/adaptador-cf.js`. **La lógica de negocio de `api/*.js` y
+  `lib/*.js` no se tocó** salvo lo que sigue — sólo cambió cómo entra el
+  pedido y sale la respuesta.
 - **`lib/mercadopago.js`** — antes usaba el SDK oficial de npm (`mercadopago`).
   No había forma de confirmar que ese SDK corriera en el runtime de
   Cloudflare (Workers) sin probarlo en producción, así que se reemplazó por
@@ -37,9 +46,15 @@ $20/mes de Vercel Pro) por si algún día hiciera falta.
   (el header que pone el borde de Cloudflare) en vez de `x-forwarded-for`.
 - **`_headers` y `_redirects`** (nuevos, reemplazan a `vercel.json`, que se
   borró) — mismo cacheo de `img/` a un año y de HTML/CSS/JS sin caché, y las
-  mismas URLs limpias (`/reserva` en vez de `/reserva.html`).
-- **`wrangler.toml`** (nuevo) — declara el binding de R2 y sirve para probar
-  en la computadora con `npx wrangler pages dev .`.
+  mismas URLs limpias (`/reserva` en vez de `/reserva.html`). El binding de
+  assets los sigue soportando igual que Pages.
+- **`wrangler.toml`** (nuevo) — declara el punto de entrada (`worker.js`), el
+  binding de assets con `run_worker_first = ["/api/*"]` (así esas rutas
+  siempre llegan al Worker) y el binding de R2. Sirve además para probar en
+  la computadora con `npx wrangler dev`.
+- **`.assetsignore`** (nuevo) — qué no subir como archivo estático (el código
+  de `api/` y `lib/`, `.git`, etc.). Sin esto el binding de assets serviría
+  el código fuente del servidor como archivos descargables.
 - **`package.json`** — se sacaron `@vercel/blob` y `mercadopago`; sólo queda
   `@neondatabase/serverless`.
 - `js/precios.js`, `js/contenido.js`, `js/config.js` y toda la lógica de
@@ -49,28 +64,31 @@ $20/mes de Vercel Pro) por si algún día hiciera falta.
 
 ## Qué hay que hacer en Cloudflare (una sola vez)
 
-1. **Crear el proyecto de Pages**: dashboard de Cloudflare → Workers & Pages
-   → Create → Pages → conectar el repo `ebrusco/balcones-web`. Framework:
-   *None* / *Static*. Directorio de salida: `/` (la raíz, no hay build).
-2. **Crear el bucket de R2**: R2 → Create bucket → nombre `balcones-fotos`
-   (o el que quieras, pero avisá si no es ese para actualizar
-   `wrangler.toml`).
-3. **Conectar el bucket al proyecto**: el proyecto de Pages → Settings →
-   Functions → R2 bucket bindings → Add binding → nombre de variable
-   `FOTOS_BUCKET` → elegís el bucket.
-4. **Dominio público del bucket**: R2 → el bucket → Settings → Public access
+Cloudflare unificó Pages y Workers: los proyectos nuevos se crean como un
+**Worker con Git conectado** (dashboard → Workers & Pages → Create
+application → conectar el repo), no como el "Pages clásico" de antes. El
+`wrangler.toml` del repo ya declara el punto de entrada (`worker.js`), el
+binding de assets para servir el sitio estático y el binding del bucket de
+R2 — Cloudflare los lee solo al desplegar, así que casi no hay nada que
+tocar a mano en el dashboard salvo lo que sigue:
+
+1. **Crear el bucket de R2 antes del primer deploy**: R2 → Create bucket →
+   nombre **exactamente** `balcones-fotos` (si querés otro nombre, avisá
+   para actualizar `wrangler.toml` a juego). El binding de `wrangler.toml`
+   necesita que el bucket ya exista para poder conectarse.
+2. **Dominio público del bucket**: R2 → el bucket → Settings → Public access
    → Enable → o bien un dominio propio (subdominio, ej.
    `fotos.balconesdelarroyo.com.ar`, apuntado a Cloudflare) o el subdominio
    `r2.dev` que te ofrece la misma pantalla para arrancar rápido. Copiá esa
    URL.
-5. **Variables de entorno**: el proyecto de Pages → Settings → Environment
-   variables (revisá que estén tanto en *Production* como en *Preview*):
+3. **Variables de entorno**: el proyecto → Settings → Variables and Secrets
+   (revisá que estén tanto en *Production* como en *Preview*, si las separa):
    - `DATABASE_URL` — el connection string de Neon
    - `ADMIN_PASSWORD` — la contraseña del panel
    - `MP_ACCESS_TOKEN` — el Access Token de Mercado Pago
    - `MP_WEBHOOK_SECRET` — opcional pero recomendado
-   - `FOTOS_PUBLIC_URL` — la URL del paso 4, sin `/` al final
-6. **Redeploy**: como en Vercel, una variable cargada después del primer
+   - `FOTOS_PUBLIC_URL` — la URL del paso 2, sin `/` al final
+4. **Redeploy**: como en Vercel, una variable cargada después del primer
    deploy necesita un deployment nuevo para que la función la vea.
 7. **Webhook de Mercado Pago**: en el panel de Mercado Pago, apuntar a
    `https://tu-dominio/api/webhook-mercadopago`, evento `payments` — esto no
@@ -100,6 +118,6 @@ $20/mes de Vercel Pro) por si algún día hiciera falta.
 
 Los archivos HTML/CSS/JS del sitio público (`index.html`, `js/app.js`,
 `js/calendario.js`, etc.) no se tocaron: siguen pidiendo `/api/...` igual
-que antes, y Cloudflare Pages sirve `functions/api/...` en esas mismas rutas
-automáticamente. Tampoco cambió nada de precios, temporadas, ni la lógica de
-reservas.
+que antes, y `worker.js` despacha esas rutas a `api/...` automáticamente
+(ver `wrangler.toml`, `run_worker_first`). Tampoco cambió nada de precios,
+temporadas, ni la lógica de reservas.

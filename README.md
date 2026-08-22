@@ -39,36 +39,42 @@ publicar"** te muestra el viejo → nuevo campo por campo antes de tocar la base
 Todo lo marcado con `<< REVISAR >>` en `js/config.js` tiene datos de ejemplo y
 hay que reemplazarlo por los reales.
 
-## Publicar en Cloudflare Pages
+## Publicar en Cloudflare
 
-El repo ya viene listo. En [dash.cloudflare.com](https://dash.cloudflare.com):
+El repo ya viene listo. Cloudflare unificó Pages y Workers: los proyectos
+nuevos se crean como un **Worker con Git conectado**, no como el "Pages
+clásico" de antes. En [dash.cloudflare.com](https://dash.cloudflare.com):
 
-1. **Workers & Pages → Create → Pages** e importá `ebrusco/balcones-web`.
-2. Framework preset: *None*. Build command: vacío. Directorio de salida: `/`
-   (la raíz — no hay build).
-3. **Deploy**.
+1. **Workers & Pages → Create application** e importá `ebrusco/balcones-web`.
+2. Cloudflare lee `wrangler.toml` del repo solo: punto de entrada
+   (`worker.js`), el binding para servir el sitio estático y el binding del
+   bucket de R2 ya quedan declarados ahí. No hace falta tocar el build
+   command ni el output directory a mano.
+3. **Antes de darle Deploy**, creá el bucket de R2 (paso 2 de la lista de
+   abajo) — el binding necesita que ya exista.
+4. **Deploy**.
 
-El sitio en sí no necesita nada más: no hay build. Cada `git push` a `main`
-publica automáticamente.
+El sitio en sí no necesita build propio, más allá de lo que ya resuelve
+Cloudflare al leer `wrangler.toml`. Cada `git push` a `main` publica
+automáticamente.
 
 `_headers` y `_redirects` ya dejan resuelto el caché (las fotos se guardan un
 año, el HTML y el código se revalidan siempre) y las URLs sin `.html`.
 
 ### Para que funcione el bloqueo de fechas, las fotos y el cobro de la seña
 
-Esto sí necesita configurarse una vez, después del primer deploy — la parte
-de Neon y `ADMIN_PASSWORD` hace falta siempre (el sitio hoy manda todo por
-WhatsApp); la de Mercado Pago sólo si van a activar la variante de cobro
-online:
+Esto sí necesita configurarse una vez — la parte de Neon y `ADMIN_PASSWORD`
+hace falta siempre (el sitio hoy manda todo por WhatsApp); la de Mercado Pago
+sólo si van a activar la variante de cobro online:
 
-1. Crear una base en [Neon](https://neon.tech) (gratis) y copiar el
-   connection string — ahí quedan la disponibilidad y todas las reservas
-   (las de la web, las que se cargan a mano y los bloqueos).
-2. Crear un bucket en **R2** (Cloudflare → R2 → Create bucket) y conectarlo
-   al proyecto: el proyecto de Pages → Settings → Functions → R2 bucket
-   bindings → variable `FOTOS_BUCKET` → elegir el bucket. Es lo que permite
-   subir fotos nuevas desde el panel; sin esto el resto de la galería
-   (reordenar, epígrafes, sacar) igual funciona.
+1. Crear una base en [Neon](https://neon.tech) (gratis, región São Paulo
+   `sa-east-1` — la más cercana a Traslasierra) y copiar el connection
+   string — ahí quedan la disponibilidad y todas las reservas (las de la
+   web, las que se cargan a mano y los bloqueos).
+2. Crear un bucket en **R2** (Cloudflare → R2 → Create bucket) con el nombre
+   **exactamente** `balcones-fotos` — así coincide con lo que ya declara
+   `wrangler.toml`. Es lo que permite subir fotos nuevas desde el panel; sin
+   esto el resto de la galería (reordenar, epígrafes, sacar) igual funciona.
 
    Después, en el bucket → Settings → Public access, activar un dominio
    público (uno propio o el `r2.dev` que ofrece la misma pantalla para
@@ -76,8 +82,8 @@ online:
    **Ojo:** tiene que ser público, no privado — las fotos las carga el
    navegador del visitante con `<img src>` directo. Acá no hay nada
    sensible: son las fotos de la casa que se muestran en el sitio.
-3. El proyecto de Pages → Settings → Environment variables (cargalas tanto
-   en *Production* como en *Preview*), agregar:
+3. El proyecto → Settings → Variables and Secrets (cargalas tanto en
+   *Production* como en *Preview*, si las separa), agregar:
    - `DATABASE_URL` — el connection string de Neon.
    - `ADMIN_PASSWORD` — la contraseña para entrar a `/admin`. Que sea larga
      y al azar, y guardala en un gestor de contraseñas: con esa clave se
@@ -106,7 +112,7 @@ camino, cómo probarlo — está en la sección 6 de `CONTEXTO.md` y en
 
 ### Dominio propio
 
-En **Custom domains** del proyecto de Pages, agregá el dominio y seguí las
+En **Custom domains** del proyecto, agregá el dominio y seguí las
 instrucciones de DNS que te da Cloudflare. Después conviene actualizar la
 línea `<link rel="canonical">` de `index.html` con la dirección definitiva.
 
