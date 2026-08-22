@@ -72,10 +72,13 @@ binding de assets para servir el sitio estático y el binding del bucket de
 R2 — Cloudflare los lee solo al desplegar, así que casi no hay nada que
 tocar a mano en el dashboard salvo lo que sigue:
 
-1. **Crear el bucket de R2 antes del primer deploy**: R2 → Create bucket →
-   nombre **exactamente** `balcones-fotos` (si querés otro nombre, avisá
-   para actualizar `wrangler.toml` a juego). El binding de `wrangler.toml`
-   necesita que el bucket ya exista para poder conectarse.
+1. **R2, cuando quieras** (no bloquea el primer deploy): el binding de R2
+   está comentado en `wrangler.toml` a propósito, porque si apuntara a un
+   bucket que no existe todavía `wrangler deploy` falla entero. El sitio
+   funciona sin esto — subir fotos nuevas se desactiva solo con un aviso en
+   el panel, el resto sigue andando. Para activarlo: R2 → Create bucket →
+   nombre **exactamente** `balcones-fotos`, después destapar las dos líneas
+   comentadas de `[[r2_buckets]]` en `wrangler.toml` y pushear de nuevo.
 2. **Dominio público del bucket**: R2 → el bucket → Settings → Public access
    → Enable → o bien un dominio propio (subdominio, ej.
    `fotos.balconesdelarroyo.com.ar`, apuntado a Cloudflare) o el subdominio

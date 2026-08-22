@@ -32,8 +32,12 @@ binding = "ASSETS"
 run_worker_first = ["/api/*"]
 
 # El bucket de R2 donde se suben las fotos nuevas desde /admin (ver
-# lib/fotos.js). Creá el bucket en Cloudflare (R2 → Create bucket) y
-# conectalo acá y en el dashboard con el mismo nombre de binding.
-[[r2_buckets]]
-binding = "FOTOS_BUCKET"
-bucket_name = "balcones-fotos"
+# lib/fotos.js). Comentado a propósito: si el binding apunta a un bucket que
+# todavía no existe, `wrangler deploy` falla entero. El sitio funciona sin
+# esto (subir fotos nuevas se desactiva solo; reordenar, editar epígrafes y
+# sacar fotos sigue andando) — así que primero se despliega sin R2, y recién
+# cuando el bucket ya esté creado (R2 → Create bucket, nombre
+# "balcones-fotos") se destapan estas dos líneas y se pushea de nuevo.
+# [[r2_buckets]]
+# binding = "FOTOS_BUCKET"
+# bucket_name = "balcones-fotos"

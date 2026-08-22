@@ -47,12 +47,13 @@ clásico" de antes. En [dash.cloudflare.com](https://dash.cloudflare.com):
 
 1. **Workers & Pages → Create application** e importá `ebrusco/balcones-web`.
 2. Cloudflare lee `wrangler.toml` del repo solo: punto de entrada
-   (`worker.js`), el binding para servir el sitio estático y el binding del
-   bucket de R2 ya quedan declarados ahí. No hace falta tocar el build
-   command ni el output directory a mano.
-3. **Antes de darle Deploy**, creá el bucket de R2 (paso 2 de la lista de
-   abajo) — el binding necesita que ya exista.
-4. **Deploy**.
+   (`worker.js`) y el binding para servir el sitio estático ya quedan
+   declarados ahí. No hace falta tocar el build command ni el output
+   directory a mano.
+3. **Deploy** — anda sin crear nada más de entrada. El binding de R2 para
+   las fotos (paso 2 de la lista de abajo) está comentado en
+   `wrangler.toml` a propósito, para no bloquear este primer deploy; se
+   activa después, cuando el bucket ya exista.
 
 El sitio en sí no necesita build propio, más allá de lo que ya resuelve
 Cloudflare al leer `wrangler.toml`. Cada `git push` a `main` publica
@@ -71,10 +72,12 @@ sólo si van a activar la variante de cobro online:
    `sa-east-1` — la más cercana a Traslasierra) y copiar el connection
    string — ahí quedan la disponibilidad y todas las reservas (las de la
    web, las que se cargan a mano y los bloqueos).
-2. Crear un bucket en **R2** (Cloudflare → R2 → Create bucket) con el nombre
-   **exactamente** `balcones-fotos` — así coincide con lo que ya declara
-   `wrangler.toml`. Es lo que permite subir fotos nuevas desde el panel; sin
-   esto el resto de la galería (reordenar, epígrafes, sacar) igual funciona.
+2. Cuando quieras (no es necesario para el primer deploy): crear un bucket
+   en **R2** (Cloudflare → R2 → Create bucket) con el nombre **exactamente**
+   `balcones-fotos`, y destapar las dos líneas comentadas de `[[r2_buckets]]`
+   en `wrangler.toml`. Es lo que permite subir fotos nuevas desde el panel;
+   sin esto el resto de la galería (reordenar, epígrafes, sacar) igual
+   funciona.
 
    Después, en el bucket → Settings → Public access, activar un dominio
    público (uno propio o el `r2.dev` que ofrece la misma pantalla para
