@@ -30,6 +30,13 @@ binding = "ASSETS"
 # del sitio sigue sirviéndose como archivos estáticos, con _headers y
 # _redirects funcionando igual que antes.
 run_worker_first = ["/api/*"]
+# El binding de assets trae su propio manejo automático de URLs limpias
+# ("auto-trailing-slash"), pensado para carpetas con index.html — no para
+# archivos planos como los de este sitio (reserva.html, checkout.html, etc.).
+# Con el default puesto, esa lógica automática peleaba con las reglas de
+# _redirects: /reserva entraba en loop de redirección infinito. "none" apaga
+# el manejo automático y deja a _redirects como única fuente de verdad.
+html_handling = "none"
 
 # El bucket de R2 donde se suben las fotos nuevas desde /admin (ver
 # lib/fotos.js). Comentado a propósito: si el binding apunta a un bucket que
