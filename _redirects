@@ -12,6 +12,7 @@
 /arrepentimiento.html /arrepentimiento  301
 /admin.html /admin  301
 
+/ /index.html  200
 /reserva /reserva.html  200
 /checkout /checkout.html  200
 /preguntas /preguntas.html  200
