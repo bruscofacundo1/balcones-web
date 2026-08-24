@@ -18,7 +18,7 @@
 const { FOTOS } = require('../../js/config.js');
 const { exigirSesion } = require('../../lib/sesion.js');
 const {
-  hayBaseDatos, haySubidaDeFotos, diagnosticoSubida, listarFotos, importarDeConfig,
+  hayBaseDatos, haySubidaDeFotos, listarFotos, importarDeConfig,
   agregarFoto, actualizarFoto, borrarFoto, reordenarFotos, vaciarFotos,
   subirArchivo, borrarArchivosPorUrl
 } = require('../../lib/fotos.js');
@@ -88,8 +88,7 @@ module.exports = async (req, res) => {
         importada: fotos.length > 0,
         puedeSubir: haySubidaDeFotos(),
         categorias: CATEGORIAS,
-        enConfig: FOTOS.length,
-        diagnostico: diagnosticoSubida() // TEMPORAL: sacar junto con lo de lib/fotos.js
+        enConfig: FOTOS.length
       });
       return;
     }

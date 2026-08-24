@@ -84,15 +84,23 @@ tocar a mano en el dashboard salvo lo que sigue:
    `fotos.balconesdelarroyo.com.ar`, apuntado a Cloudflare) o el subdominio
    `r2.dev` que te ofrece la misma pantalla para arrancar rápido. Copiá esa
    URL.
-3. **Variables de entorno**: el proyecto → Settings → Variables and Secrets
-   (revisá que estén tanto en *Production* como en *Preview*, si las separa):
+3. **Variables de entorno — ojo, hay DOS pantallas parecidas y sólo una sirve**:
+   el proyecto → Settings tiene una sección "Variables and secrets" colgando
+   de **Build** (la que se ve primero, junto con el repositorio de Git y los
+   comandos de build/deploy) y otra, más abajo, bajo **Runtime** que se llama
+   **"Runtime variables and secrets"**. La de Build sólo la ve el proceso que
+   corre `wrangler deploy`, no el Worker sirviendo pedidos — cargarlas ahí no
+   hace nada para el sitio, aunque la UI no avisa nada raro y las deja guardar
+   igual. Las variables van en la de **Runtime**:
    - `DATABASE_URL` — el connection string de Neon
    - `ADMIN_PASSWORD` — la contraseña del panel
    - `MP_ACCESS_TOKEN` — el Access Token de Mercado Pago
    - `MP_WEBHOOK_SECRET` — opcional pero recomendado
    - `FOTOS_PUBLIC_URL` — la URL del paso 2, sin `/` al final
-4. **Redeploy**: como en Vercel, una variable cargada después del primer
-   deploy necesita un deployment nuevo para que la función la vea.
+4. **Redeploy**: una variable de Runtime cargada después del primer deploy
+   necesita un **deployment nuevo** para que el Worker la vea — no alcanza con
+   guardarla, aunque no haya cambiado ni una línea de código. Un *Retry* del
+   último deployment (menú `⋯` en Deployments) alcanza; no hace falta pushear.
 7. **Webhook de Mercado Pago**: en el panel de Mercado Pago, apuntar a
    `https://tu-dominio/api/webhook-mercadopago`, evento `payments` — esto no
    cambia respecto a como estaba pensado para Vercel.
