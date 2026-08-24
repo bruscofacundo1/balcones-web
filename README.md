@@ -122,5 +122,5 @@ línea `<link rel="canonical">` de `index.html` con la dirección definitiva.
 ## Documentación
 
 **[CONTEXTO.md](CONTEXTO.md)** explica qué se hizo, por qué, cómo funciona el
-flujo de reserva, el sistema de variantes y qué falta. Leerlo antes de meter
+flujo de reserva, las decisiones de diseño y qué falta. Leerlo antes de meter
 mano.

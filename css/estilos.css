@@ -370,22 +370,6 @@ a { color: var(--terracota); }
 .tab:hover { border-color: var(--ocre); }
 .tab[aria-selected="true"] { background: var(--carbon); border-color: var(--carbon); color: #fff; }
 
-.ambientes { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 26px; }
-.ambiente {
-  background: var(--crema); border: 1px solid var(--borde);
-  border-radius: var(--radio); overflow: hidden;
-  transition: box-shadow .22s ease;
-}
-.ambiente:hover { box-shadow: var(--sombra); }
-.ambiente img { aspect-ratio: 4/3; object-fit: cover; width: 100%; cursor: zoom-in; }
-.ambiente__cuerpo { padding: 22px 24px 26px; }
-.ambiente__cuerpo h3 { font-size: 1.18rem; margin-bottom: 6px; }
-.ambiente__meta {
-  font-size: .78rem; letter-spacing: .1em; text-transform: uppercase;
-  color: var(--terracota); font-weight: 600; margin-bottom: 10px;
-}
-.ambiente p { font-size: .92rem; color: var(--piedra); margin: 0; }
-
 /* ------------------------------------------------------------- carrusel -- */
 /* Foto grande al medio y las vecinas asomando a los lados. El texto va abajo
    de la foto, no encima, para que se lea siempre. */
@@ -551,97 +535,8 @@ a { color: var(--terracota); }
   .carrusel--pantalla .carrusel__texto { color: var(--piedra); font-size: .94rem; }
 }
 
-/* ---------------------------------------------------- panel de variantes - */
-.variantes { position: fixed; left: 20px; bottom: 20px; z-index: 120; }
-.variantes__boton {
-  border: 1px solid var(--borde); background: var(--crema);
-  border-radius: var(--radio-sm); cursor: pointer;
-  font-family: var(--texto); font-size: .78rem; font-weight: 600;
-  color: var(--carbon-suave); padding: 9px 14px;
-  box-shadow: var(--sombra-sm);
-  transition: all .18s ease;
-}
-.variantes__boton:hover { border-color: var(--terracota); color: var(--terracota); }
-
-.variantes__panel {
-  position: absolute; left: 0; bottom: calc(100% + 8px);
-  width: 260px; padding: 16px;
-  background: var(--crema);
-  border: 1px solid var(--borde); border-radius: var(--radio);
-  box-shadow: var(--sombra-lg);
-  display: none;
-  /* Con seis o siete grupos ya no entraba en pantallas bajas y no había
-     forma de llegar a los últimos — el panel abre hacia arriba desde un
-     botón pegado abajo, así que se le pone un techo y scroll propio. */
-  max-height: calc(100vh - 80px);
-  overflow-y: auto;
-}
-.variantes.abierto .variantes__panel { display: block; }
-
-.pvar__grupo + .pvar__grupo { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--borde); }
-.pvar__titulo {
-  margin: 0 0 8px;
-  font-size: .68rem; font-weight: 600; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--piedra);
-}
-.pvar__ops { display: grid; gap: 5px; }
-.pvar__op {
-  text-align: left; padding: 8px 11px;
-  border: 1px solid var(--borde); background: transparent;
-  border-radius: var(--radio-sm); cursor: pointer;
-  font-family: var(--texto); font-size: .84rem; color: var(--carbon-suave);
-  transition: all .16s ease;
-}
-.pvar__op:hover { border-color: var(--ocre); }
-.pvar__op--activa {
-  background: var(--carbon); border-color: var(--carbon);
-  color: #fff; font-weight: 600;
-}
-
-@media (max-width: 760px) {
-  .variantes { left: 14px; bottom: 14px; }
-  .variantes__boton { font-size: .72rem; padding: 8px 11px; }
-  .variantes__panel { width: min(260px, calc(100vw - 40px)); }
-}
-
 /* -------------------------------------------------------------- galeria -- */
 .filtros { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 40px; }
-
-/* Grilla despareja: cada tanto una foto ocupa el doble de ancho o de alto,
-   así no quedan todas del mismo tamaño como en una plantilla. */
-.galeria {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: 210px;
-  grid-auto-flow: dense;
-  gap: 14px;
-}
-.galeria__item {
-  margin: 0;
-  border-radius: var(--radio-sm);
-  overflow: hidden;
-  cursor: zoom-in;
-  position: relative;
-  background: var(--arena-osc);
-  box-shadow: var(--sombra-sm);
-}
-.galeria__item:nth-child(8n+1) { grid-column: span 2; grid-row: span 2; }
-.galeria__item:nth-child(8n+4) { grid-row: span 2; }
-.galeria__item:nth-child(8n+6) { grid-column: span 2; }
-
-.galeria__item img {
-  width: 100%; height: 100%; object-fit: cover;
-  transition: transform .5s cubic-bezier(.2,.7,.3,1);
-}
-.galeria__item:hover img { transform: scale(1.05); }
-.galeria__item figcaption {
-  position: absolute; inset: auto 0 0 0;
-  padding: 26px 16px 13px;
-  background: linear-gradient(transparent, rgba(20,16,12,.82));
-  color: #fff; font-size: .84rem; font-weight: 500;
-  opacity: 0; transition: opacity .25s ease;
-}
-.galeria__item:hover figcaption { opacity: 1; }
 
 /* ------------------------------------------------ modal de reserva ------- */
 /* El flujo principal: fechas, después qué se alquila, y el pago ya en otra
@@ -691,6 +586,13 @@ a { color: var(--terracota); }
 
 /* la referencia de colores va acá arriba, en la misma línea del título */
 .modal-res__cab-der { display: flex; align-items: center; gap: 14px; }
+.modal-res__cerrar {
+  width: 38px; height: 38px; border-radius: var(--radio-sm);
+  border: 1px solid var(--borde); background: transparent;
+  font-size: 1.4rem; line-height: 1; color: var(--carbon);
+  cursor: pointer; transition: all .18s ease;
+}
+.modal-res__cerrar:hover { background: var(--carbon); color: #fff; border-color: var(--carbon); }
 .cal__referencias--cab {
   margin: 0; padding: 0; border: 0;
   gap: 12px; font-size: .74rem;
@@ -747,78 +649,7 @@ a { color: var(--terracota); }
   .modal-res__estado { text-align: center; }
 }
 
-/* --------------------------------------------------------------- drawer -- */
-/* Panel lateral de reserva: se abre desde cualquier botón "Reservar" y deja
-   la página de fondo, en vez de mandar al visitante a una sección. */
-.drawer {
-  position: fixed; inset: 0; z-index: 150;
-  visibility: hidden;
-  transition: visibility 0s .35s;
-}
-.drawer.abierto { visibility: visible; transition: visibility 0s; }
-
-.drawer__fondo {
-  position: absolute; inset: 0;
-  background: rgba(16,13,10,.55);
-  opacity: 0; transition: opacity .35s ease;
-}
-.drawer.abierto .drawer__fondo { opacity: 1; }
-
-.drawer__panel {
-  position: absolute; top: 0; right: 0; bottom: 0;
-  width: min(540px, 100%);
-  background: var(--crema);
-  display: flex; flex-direction: column;
-  box-shadow: -18px 0 50px rgba(43,38,33,.22);
-  transform: translateX(100%);
-  transition: transform .35s cubic-bezier(.2,.7,.3,1);
-}
-.drawer.abierto .drawer__panel { transform: none; }
-
-.drawer__cabecera {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 24px; border-bottom: 1px solid var(--borde);
-  flex: 0 0 auto;
-}
-.drawer__cabecera h3 { margin: 0; font-size: 1.25rem; }
-.drawer__cerrar {
-  width: 38px; height: 38px; border-radius: var(--radio-sm);
-  border: 1px solid var(--borde); background: transparent;
-  font-size: 1.4rem; line-height: 1; color: var(--carbon);
-  cursor: pointer; transition: all .18s ease;
-}
-.drawer__cerrar:hover { background: var(--carbon); color: #fff; border-color: var(--carbon); }
-
-.drawer__acciones { display: flex; align-items: center; gap: 10px; }
-.drawer__toggle {
-  border: 1px dashed var(--borde); background: transparent;
-  border-radius: var(--radio-sm); cursor: pointer;
-  font-family: var(--texto); font-size: .72rem; font-weight: 600;
-  letter-spacing: .06em; text-transform: uppercase;
-  color: var(--piedra); padding: 7px 12px;
-  transition: all .18s ease;
-}
-.drawer__toggle:hover { color: var(--terracota); border-color: var(--terracota); }
-
-.drawer__cuerpo {
-  flex: 1 1 auto; overflow-y: auto; padding: 22px 24px;
-  display: flex; flex-direction: column;
-}
-
-/* El orden de los bloques es lo único que cambia entre un flujo y el otro:
-   el DOM es el mismo, así no hay dos calendarios que mantener. */
-.drawer__bloque { order: 2; }
-.drawer__bloque--datos { order: 4; }
-
-.drawer[data-variante="a"] .drawer__bloque--modalidad { order: 1; }
-.drawer[data-variante="a"] .drawer__bloque--fechas    { order: 2; }
-.drawer[data-variante="a"] .drawer__bloque--opciones  { display: none; }
-
-.drawer[data-variante="b"] .drawer__bloque--modalidad { display: none; }
-.drawer[data-variante="b"] .drawer__bloque--fechas    { order: 1; }
-.drawer[data-variante="b"] .drawer__bloque--opciones  { order: 2; margin-top: 26px; }
-
-/* ---------------------------------------------- opciones con precio (b) -- */
+/* -------------------------------------------------------------- opciones - */
 .opciones { display: grid; gap: 10px; }
 .opcion {
   display: flex; align-items: center; justify-content: space-between; gap: 14px;
@@ -981,32 +812,9 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
   padding: 18px; text-align: center;
   background: var(--arena); border-radius: var(--radio);
 }
-.drawer__paso {
-  font-size: .72rem; font-weight: 600; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--terracota);
-  margin: 0 0 12px;
-}
-.drawer__cuerpo .cal__barra { margin-bottom: 14px; }
-.drawer__cuerpo .campos { margin-top: 20px; }
-.tabs--drawer { gap: 6px; margin-bottom: 26px; }
-.tabs--drawer .tab { padding: 9px 14px; font-size: .84rem; flex: 1 1 auto; }
-.tabs--drawer .tab small { display: none; }
 /* Doble clase a propósito: `.cal__meses` se define más abajo en el archivo y
    con una sola clase le ganaría por orden. */
 .cal__meses.cal__meses--uno { grid-template-columns: 1fr; }
-
-.drawer__pie {
-  flex: 0 0 auto; padding: 18px 24px 22px;
-  border-top: 1px solid var(--borde); background: var(--arena);
-}
-.drawer__unidad {
-  font-size: .82rem; color: var(--piedra);
-  margin: 0 0 12px; text-align: center;
-}
-
-@media (max-width: 480px) {
-  .drawer__panel { width: 100%; }
-}
 
 /* --------------------------------------------------------------- mosaico - */
 /* Nivel 1 de la galería: unas pocas fotos y el resto a un clic, para que la
@@ -1340,49 +1148,6 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 }
 .unidad__texto { font-size: .92rem; color: var(--piedra); margin: 0; }
 
-/* ---------------------------------------------------- bandas (variante B) - */
-/* Una fila por unidad, la foto cambia de lado en la del medio para que no
-   quede una columna prolija. */
-.bandas { display: flex; flex-direction: column; }
-.banda {
-  display: flex; align-items: center; gap: 38px;
-  padding: 34px 0; border-top: 1px solid var(--borde);
-}
-.banda:first-child { border-top: 0; padding-top: 0; }
-.banda:nth-child(even) { flex-direction: row-reverse; }
-.banda__foto {
-  width: 300px; flex-shrink: 0; aspect-ratio: 3 / 2;
-  object-fit: cover; border-radius: var(--radio-sm);
-}
-.banda--principal .banda__foto { width: 400px; aspect-ratio: 16 / 10; }
-.banda__cuerpo { flex: 1; }
-.banda__cuerpo h3 { font-size: 1.35rem; margin-bottom: 4px; }
-.banda--principal .banda__cuerpo h3 { font-size: 1.85rem; }
-.banda__meta {
-  font-size: .8rem; letter-spacing: .03em; color: var(--terracota);
-  font-weight: 600; margin-bottom: 10px;
-}
-.banda__texto { font-size: .95rem; color: var(--piedra); margin: 0 0 16px; }
-.banda__desde { font-size: .9rem; color: var(--piedra); margin: 0; }
-.banda__desde strong {
-  font-family: var(--display); font-size: 1.6rem; color: var(--terracota);
-  font-weight: 600; margin: 0 4px;
-}
-
-.bandas__pie {
-  border-top: 1px solid var(--borde); padding-top: 30px; margin-top: 8px;
-  text-align: center;
-}
-.plegable { margin-top: 20px; }
-.plegable summary {
-  cursor: pointer; list-style: none; display: inline-block;
-  font-size: .9rem; color: var(--carbon-suave);
-  border-bottom: 1px solid var(--borde); padding-bottom: 3px;
-}
-.plegable summary::-webkit-details-marker { display: none; }
-.plegable summary:hover { color: var(--terracota); border-color: var(--terracota); }
-.plegable summary::after { content: ' +'; color: var(--terracota); }
-.plegable[open] summary::after { content: ' −'; }
 
 #modalidades { margin-bottom: 22px; }
 #modalidades .tab small { font-weight: 500; opacity: .75; }
@@ -1422,12 +1187,6 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 }
 .nota-tarifas ul { margin: 8px 0 0; padding-left: 20px; }
 .nota-tarifas li { margin-bottom: 5px; }
-
-/* -------------------------------------------------------------- reservas - */
-.reservas__layout {
-  display: grid; grid-template-columns: 1.25fr .75fr;
-  gap: clamp(28px, 4vw, 48px); align-items: start;
-}
 
 .panel {
   background: var(--crema); border: 1px solid var(--borde);
@@ -1582,11 +1341,6 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
   border-color: var(--dia-libre-bd);
 }
 .ref__caja--sel { background: var(--terracota); border-color: var(--terracota); }
-
-/* resumen de la reserva */
-.resumen { position: sticky; top: calc(var(--nav-h) + 20px); }
-.resumen__titulo { font-size: 1.3rem; margin-bottom: 4px; }
-.resumen__sub { font-size: .88rem; color: var(--piedra); margin-bottom: 24px; }
 
 .campos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
 .campo { display: flex; flex-direction: column; gap: 6px; }
@@ -1956,7 +1710,7 @@ html.anim .revelar--foto.visible { transform: none; }
 
 /* ---------------------------------------------------------- responsive --- */
 @media (max-width: 1000px) {
-  .casa__layout, .ubicacion__layout, .reservas__layout, .contacto__layout { grid-template-columns: 1fr; }
+  .casa__layout, .ubicacion__layout, .contacto__layout { grid-template-columns: 1fr; }
   /* la foto deja de sangrar a la derecha y pasa a ocupar todo el ancho */
   .casa__foto { margin-right: -24px; margin-left: -24px; }
   .casa__foto-grande { border-radius: 0; aspect-ratio: 16/10; }
@@ -1987,17 +1741,8 @@ html.anim .revelar--foto.visible { transform: none; }
   .nav__links a { color: var(--carbon); padding: 14px 0; border-bottom: 1px solid var(--borde); }
   .nav__links .boton { margin-top: 14px; justify-content: center; }
   .nav__burger { display: block; }
-  .ambientes { grid-template-columns: 1fr; }
   .unidades { grid-template-columns: 1fr; gap: 30px; }
   .unidad--principal .unidad__foto { aspect-ratio: 16 / 10; }
-  /* en celular la foto va siempre arriba, alternar los lados no se nota */
-  .banda, .banda:nth-child(even) { flex-direction: column; align-items: stretch; gap: 16px; }
-  .banda__foto, .banda--principal .banda__foto { width: 100%; aspect-ratio: 16 / 10; }
-  /* en celular la grilla se aplana: todas iguales, una al lado de la otra */
-  .galeria { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 130px; gap: 10px; }
-  .galeria__item:nth-child(8n+1),
-  .galeria__item:nth-child(8n+4),
-  .galeria__item:nth-child(8n+6) { grid-column: auto; grid-row: auto; }
   .campos { grid-template-columns: 1fr; }
   .lightbox__btn--prev { left: 8px; }
   .lightbox__btn--next { right: 8px; }

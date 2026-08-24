@@ -116,10 +116,10 @@
       </section>
 
       <!-- ------------------------------------------------------- el pago -->
-      <!-- Dos variantes (ver js/variantes.js): 'a' manda todo por WhatsApp y
-           Naty coordina la seña a mano; 'b' cobra ahí mismo con el Payment
-           Brick de Mercado Pago. Por defecto va 'a' — mientras no se decida
-           cobrar online, Mercado Pago queda armado pero apagado, no borrado. -->
+      <!-- Cómo se paga hoy: todo por WhatsApp, Naty coordina la seña a mano
+           (ver VARIANTE_PAGO en js/checkout.js). El bloque de Mercado Pago
+           (Payment Brick) queda armado y probado, pero apagado — se activa
+           cambiando esa constante, sin tocar el resto del flujo. -->
       <section class="panel" id="panel-pago">
         <h2 class="panel__titulo">Cómo se paga</h2>
 
@@ -195,9 +195,7 @@
 <script src="js/config.js?v=46"></script>
 <script src="js/contenido.js?v=46"></script>
 <script src="js/disponibilidad.js?v=46"></script>
-<script src="js/precios.js?v=46"></script>
-<script src="js/variantes.js?v=46"></script>
-<script src="js/calendario.js?v=46"></script>
+<script src="js/precios.js?v=46"></script><script src="js/calendario.js?v=46"></script>
 <script src="js/checkout.js?v=46"></script>
 </body>
 </html>

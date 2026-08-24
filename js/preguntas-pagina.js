@@ -2,8 +2,8 @@
    Balcones del Arroyo — página de preguntas frecuentes
    Depende de: config.js
 
-   Muestra el listado completo de FAQ (en el inicio sólo aparecen algunas,
-   según la variante elegida — ver js/variantes.js y js/app.js).
+   Muestra el listado completo de FAQ (en el inicio sólo aparecen las
+   destacadas — ver FAQ_DESTACADAS en js/app.js).
    ============================================================================ */
 
 document.addEventListener('DOMContentLoaded', async () => {

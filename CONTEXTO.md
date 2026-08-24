@@ -214,7 +214,7 @@ en §6 y en `MIGRACION-CLOUDFLARE.md`).
 | `index.html` | La home entera |
 | `reserva.html` | Paso 2: qué se alquila, con el precio de cada opción |
 | `checkout.html` | Paso 3: detalle, datos y (más adelante) el pago |
-| `preguntas.html` | Las 13 preguntas frecuentes completas (en el inicio sólo se ven algunas, según la variante) |
+| `preguntas.html` | Las 13 preguntas frecuentes completas (en el inicio sólo se ven las destacadas) |
 | `legales.html` | Términos y condiciones, privacidad y cancelación |
 | `arrepentimiento.html` | Botón de arrepentimiento (Res. 424/2020) |
 | `admin.html` | El panel entero: calendario, reservas, precios y textos, fotos (§6.c y §6.d) |
@@ -223,8 +223,7 @@ en §6 y en `MIGRACION-CLOUDFLARE.md`).
 | `js/disponibilidad.js` | **Vacío a propósito.** Quedó como red de seguridad; las noches ocupadas viven en la base (§6) |
 | `js/precios.js` | Fechas, temporadas y cotización — funciones puras, sin DOM. Las usa el navegador y el servidor (§6) |
 | `js/contenido.js` | **Qué se puede editar desde el panel y cómo se valida.** Dual como `precios.js`. También la vista previa, las colecciones y el cálculo de Semana Santa (§6.d) |
-| `js/variantes.js` | Sistema de variantes (provisorio, ver §5) |
-| `js/calendario.js` | Calendario, drawer y modal de reserva (usa `precios.js` para las cuentas) |
+| `js/calendario.js` | Calendario y modal de reserva (usa `precios.js` para las cuentas) |
 | `js/app.js` | Arma el resto de la página: galería, carrusel, ambientes, FAQ… |
 | `js/reserva-pagina.js` | Lógica de `reserva.html` |
 | `js/checkout.js` | Lógica de `checkout.html`: datos, Payment Brick y pago |
@@ -240,7 +239,7 @@ en §6 y en `MIGRACION-CLOUDFLARE.md`).
 | `api/contenido.js` | **Público.** Textos, fotos y **noches ocupadas** — todo en un pedido, antes de pintar |
 | `api/crear-pago.js` | Cobra la seña (recalcula todo del lado del servidor) |
 | `api/webhook-mercadopago.js` | Recibe los avisos de Mercado Pago cuando cambia el estado de un pago |
-| `api/reservar.js` | **Público.** Bloquea la fecha sin cobrar (variante WhatsApp), con tope por IP |
+| `api/reservar.js` | **Público.** Bloquea la fecha sin cobrar (el flujo WhatsApp), con tope por IP |
 | `api/admin/reservas.js` | Lista, crea, confirma y cancela reservas |
 | `api/admin/contenido.js` | Guarda precios y textos; valida contra el mismo catálogo que el panel |
 | `api/admin/fotos.js` | Subir, reordenar, editar y sacar fotos |
@@ -351,8 +350,9 @@ Por eso `pintarTarifas()` y `tarjetasActividades()` reciben un parámetro
 la copia que vive escondida se pinta sin animación, directamente visible.
 
 Mismo problema, versión "tarde": `pintarMosaico()` se puede repintar después
-de la carga inicial si alguien cambia la variante de "La casa y el lugar" en
-la misma visita (`aplicarVarianteGaleria` → `Variantes.alCambiar`). El
+de la carga inicial si el contenido editado desde `/admin` llega tarde (ver
+`Contenido.preparar` → `pintarDesdeConfig()`, que llama a `pintarMosaico()`
+de nuevo si la galería cambió). El
 `IntersectionObserver` de `iniciarRevelado()` escanea el DOM **una sola vez**
 al cargar; un `.revelar` que aparece después no lo observa nadie. Se resuelve
 con la bandera `animacionesListas` (`js/app.js`): en true recién al terminar
@@ -507,39 +507,41 @@ casa** — es una limitación del dibujo, no del archivo. Si en algún momento
 molesta, la salida es un logo simplificado para tamaño chico (por ejemplo sólo
 el techo, o una inicial), no seguir peleando con el escalado.
 
-## 5. Las variantes
+## 5. Decisiones de diseño (23/08/2026)
 
-Varias secciones están hechas de más de una forma para poder compararlas antes
-de decidir. Se cambian con el **botón "⚙ Variantes" abajo a la izquierda**, y
-la elección queda guardada en el navegador.
+Varias secciones se armaron en más de una forma para poder compararlas en
+vivo antes de decidir cuál quedaba (un panel "⚙ Variantes" las cambiaba al
+vuelo). Ya está decidido y publicado — este documento describe cómo quedó
+cada una, y por qué, para quien toque el código después.
 
-| Sección | Variantes | Por defecto |
-|---|---|---|
-| **Cómo se paga** (`checkout.html`) | `a` directo a WhatsApp · `b` Mercado Pago (Payment Brick) | `a` |
-| **Preguntas frecuentes (inicio)** | `a` 4 preguntas + botón · `b` sólo botón · `c` nada, el nav va directo a la página | `b` |
-| **Reservas en el inicio** | `a` sin panel · `b` con panel | `a` |
-| **Cómo se alquila** | `a` unidades + precios por temporada · `b` bandas con foto y "desde" | `a` |
-| **Reservas** | `c` modal en pasos · `b` panel lateral, fechas primero · `a` panel lateral, unidad primero | `c` |
-| **La casa por dentro** | `a` carrusel · `c` carrusel a pantalla · `b` grilla | `a` |
-| **La casa y el lugar** | `a` mosaico en 3 niveles · `b` grilla completa | `a` |
+| Sección | Quedó |
+|---|---|
+| **Cómo se paga** (`checkout.html`) | WhatsApp. Mercado Pago sigue armado y probado, apagado con `VARIANTE_PAGO` en `js/checkout.js` |
+| **Preguntas frecuentes (inicio)** | 4 preguntas + botón a `preguntas.html` |
+| **Reservas en el inicio** | Sin panel — todos los "Reservar" abren el modal |
+| **Cómo se alquila** | Unidades + precios por temporada |
+| **Reservas** | Modal en pasos: fechas, después qué alquilás, después `reserva.html` |
+| **La casa por dentro** | Carrusel a pantalla completa |
+| **La casa y el lugar** | Mosaico en 3 niveles |
+
+Las otras formas (el drawer lateral, la grilla de ambientes, la galería
+completa con filtros, las bandas de "Cómo se alquila") se sacaron del todo:
+código, HTML y CSS. Si hace falta recuperar alguna, están en el historial de
+git de antes del commit que dice "sacar el sistema de variantes".
 
 ### Preguntas frecuentes (inicio)
 
-`preguntas.html` es una página nueva con las 13 preguntas completas (reusa el
-mismo `<details>`/`<summary>` que ya existía, ahora en `js/preguntas-pagina.js`).
-En el inicio, la sección `#preguntas` tiene tres formas de mostrarse:
+`preguntas.html` es una página aparte con las 13 preguntas completas (reusa
+el mismo `<details>`/`<summary>`, en `js/preguntas-pagina.js`). En el inicio,
+la sección `#preguntas` muestra las 4 que más pesan en si alguien reserva o
+no: entera/por planta, ingreso y salida, cómo se paga la seña, mascotas
+(`FAQ_DESTACADAS = [0, 3, 4, 5]` en `js/app.js`, por índice — si se reordena
+`FAQ` en `config.js` hay que revisar esos números). Debajo, "Ver todas las
+preguntas" a `preguntas.html`.
 
-- **`a` — 4 preguntas + botón.** Las 4 que más pesan en si alguien reserva o
-  no: entera/por planta, ingreso y salida, cómo se paga la seña, mascotas
-  (`FAQ_DESTACADAS = [0, 3, 4, 5]` en `js/app.js`, por índice — si se
-  reordena `FAQ` en `config.js` hay que revisar esos números). Debajo, "Ver
-  todas las preguntas" a `preguntas.html`.
-- **`b` — sólo el botón (la que queda activa).** Ni una pregunta en el
-  inicio, sólo el título, la bajada y el botón a la página completa.
-- **`c` — nada.** La sección `#preguntas` entera desaparece del inicio
-  (`hidden`), y el link "Preguntas" del menú deja de hacer scroll-anchor y
-  pasa a apuntar directo a `preguntas.html` (`aplicarVariantePreguntas()` le
-  cambia el `href` al link con `id="nav-preguntas"` según la variante activa).
+Se eligió mostrar preguntas reales y no sólo un botón porque la sección
+existe justo para reducir las consultas repetidas por WhatsApp — un botón
+pelado no cumple esa promesa en el mismo scroll.
 
 Pedido explícito (14/08/2026) pensando en achicar el scroll del inicio,
 sobre todo en celular — 12-13 preguntas en acordeón eran de las secciones más
@@ -550,9 +552,8 @@ clic, no se borra nada.
 **La sección tiene la foto de las sierras de fondo** (`.seccion--foto`,
 `img/sierras-rosa.jpg` difuminada y bajada de brillo). Es la foto que antes
 usaba la franja suelta que había justo antes; al fusionarlas, la home perdió
-una parada entera sin perder el respiro visual. Con la variante `b` la
-sección queda ocupando ~57% de la ventana, más presencia que la franja vieja
-(44vh).
+una parada entera sin perder el respiro visual. La sección queda ocupando
+~57% de la ventana, más presencia que la franja vieja (44vh).
 
 Dos cosas a tener en cuenta si se toca esto:
 
@@ -572,13 +573,11 @@ Dos cosas a tener en cuenta si se toca esto:
 ### Reservas en el inicio
 
 La home tenía una sección `#reservas` con el calendario de dos meses y el panel
-de resumen al costado. Con el modal (flujo `c`) esa sección quedó duplicando lo
-mismo y alargando muchísimo el inicio, así que por defecto **no se muestra**:
-todos los botones "Reservar" / "Ver disponibilidad" / "Disponibilidad" abren el
-modal. La variante `b` la vuelve a mostrar tal cual estaba, para comparar.
-
-La sección sigue existiendo en `index.html` con el atributo `hidden`; la
-enciende `aplicarPanelInicio()` en `js/calendario.js`.
+de resumen al costado. Con el modal duplicaba lo mismo y alargaba muchísimo el
+inicio, así que se sacó del todo: todos los botones "Reservar" / "Ver
+disponibilidad" abren el modal directamente (`href="reserva.html"` +
+`data-reservar`, interceptado por `iniciarModalReserva()` en
+`js/calendario.js`).
 
 ### Cómo se alquila
 
@@ -599,45 +598,29 @@ que volvían a listar `Casa completa · 9 plazas`, y así con las tres, una vez
 por temporada). El nombre, las plazas y el detalle aparecían cuatro veces.
 
 Ahora es **una sola sección** (`#tarifas`, donde estaba Tarifas, justo antes de
-reservar) y las plazas se dicen una vez:
+reservar) y las plazas se dicen una vez: arriba las tres unidades presentadas
+una sola vez (foto, nombre, plazas, detalle), con la casa completa más ancha
+que las plantas para que no queden tres columnas iguales. Abajo, las cards por
+temporada como estaban, pero ya sin repetir las plazas: sólo nombre y precio.
 
-- **`a` — unidades + precios.** Arriba las tres unidades presentadas una sola
-  vez (foto, nombre, plazas, detalle), con la casa completa más ancha que las
-  plantas para que no queden tres columnas iguales. Abajo, las cards por
-  temporada como estaban, pero ya sin repetir las plazas: sólo nombre y precio.
-- **`b` — bandas con foto.** Una banda por unidad, alternando el lado de la
-  foto (la casa completa más grande), con `desde $X la noche` en vez del cuadro
-  completo. El detalle por temporada queda plegado en "Ver precios por
-  temporada". Es la que menos hace leer: la idea es que el que quiere reservar
-  rápido vea unidad, foto y precio de referencia, y el número exacto salga del
-  calendario.
-
-El `desde` sale de `precioDesde()` en `js/app.js`: el mínimo de esa unidad
-entre todas las temporadas de `config.js`, no un número escrito a mano.
+(Hubo una segunda forma — bandas alternadas con "desde $X la noche" y el
+detalle plegado — que se descartó y se sacó del código.)
 
 ### Cómo se paga
 
-En `checkout.html`, después de "Tus datos". Es la variante que decide **si
-esta reserva pasa por Mercado Pago o no** (ver §6 para el detalle técnico del
-pago en sí):
+En `checkout.html`, después de "Tus datos". Hoy va todo por **WhatsApp**: al
+tocar "Confirmar por WhatsApp" primero se bloquea la fecha en el servidor
+(`api/reservar.js`) y recién si eso sale bien se abre el mensaje con toda la
+reserva (unidad, fechas, noches, total, seña, datos de contacto). La seña se
+coordina a mano — no se cobra nada desde el sitio.
 
-- **`a` — WhatsApp (la que queda activa).** Al tocar "Confirmar por
-  WhatsApp" primero se bloquea la fecha en el servidor (`api/reservar.js`) y
-  recién si eso sale bien se abre el mensaje con toda la reserva (unidad,
-  fechas, noches, total, seña, datos de contacto). La seña se coordina a
-  mano, como se venía haciendo antes de meter Mercado Pago — no se cobra
-  nada desde el sitio.
-- **`b` — Mercado Pago.** El Payment Brick de siempre: tarjeta ahí mismo,
-  seña acreditada al toque, fecha bloqueada sola en la base.
-
-El pedido de bajar el cobro online por ahora (14/08/2026, después de que la
-familia viera la demo) fue explícito: no borrar nada, dejarlo listo para
-prender cuando decidan cobrar de verdad. Por eso quedó como variante y no
-como una rama de código aparte — es exactamente el mecanismo que ya existía
-para comparar dos formas de hacer algo, tenía sentido reusarlo acá en vez de
-inventar un interruptor nuevo. Se elige desde el mismo panel "⚙ Variantes" de
-la home (aunque el efecto sólo se ve en `checkout.html`) y queda guardado en
-el navegador.
+**Mercado Pago queda armado y probado, apagado.** El Payment Brick de
+siempre (tarjeta ahí mismo, seña acreditada al toque, fecha bloqueada sola en
+la base) sigue en `checkout.js`/`api/crear-pago.js`/`api/webhook-mercadopago.js`
+sin tocar — sólo hay que cambiar `const VARIANTE_PAGO = 'a'` a `'b'` en
+`js/checkout.js` para activarlo. El pedido de bajar el cobro online por ahora
+(14/08/2026, después de que la familia viera la demo) fue explícito: no
+borrar nada, dejarlo listo para cuando decidan cobrar de verdad.
 
 ### El bloqueo sin pago (`api/reservar.js`)
 
@@ -674,58 +657,51 @@ las tenga marcadas — así no hay que adivinar mirando dos listas separadas.
 
 ### Reservas
 
-- **`c` — modal en pasos (el principal).** Paso 1: calendario grande y
-  huéspedes. Paso 2: qué alquilás, con el precio de cada opción para esas
-  fechas. Después salta a `reserva.html`, ya fuera de la home.
-- **`b` — panel lateral, fechas primero.** Mismo orden que `c` pero en un panel
-  al costado, sin cambiar de página hasta el final.
-- **`a` — panel lateral, unidad primero.** El orden original: elegís qué
-  alquilar y después las fechas.
+**Modal en pasos.** Paso 1: calendario grande y huéspedes. Paso 2: qué
+alquilás, con el precio de cada opción para esas fechas. Después salta a
+`reserva.html`, ya fuera de la home. (`js/calendario.js`: `abrirModalReserva`,
+`iniciarModalReserva`, `pintarOpciones`.)
 
-**Por qué `c` y `b` ponen las fechas antes que la unidad:** como las
-modalidades están anidadas, si elegís "casa completa" primero y esa semana la
-planta baja está ocupada, ves los días bloqueados y te vas — sin enterarte de
-que podías alquilar la planta alta. Poniendo las fechas primero, el sistema
-muestra las tres opciones con precio y marca cuáles están libres. En `a` esa
-alternativa queda escondida.
+**Por qué las fechas van antes que la unidad:** como las modalidades están
+anidadas, si elegís "casa completa" primero y esa semana la planta baja está
+ocupada, ves los días bloqueados y te vas — sin enterarte de que podías
+alquilar la planta alta. Poniendo las fechas primero, el paso 2 muestra las
+tres opciones con precio y marca cuáles están libres.
+
+(Hubo dos formas más — un panel lateral en vez de modal, con el orden de
+pasos invertido en una de ellas — que se descartaron y se sacaron del
+código junto con el `drawer` que las servía.)
 
 ### La casa por dentro
 
-- **`a` carrusel:** una foto grande por vez, con las vecinas asomando a los
-  lados, flechas, puntitos y teclas ←/→. El título y la descripción van
-  **abajo** de la foto, no encima, para que se lean siempre.
-- **`c` carrusel a pantalla:** el mismo carrusel con otra piel. La foto ocupa
-  casi todo el alto de la ventana (`76vh`, así se acomoda solo al zoom y a
-  cada monitor, no a una medida fija), se sale del contenedor a todo el ancho,
-  y la descripción va **encima** de la foto sobre un degradado oscuro.
-- **`b` grilla:** todas las fichas juntas (lo que había antes).
+**Carrusel a pantalla completa.** Una foto grande por vez, con las vecinas
+asomando a los lados, flechas, puntitos y teclas ←/→. La foto ocupa casi todo
+el alto de la ventana (`76vh`, así se acomoda solo al zoom y a cada monitor,
+no a una medida fija), se sale del contenedor a todo el ancho, y la
+descripción va **encima** de la foto sobre un degradado oscuro. Usa la foto
+original (`IMG()`), no la miniatura de 760px, que a ese tamaño se vería
+borrosa.
 
-`a` y `c` **comparten toda la lógica**: es un solo carrusel y la variante sólo
-cambia una clase CSS (`.carrusel--pantalla`) y qué foto se carga — en `c` se
-usa la original en vez de la miniatura de 760px, que a ese tamaño se vería
-borrosa. No hay código duplicado que mantener al par.
+(Antes había dos formas más: el mismo carrusel con el texto abajo de la foto
+en vez de encima, y una grilla con todas las fichas juntas. Se descartaron.)
 
-Dos cosas que se resolvieron distinto en celular para `c`, porque la pantalla
-angosta y alta rompía las dos ideas que la definen:
+En celular el alto deja de ir en `vh` y lo manda el formato de la foto —
+con `66vh` la imagen quedaba vertical y recortaba los costados de cada
+ambiente — y el texto vuelve abajo de la foto: encima de una imagen de 300px
+de ancho, el bloque de descripción tapaba el 97%.
 
-- El alto deja de ir en `vh` y lo manda el formato de la foto. Con `66vh` la
-  imagen quedaba vertical (260×421 sobre un original 4:3) y recortaba los
-  costados de cada ambiente.
-- El texto vuelve abajo de la foto. Encima de una imagen de 300px de ancho, el
-  bloque de descripción tapaba el 97% de la foto.
+**Bug que se arregló de paso:** todas las fotos del carrusel son
+`position: absolute`, así que el contenedor no tenía alto propio y se
+quedaba en su `min-height`; el `overflow: hidden` (que está para recortar a
+lo ancho las fotos vecinas, que se salen a propósito) cortaba el texto por
+abajo cuando el título+descripción ocupaban más que ese mínimo. Se arregló
+dejando **sólo la foto activa en el flujo**
+(`.carrusel__item--activo { position: relative }`), así el contenedor crece
+hasta donde llega el texto. El `min-height` del pie está para que el alto no
+salte al pasar de una foto a otra cuando un texto ocupa una línea más.
 
-**Bug que apareció de paso:** en la variante `a` la descripción estaba escrita
-pero no se veía. Todas las fotos del carrusel eran `position: absolute`, así
-que el contenedor no tenía alto propio y se quedaba en su `min-height`; el
-`overflow: hidden` (que está para recortar a lo ancho las fotos vecinas, que
-se salen a propósito) cortaba el texto por abajo. Se arregló dejando **sólo la
-foto activa en el flujo** (`.carrusel__item--activo { position: relative }`),
-así el contenedor crece hasta donde llega el texto. El `min-height` del pie
-está para que el alto no salte al pasar de una foto a otra cuando un texto
-ocupa una línea más.
-
-El carrusel ocupa muchísimo menos alto, que era el problema: con 15 ambientes
-la grilla se hacía eterna, sobre todo en celular.
+El carrusel ocupa muchísimo menos alto que una grilla, que era el problema
+original: con 15 ambientes la grilla se hacía eterna, sobre todo en celular.
 
 ### La casa y el lugar
 
@@ -775,13 +751,9 @@ Dos cosas del nivel 2 que se ajustaron mirando cómo quedaba de verdad:
   En celular la panorámica vuelve al cuadro normal: entran dos columnas
   justas, y si una se llevaba las dos quedaba una foto sola por fila.
 
-Con 56 fotos, mostrarlas todas de una hacía la home larguísima.
-
-### Cuando decidan
-
-Borrar `js/variantes.js`, el bloque `<div class="variantes">` de `index.html`,
-los estilos `.variantes`/`.pvar__*`, y el código de la variante que pierda.
-Está todo marcado con comentarios.
+Con 56 fotos, mostrarlas todas de una hacía la home larguísima. (Esa era la
+otra forma que se probó — grilla completa con filtros, sin mosaico — y se
+descartó por eso mismo.)
 
 ---
 
@@ -1678,10 +1650,11 @@ foto.
 
 ### El repintado tiene que incluir la galería
 
-`pintarDesdeConfig()` en app.js incluye `pintarGaleria`, `aplicarVarianteGaleria`
-y `pintarTodasLasFotos` — respetando el filtro y la variante activos. **Esto se
-descubrió probando:** al principio sólo repintaba textos, así que `FOTOS` se
-actualizaba pero la grilla seguía mostrando el orden viejo hasta recargar.
+`pintarDesdeConfig()` en app.js incluye `pintarMosaico()` y `pintarTodasLasFotos`
+(ésta última respetando la categoría activa, si el visor está abierto).
+**Esto se descubrió probando:** al principio sólo repintaba textos, así que
+`FOTOS` se actualizaba pero el mosaico seguía mostrando el orden viejo hasta
+recargar.
 
 ---
 

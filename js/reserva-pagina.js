@@ -1,6 +1,6 @@
 /* ============================================================================
    Balcones del Arroyo — paso 2: qué se alquila
-   Depende de: config.js, disponibilidad.js, variantes.js, calendario.js
+   Depende de: config.js, disponibilidad.js, calendario.js
 
    Del modal llegan sólo las fechas. Acá se elige la unidad viendo el precio de
    cada una y cuáles quedan libres. Los datos y el pago van en checkout.html.

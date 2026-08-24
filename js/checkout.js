@@ -1,7 +1,7 @@
 /* ============================================================================
    Balcones del Arroyo — paso 3: datos y pago
-   Depende de: config.js, disponibilidad.js, precios.js, variantes.js,
-   calendario.js, y del SDK de Mercado Pago (window.MercadoPago).
+   Depende de: config.js, disponibilidad.js, precios.js, calendario.js, y
+   del SDK de Mercado Pago (window.MercadoPago).
 
    Llega con las fechas y la unidad ya elegidas. Vuelve a validar las dos cosas
    (que el tramo siga libre y que la unidad sirva) y recalcula el precio con
@@ -13,7 +13,14 @@
    El campo de tarjeta es el Payment Brick de Mercado Pago: un iframe de ellos
    incrustado en la página. El número de tarjeta nunca pasa por este código ni
    por nuestro servidor — el Brick nos da sólo un token de un solo uso.
+
+   Cómo se paga hoy: todo por WhatsApp, se coordina la seña a mano. El cobro
+   online con Mercado Pago quedó armado y probado (Brick, webhook, todo) pero
+   apagado — para activarlo alcanza con cambiar VARIANTE_PAGO a 'b' acá abajo.
    ============================================================================ */
+
+/** 'a' = WhatsApp (como está hoy). 'b' = Mercado Pago con el Payment Brick. */
+const VARIANTE_PAGO = 'a';
 
 let calculo = null;
 
@@ -335,9 +342,9 @@ function textoAcepto(variante) {
     : 'Entiendo que la reserva se confirma cuando coordinamos la seña por WhatsApp.';
 }
 
-/** Muestra el bloque de WhatsApp o el de Mercado Pago según la variante elegida. */
+/** Muestra el bloque de WhatsApp o el de Mercado Pago según VARIANTE_PAGO. */
 function aplicarVariantePago() {
-  const v = Variantes.get('pago');
+  const v = VARIANTE_PAGO;
   const a = document.getElementById('pago-a');
   const b = document.getElementById('pago-b');
   if (!a || !b) return; // ya se reemplazó #panel-pago por la pantalla final
@@ -369,7 +376,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   calculo = pintarResumen(r);
 
   aplicarVariantePago();
-  Variantes.alCambiar('pago', aplicarVariantePago);
 
   document.getElementById('btn-finalizar').addEventListener('click', () => {
     const datos = leerFormulario();
@@ -377,9 +383,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('btn-finalizar').hidden = true;
 
-    // 'a' es la variante activa hoy: directo a WhatsApp, sin pasar por
-    // Mercado Pago. Queda todo armado abajo para cuando se prenda la 'b'.
-    if (Variantes.get('pago') !== 'b' || !hayMercadoPagoConfigurado()) {
+    // VARIANTE_PAGO 'a' es lo activo hoy: directo a WhatsApp, sin pasar por
+    // Mercado Pago. Queda todo armado abajo para cuando se cambie a 'b'.
+    if (VARIANTE_PAGO !== 'b' || !hayMercadoPagoConfigurado()) {
       irPorWhatsapp(datos);
       return;
     }

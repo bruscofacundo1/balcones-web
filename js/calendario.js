@@ -113,23 +113,6 @@ const estado = {
   mesBase: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
 };
 
-/* --------------------------------------------------------------- variante
-   Tres formas de reservar, para comparar cuál funciona mejor:
-     'c' = modal en pasos: fechas, después qué alquilás, y el pago aparte
-     'b' = panel lateral: fechas y después las opciones con precio
-     'a' = panel lateral: primero qué alquilás y después las fechas
-   Cuál está activa lo maneja variantes.js.                                */
-let VARIANTE = Variantes.get('reservas');
-
-Variantes.alCambiar('reservas', v => {
-  VARIANTE = v;
-  cerrarDrawer();
-  cerrarModalReserva();
-  aplicarVariante();
-  dibujarCalendario();
-  actualizarResumen();
-});
-
 const HOY = aIso(new Date());
 const LIMITE = (() => {
   const f = new Date();
@@ -265,13 +248,8 @@ function dibujarEn(ids, cantMeses, opts = {}) {
 }
 
 function dibujarCalendario() {
-  ajustarModalidadSiHaceFalta();
-  // La sección de la home siempre usa el flujo 'a' (ahí se elige la modalidad
-  // con los tabs); la variante sólo cambia el drawer.
-  dibujarEn({ meses: 'cal-meses', titulo: 'cal-titulo', prev: 'cal-prev', next: 'cal-next' }, 2);
-  dibujarEn({ meses: 'dr-meses',  titulo: 'dr-titulo',  prev: 'dr-prev',  next: 'dr-next'  }, 1,
-            { union: VARIANTE === 'b' });
-  // el modal siempre elige las fechas antes que la modalidad
+  // El modal elige las fechas antes que la modalidad, así que muestra libre
+  // cualquier día donde alguna planta esté disponible.
   dibujarEn({ meses: 'mr-meses', titulo: 'mr-titulo-mes', prev: 'mr-prev', next: 'mr-next' }, 1,
             { union: true });
   pintarOpciones();
@@ -323,10 +301,6 @@ function limpiarSeleccion() {
 function cambiarModalidad(id) {
   estado.modalidad = modalidadPorId(id);
 
-  document.querySelectorAll('#modalidades .tab, #dr-modalidades .tab').forEach(b => {
-    b.setAttribute('aria-selected', String(b.dataset.modalidad === id));
-  });
-
   // si la selección actual dejó de estar disponible, la limpiamos
   if (estado.entrada && estado.salida && hayOcupadasEntre(estado.entrada, estado.salida)) {
     estado.entrada = null;
@@ -337,7 +311,6 @@ function cambiarModalidad(id) {
   }
 
   llenarHuespedes();
-  pintarReferenciasTemporada();
   dibujarCalendario();
   actualizarResumen();
 
@@ -350,18 +323,16 @@ function llenarHuespedes() {
   const max = estado.modalidad.plazas;
   if (estado.huespedes > max) estado.huespedes = max;
 
-  ['res-huespedes', 'dr-huespedes', 'rp-huespedes'].forEach(id => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    sel.innerHTML = '';
-    for (let i = 1; i <= max; i++) {
-      const o = document.createElement('option');
-      o.value = i;
-      o.textContent = `${i} ${i === 1 ? 'huésped' : 'huéspedes'}`;
-      if (i === estado.huespedes) o.selected = true;
-      sel.appendChild(o);
-    }
-  });
+  const sel = document.getElementById('rp-huespedes');
+  if (!sel) return;
+  sel.innerHTML = '';
+  for (let i = 1; i <= max; i++) {
+    const o = document.createElement('option');
+    o.value = i;
+    o.textContent = `${i} ${i === 1 ? 'huésped' : 'huéspedes'}`;
+    if (i === estado.huespedes) o.selected = true;
+    sel.appendChild(o);
+  }
 }
 
 /* ------------------------------------------------------------- cotización */
@@ -382,17 +353,15 @@ function cotizar(entrada, salida, modalidad = estado.modalidad) {
 /* --------------------------------------------------------------- resumen */
 
 function mostrarAviso(texto, tipo) {
-  ['reserva-aviso', 'dr-aviso'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (!texto) {
-      el.className = 'aviso';
-      el.textContent = '';
-      return;
-    }
-    el.className = `aviso aviso--${tipo || 'error'}`;
-    el.textContent = texto;
-  });
+  const el = document.getElementById('mr-aviso');
+  if (!el) return;
+  if (!texto) {
+    el.className = 'aviso';
+    el.textContent = '';
+    return;
+  }
+  el.className = `aviso aviso--${tipo || 'error'}`;
+  el.textContent = texto;
 }
 
 /**
@@ -418,23 +387,7 @@ function estadoReserva() {
   return { listo: true, motivo: null, cotizacion: c };
 }
 
-/**
- * En el flujo 'b' la modalidad se elige después de las fechas: si la que está
- * marcada no sirve para el tramo, pasamos a la primera que sí.
- */
-function ajustarModalidadSiHaceFalta() {
-  if (VARIANTE !== 'b' || !estado.entrada || !estado.salida) return;
-  if (modalidadElegidaSirve()) return;
-
-  const alternativa = CONFIG.modalidades.find(m => {
-    if (hayOcupadasEntre(estado.entrada, estado.salida, m)) return false;
-    const c = cotizar(estado.entrada, estado.salida, m);
-    return c.noches >= c.minNoches;
-  });
-  if (alternativa) estado.modalidad = alternativa;
-}
-
-/** Filas del desglose de precios, compartidas por la sección y el drawer. */
+/** Filas del desglose de precios. También la usa checkout.js. */
 function htmlDesglose(c) {
   let html = '';
   c.tramos.forEach(tr => {
@@ -455,122 +408,22 @@ function htmlDesglose(c) {
 function actualizarResumen() {
   const r = estadoReserva();
 
-  // avisos (los pinta en la sección y en el drawer a la vez)
   if (r.motivo === 'falta-entrada')      mostrarAviso('', null);
   else if (r.motivo === 'falta-salida')  mostrarAviso('Ahora elegí la fecha de salida.', 'ok');
   else if (r.motivo === 'corta')         mostrarAviso(`Para estas fechas la estadía mínima es de ${r.cotizacion.minNoches} noches.`, 'error');
   else if (r.motivo === 'ocupada')       mostrarAviso(`${estado.modalidad.nombre} no está libre en esas fechas. Mirá las otras opciones.`, 'error');
   else                                   mostrarAviso('', null);
 
-  pintarPanel({
-    entrada: 'res-entrada', salida: 'res-salida', desglose: 'res-desglose',
-    unidad: 'res-unidad', continuar: 'res-continuar', wsp: 'res-wsp'
-  }, r);
-
-  pintarPanel({
-    entrada: 'dr-entrada', salida: 'dr-salida', desglose: 'dr-desglose',
-    unidad: 'dr-unidad', continuar: 'dr-continuar'
-  }, r);
-
   actualizarModal();
 }
 
-/** Pinta un panel de resumen (el de la sección o el del drawer). */
-function pintarPanel(ids, r) {
-  const elEntrada = document.getElementById(ids.entrada);
-  if (!elEntrada) return;
-
-  const elSalida = document.getElementById(ids.salida);
-  const elDesglose = document.getElementById(ids.desglose);
-  const elUnidad = document.getElementById(ids.unidad);
-  const btn = document.getElementById(ids.continuar);
-  const wsp = ids.wsp ? document.getElementById(ids.wsp) : null;
-
-  if (elUnidad) {
-    elUnidad.textContent = `${estado.modalidad.nombre} · hasta ${estado.modalidad.plazas} personas`;
-  }
-
-  elEntrada.textContent = estado.entrada ? formatoFechaLarga(estado.entrada) : 'Elegí una fecha';
-  elEntrada.classList.toggle('campo__valor--vacio', !estado.entrada);
-  if (elSalida) {
-    elSalida.textContent = estado.salida ? formatoFechaLarga(estado.salida) : 'Elegí una fecha';
-    elSalida.classList.toggle('campo__valor--vacio', !estado.salida);
-  }
-
-  if (elDesglose) elDesglose.innerHTML = r.listo ? htmlDesglose(r.cotizacion) : '';
-  if (wsp) wsp.hidden = !r.listo;
-
-  if (!btn) return;
-  btn.disabled = !r.listo;
-  btn.textContent = r.listo ? 'Continuar con la reserva'
-    : r.motivo === 'corta' ? 'Estadía muy corta'
-    : r.motivo === 'ocupada' ? 'No disponible'
-    : 'Elegí las fechas';
-}
-
 /* ------------------------------------------------------------- WhatsApp -- */
-
-function mensajeReserva() {
-  const l = [];
-  l.push('¡Hola! Quiero consultar disponibilidad en Balcones del Arroyo.');
-  l.push('');
-  l.push(`• Modalidad: ${estado.modalidad.nombre}`);
-  if (estado.entrada && estado.salida) {
-    const c = cotizar(estado.entrada, estado.salida);
-    l.push(`• Entrada: ${formatoFechaLarga(estado.entrada)}`);
-    l.push(`• Salida: ${formatoFechaLarga(estado.salida)}`);
-    l.push(`• Noches: ${c.noches}`);
-    l.push(`• Huéspedes: ${estado.huespedes}`);
-    l.push(`• Estimado según la web: ${pesos(c.total)}`);
-  } else {
-    l.push(`• Huéspedes: ${estado.huespedes}`);
-  }
-  l.push('');
-  l.push('¿Está disponible? ¡Gracias!');
-  return l.join('\n');
-}
-
+/* enlaceWsp también lo usa checkout.js. */
 function enlaceWsp(texto) {
   return `https://wa.me/${CONFIG.contacto.whatsapp}?text=${encodeURIComponent(texto)}`;
 }
 
 /* ------------------------------------------------------------ arranque -- */
-
-function pintarModalidades() {
-  ['modalidades', 'dr-modalidades'].forEach(id => {
-    const cont = document.getElementById(id);
-    if (!cont) return;
-    cont.innerHTML = CONFIG.modalidades.map(m => `
-      <button class="tab" data-modalidad="${m.id}"
-              aria-selected="${m.id === estado.modalidad.id}">
-        ${m.nombre} <small>· ${m.plazas} plazas</small>
-      </button>`).join('');
-
-    cont.querySelectorAll('.tab').forEach(b => {
-      b.addEventListener('click', () => cambiarModalidad(b.dataset.modalidad));
-    });
-  });
-}
-
-/**
- * Leyenda de colores del calendario con el precio por noche de cada
- * temporada, para la modalidad elegida. Se actualiza al cambiar de modalidad
- * así se ve cuánto sale cada época sin tener que elegir fechas primero.
- */
-function pintarReferenciasTemporada() {
-  ['cal-temporadas', 'dr-temporadas'].forEach(id => {
-    const cont = document.getElementById(id);
-    if (!cont) return;
-    cont.innerHTML = CONFIG.temporadas.map(t => `
-      <span class="ref ref--temp">
-        <span class="ref__caja" style="background:${tinte(t.color, .16)};border-color:${tinte(t.color, .45)}"></span>
-        <span class="ref__nombre">${t.nombre.replace(/^Temporada /, '')}</span>
-        <strong>${pesos(t.precios[estado.modalidad.id])}</strong>
-      </span>`).join('');
-  });
-}
-
-/* ------------------------------------------ opciones con precio (flujo b) */
 
 /**
  * Lista las modalidades con el precio total para las fechas elegidas y cuáles
@@ -585,81 +438,47 @@ const FOTO_UNIDAD = {
 };
 
 function pintarOpciones() {
-  [['dr-opciones', false], ['rp-opciones', true]].forEach(([id, conFoto]) => {
-    const cont = document.getElementById(id);
-    if (!cont) return;
+  const cont = document.getElementById('rp-opciones');
+  if (!cont) return;
 
-    if (!estado.entrada || !estado.salida) {
-      cont.innerHTML = '<p class="opcion__vacio">Elegí la entrada y la salida y te mostramos ' +
-                       'cada opción con su precio.</p>';
-      return;
-    }
+  if (!estado.entrada || !estado.salida) {
+    cont.innerHTML = '<p class="opcion__vacio">Elegí la entrada y la salida y te mostramos ' +
+                     'cada opción con su precio.</p>';
+    return;
+  }
 
-    cont.innerHTML = CONFIG.modalidades.map(m => {
-      const ocupada = hayOcupadasEntre(estado.entrada, estado.salida, m);
-      const c = cotizar(estado.entrada, estado.salida, m);
-      const corta = c.noches < c.minNoches;
-      const elegida = m.id === estado.modalidad.id;
-      const nodisp = ocupada || corta;
+  cont.innerHTML = CONFIG.modalidades.map(m => {
+    const ocupada = hayOcupadasEntre(estado.entrada, estado.salida, m);
+    const c = cotizar(estado.entrada, estado.salida, m);
+    const corta = c.noches < c.minNoches;
+    const elegida = m.id === estado.modalidad.id;
+    const nodisp = ocupada || corta;
 
-      let estadoTexto = '';
-      if (ocupada) estadoTexto = '<span class="opcion__no">No disponible en esas fechas</span>';
-      else if (corta) estadoTexto = `<span class="opcion__no">Mínimo ${c.minNoches} noches</span>`;
+    let estadoTexto = '';
+    if (ocupada) estadoTexto = '<span class="opcion__no">No disponible en esas fechas</span>';
+    else if (corta) estadoTexto = `<span class="opcion__no">Mínimo ${c.minNoches} noches</span>`;
 
-      return `
-        <button type="button" class="opcion${conFoto ? ' opcion--foto' : ''}${elegida && !nodisp ? ' opcion--elegida' : ''}${nodisp ? ' opcion--nodisp' : ''}"
-                data-modalidad="${m.id}" ${nodisp ? 'disabled' : ''}>
-          ${conFoto ? `<img class="opcion__img" src="${FOTO_UNIDAD[m.id]}" alt="" loading="lazy">` : ''}
-          <span class="opcion__info">
-            <strong>${m.nombre}</strong>
-            <small>${m.plazas} plazas · ${m.detalle}</small>
-            ${estadoTexto}
-          </span>
-          ${nodisp ? '' : `
-          <span class="opcion__precio">
-            <strong>${pesos(c.total)}</strong>
-            <small>${pesos(Math.round(c.total / c.noches))} la noche</small>
-            <small>${c.noches} ${c.noches === 1 ? 'noche' : 'noches'}</small>
-          </span>`}
-        </button>`;
-    }).join('');
+    return `
+      <button type="button" class="opcion opcion--foto${elegida && !nodisp ? ' opcion--elegida' : ''}${nodisp ? ' opcion--nodisp' : ''}"
+              data-modalidad="${m.id}" ${nodisp ? 'disabled' : ''}>
+        <img class="opcion__img" src="${FOTO_UNIDAD[m.id]}" alt="" loading="lazy">
+        <span class="opcion__info">
+          <strong>${m.nombre}</strong>
+          <small>${m.plazas} plazas · ${m.detalle}</small>
+          ${estadoTexto}
+        </span>
+        ${nodisp ? '' : `
+        <span class="opcion__precio">
+          <strong>${pesos(c.total)}</strong>
+          <small>${pesos(Math.round(c.total / c.noches))} la noche</small>
+          <small>${c.noches} ${c.noches === 1 ? 'noche' : 'noches'}</small>
+        </span>`}
+      </button>`;
+  }).join('');
 
-    cont.querySelectorAll('.opcion:not([disabled])').forEach(b => {
-      b.addEventListener('click', () => cambiarModalidad(b.dataset.modalidad));
-    });
+  cont.querySelectorAll('.opcion:not([disabled])').forEach(b => {
+    b.addEventListener('click', () => cambiarModalidad(b.dataset.modalidad));
   });
-}
-
-/** ¿La modalidad elegida sirve para las fechas elegidas? (sólo flujo 'b') */
-function modalidadElegidaSirve() {
-  if (!estado.entrada || !estado.salida) return false;
-  if (hayOcupadasEntre(estado.entrada, estado.salida)) return false;
-  const c = cotizar(estado.entrada, estado.salida);
-  return c.noches >= c.minNoches;
-}
-
-/* --------------------------------------------------- mostrar la variante */
-
-/** Muestra u oculta los bloques del drawer según el flujo elegido. */
-function aplicarVariante() {
-  const dr = document.getElementById('drawer');
-  if (!dr) return;
-  dr.dataset.variante = VARIANTE;
-
-  // La 'c' abre el modal, no el drawer, pero dejamos rótulos por las dudas.
-  const rotulos = {
-    a: { modalidad: '1 · Qué querés alquilar', fechas: '2 · Elegí las fechas', opciones: '' },
-    b: { modalidad: '', fechas: '1 · Elegí las fechas', opciones: '2 · Qué querés alquilar' }
-  }[VARIANTE] || { modalidad: '', fechas: '1 · Elegí las fechas', opciones: '2 · Qué querés alquilar' };
-
-  const set = (id, texto) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = texto;
-  };
-  set('dr-paso-modalidad', rotulos.modalidad);
-  set('dr-paso-fechas', rotulos.fechas);
-  set('dr-paso-opciones', rotulos.opciones);
-
 }
 
 /* ------------------------------------------------------ paso a la reserva */
@@ -736,6 +555,16 @@ function iniciarModalReserva() {
   const m = document.getElementById('modal-res');
   if (!m) return;
 
+  // Cualquier botón con data-reservar abre el modal, en vez de saltar a una
+  // sección. Va por delegación para que también sirva en lo que se pinta
+  // después (por ejemplo las tarjetas de tarifas).
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-reservar]');
+    if (!b) return;
+    e.preventDefault();
+    abrirModalReserva();
+  });
+
   document.getElementById('mr-cerrar').addEventListener('click', cerrarModalReserva);
   m.querySelector('.modal-res__fondo').addEventListener('click', cerrarModalReserva);
   document.addEventListener('keydown', e => {
@@ -754,117 +583,9 @@ function iniciarModalReserva() {
   document.getElementById('mr-siguiente').addEventListener('click', irAReserva);
 }
 
-/* --------------------------------------------------------------- drawer -- */
-
-function abrirDrawer() {
-  const dr = document.getElementById('drawer');
-  if (!dr) return;
-  dr.classList.add('abierto');
-  dr.setAttribute('aria-hidden', 'false');
-  document.body.style.overflow = 'hidden';
-  const cerrar = document.getElementById('dr-cerrar');
-  if (cerrar) cerrar.focus();
-}
-
-function cerrarDrawer() {
-  const dr = document.getElementById('drawer');
-  if (!dr) return;
-  dr.classList.remove('abierto');
-  dr.setAttribute('aria-hidden', 'true');
-  document.body.style.overflow = '';
-}
-
-function iniciarDrawer() {
-  const dr = document.getElementById('drawer');
-  if (!dr) return;
-
-  // Cualquier botón con data-reservar abre el panel en vez de saltar a la
-  // sección. Va por delegación para que también sirva en lo que se pinta
-  // después (por ejemplo las tarjetas de tarifas).
-  document.addEventListener('click', e => {
-    const b = e.target.closest('[data-reservar]');
-    if (!b) return;
-    e.preventDefault();
-    if (VARIANTE === 'c') abrirModalReserva();
-    else abrirDrawer();
-  });
-
-  document.getElementById('dr-cerrar').addEventListener('click', cerrarDrawer);
-  dr.querySelector('.drawer__fondo').addEventListener('click', cerrarDrawer);
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && dr.classList.contains('abierto')) cerrarDrawer();
-  });
-
-  document.getElementById('dr-prev').addEventListener('click', () => {
-    estado.mesBase = new Date(estado.mesBase.getFullYear(), estado.mesBase.getMonth() - 1, 1);
-    dibujarCalendario();
-  });
-  document.getElementById('dr-next').addEventListener('click', () => {
-    estado.mesBase = new Date(estado.mesBase.getFullYear(), estado.mesBase.getMonth() + 1, 1);
-    dibujarCalendario();
-  });
-  document.getElementById('dr-limpiar').addEventListener('click', limpiarSeleccion);
-
-  document.getElementById('dr-huespedes').addEventListener('change', e => {
-    estado.huespedes = Number(e.target.value);
-    actualizarResumen();
-  });
-
-  document.getElementById('dr-continuar').addEventListener('click', irAReserva);
-  aplicarVariante();
-}
-
-/** Muestra u oculta la sección completa de reservas del inicio (variante). */
-function aplicarPanelInicio() {
-  const sec = document.getElementById('reservas');
-  if (!sec) return;
-  sec.hidden = Variantes.get('panelInicio') !== 'b';
-}
-
 function iniciarReservas() {
-  pintarModalidades();
   llenarHuespedes();
-  pintarReferenciasTemporada();
-  iniciarDrawer();
   iniciarModalReserva();
-
-  aplicarPanelInicio();
-  Variantes.alCambiar('panelInicio', aplicarPanelInicio);
-
-  if (document.getElementById('cal-meses')) {
-    document.getElementById('cal-prev').addEventListener('click', () => {
-      estado.mesBase = new Date(estado.mesBase.getFullYear(), estado.mesBase.getMonth() - 1, 1);
-      dibujarCalendario();
-    });
-    document.getElementById('cal-next').addEventListener('click', () => {
-      estado.mesBase = new Date(estado.mesBase.getFullYear(), estado.mesBase.getMonth() + 1, 1);
-      dibujarCalendario();
-    });
-    document.getElementById('cal-limpiar').addEventListener('click', limpiarSeleccion);
-
-    document.getElementById('res-huespedes').addEventListener('change', e => {
-      estado.huespedes = Number(e.target.value);
-      actualizarResumen();
-    });
-
-    document.getElementById('res-continuar').addEventListener('click', irAReserva);
-    document.getElementById('res-wsp').addEventListener('click', e => {
-      e.preventDefault();
-      window.open(enlaceWsp(mensajeReserva()), '_blank', 'noopener');
-    });
-
-    // Antes decía "Disponibilidad actualizada al <fecha de disponibilidad.js>",
-    // una fecha congelada en un archivo que ya no se edita: mentía dos veces,
-    // porque además el calendario ni siquiera estaba mirando las reservas.
-    // Ahora sólo se afirma algo si el servidor pudo contestar de verdad.
-    const act = document.getElementById('disp-actualizado');
-    if (act) {
-      act.textContent = Contenido.hayDisponibilidadFresca()
-        ? 'Disponibilidad al día. Confirmamos la fecha al recibir la seña.'
-        : 'No pudimos confirmar la disponibilidad en este momento: escribinos y te decimos enseguida.';
-    }
-  }
-
   dibujarCalendario();
   actualizarResumen();
 }

@@ -115,28 +115,6 @@ function pintarDistancias() {
 }
 
 /* -------------------------------------------------------------- ambientes */
-function pintarAmbientes(planta = 'todas') {
-  const lista = planta === 'todas'
-    ? AMBIENTES
-    : AMBIENTES.filter(a => a.planta === planta);
-
-  document.getElementById('ambientes').innerHTML = lista.map(a => `
-    <article class="ambiente">
-      <img src="${THUMB(a.foto)}" alt="${a.titulo}" loading="lazy"
-           data-foto="${a.foto}" data-titulo="${a.titulo}">
-      <div class="ambiente__cuerpo">
-        <p class="ambiente__meta">${a.meta}</p>
-        <h3>${a.titulo}</h3>
-        <p>${a.texto}</p>
-      </div>
-    </article>`).join('');
-
-  document.querySelectorAll('#ambientes img').forEach(img => {
-    img.addEventListener('click', () => abrirLightbox(
-      [{ f: img.dataset.foto, t: img.dataset.titulo }], 0));
-  });
-}
-
 function iniciarTabsAmbientes() {
   const tabs = document.querySelectorAll('#tabs-ambientes .tab');
   tabs.forEach(t => {
@@ -144,15 +122,14 @@ function iniciarTabsAmbientes() {
       tabs.forEach(o => o.setAttribute('aria-selected', 'false'));
       t.setAttribute('aria-selected', 'true');
       plantaAmbientes = t.dataset.planta;
-      pintarAmbientes(plantaAmbientes);
       pintarCarruselAmbientes(plantaAmbientes);
     });
   });
 }
 
 /* ------------------------------------------------ carrusel de ambientes -- */
-/* Variante A: una foto grande por vez, con las vecinas asomando a los lados.
-   Ocupa mucho menos alto que la grilla, sobre todo en celular. */
+/* Una foto grande por vez, casi a pantalla completa, con las vecinas
+   asomando a los lados y el texto abajo. */
 
 let plantaAmbientes = 'todas';
 let carrIndice = 0;
@@ -165,13 +142,9 @@ function pintarCarruselAmbientes(planta = 'todas') {
   carrLista = planta === 'todas' ? AMBIENTES : AMBIENTES.filter(a => a.planta === planta);
   carrIndice = 0;
 
-  // La variante 'c' muestra la foto casi a pantalla completa: con la miniatura
-  // (760px de ancho) se vería borrosa, así que ahí va la foto grande.
-  const src = Variantes.get('ambientes') === 'c' ? IMG : THUMB;
-
   pista.innerHTML = carrLista.map((a, i) => `
     <figure class="carrusel__item" data-i="${i}">
-      <img src="${src(a.foto)}" alt="${a.titulo}" loading="lazy"
+      <img src="${IMG(a.foto)}" alt="${a.titulo}" loading="lazy"
            data-foto="${a.foto}" data-titulo="${a.titulo}">
       <figcaption class="carrusel__pie">
         <p class="carrusel__meta">${a.meta}</p>
@@ -227,30 +200,12 @@ function iniciarCarruselAmbientes() {
   // flechas del teclado cuando el carrusel está a la vista
   document.addEventListener('keydown', e => {
     if (document.getElementById('lightbox').classList.contains('abierto')) return;
-    if (Variantes.get('ambientes') === 'b') return;   // la grilla no se navega
     const caja = document.getElementById('ambientes-carrusel');
     const r = caja.getBoundingClientRect();
     if (r.top > window.innerHeight || r.bottom < 0) return;
     if (e.key === 'ArrowLeft') moverCarrusel(carrIndice - 1, true);
     if (e.key === 'ArrowRight') moverCarrusel(carrIndice + 1, true);
   });
-}
-
-/**
- * Muestra la grilla o el carrusel según la variante elegida.
- * 'a' y 'c' son el mismo carrusel con distinta piel: cambia sólo el CSS
- * (y la foto que se carga), así que la lógica de navegación es una sola.
- */
-function aplicarVarianteAmbientes(v = Variantes.get('ambientes')) {
-  const carr = document.getElementById('ambientes-carrusel');
-  const grilla = document.getElementById('ambientes');
-  if (!carr || !grilla) return;
-
-  carr.hidden = v === 'b';
-  grilla.hidden = v !== 'b';
-  carr.classList.toggle('carrusel--pantalla', v === 'c');
-
-  if (v !== 'b') pintarCarruselAmbientes(plantaAmbientes);
 }
 
 /* ---------------------------------------------------------- actividades -- */
@@ -355,34 +310,6 @@ function iniciarTodasActividades() {
     if (e.key === 'Escape' && document.getElementById('todas-actividades').classList.contains('abierto')) {
       cerrarTodasActividades();
     }
-  });
-}
-
-/* --------------------------------------------------------------- galería */
-let fotosVisibles = FOTOS;
-
-function pintarGaleria(categoria = 'todas') {
-  fotosVisibles = categoria === 'todas' ? FOTOS : FOTOS.filter(f => f.c === categoria);
-
-  document.getElementById('galeria-grid').innerHTML = fotosVisibles.map((foto, i) => `
-    <figure class="galeria__item" data-i="${i}">
-      <img src="${THUMB(foto)}" alt="${foto.t}" loading="lazy">
-      <figcaption>${foto.t}</figcaption>
-    </figure>`).join('');
-
-  document.querySelectorAll('.galeria__item').forEach(el => {
-    el.addEventListener('click', () => abrirLightbox(fotosVisibles, Number(el.dataset.i)));
-  });
-}
-
-function iniciarFiltros() {
-  const filtros = document.querySelectorAll('#filtros .tab');
-  filtros.forEach(f => {
-    f.addEventListener('click', () => {
-      filtros.forEach(o => o.setAttribute('aria-selected', 'false'));
-      f.setAttribute('aria-selected', 'true');
-      pintarGaleria(f.dataset.cat);
-    });
   });
 }
 
@@ -517,15 +444,6 @@ function iniciarTodasLasFotos() {
   });
 }
 
-/** Muestra el mosaico o la galería completa según la variante. */
-function aplicarVarianteGaleria(v = Variantes.get('galeria')) {
-  const mosaico = document.getElementById('mosaico');
-  const completa = document.getElementById('galeria-completa');
-  if (!mosaico || !completa) return;
-  mosaico.hidden = v !== 'a';
-  completa.hidden = v !== 'b';
-  if (v === 'a') pintarMosaico();
-}
 
 /* -------------------------------------------------------------- lightbox */
 let lbFotos = [];
@@ -612,33 +530,20 @@ function iniciarLightbox() {
   });
 }
 
-/* --------------------------------------------------------------- tarifas */
 /* --------------------------------------------- cómo se alquila + precios */
-/* Las dos variantes cuentan lo mismo con distinto peso: la 'a' presenta las
-   unidades y después el cuadro de temporadas; la 'b' deja mandar a las fotos
-   y muestra un "desde", con el detalle por temporada plegado. En las dos, las
-   plazas y el detalle de cada unidad se dicen una sola vez. */
+/* Primero las unidades (casa completa y cada planta), después el cuadro de
+   precios por temporada. Las plazas y el detalle de cada unidad se dicen
+   una sola vez, arriba. */
 
-/** El valor más barato de una unidad en todo el año, para el "desde". */
-function precioDesde(idModalidad) {
-  return Math.min(...CONFIG.temporadas.map(t => t.precios[idModalidad]));
-}
-
-/** Cuadro de precios por temporada. Va en las dos variantes, así que recibe
-    dónde dibujarse. Ya no repite las plazas: eso se dice una vez arriba. */
+/** Cuadro de precios por temporada. */
 function pintarTarifas(idContenedor) {
   const cont = document.getElementById(idContenedor);
   if (!cont) return;
 
-  // 'tarifas-grid-b' vive adentro de un <details> cerrado (la variante B lo
-  // pliega bajo "Ver precios por temporada"): un elemento sin caja mientras
-  // está cerrado nunca cruza el umbral del IntersectionObserver, así que si
-  // arrancara en opacity:0 quedaría invisible para siempre aunque se abra
-  // el desplegable. Sólo la grilla que se ve de entrada usa la cascada.
   // `&& !animacionesListas`: si esto se repinta después de que corrió
   // iniciarRevelado(), un .revelar nuevo no lo observa nadie y la tarjeta
   // queda en opacity:0 PARA SIEMPRE. Un repintado tardío aparece sin animar.
-  const conRevelado = idContenedor === 'tarifas-grid' && !animacionesListas;
+  const conRevelado = !animacionesListas;
 
   cont.innerHTML = CONFIG.temporadas.map(t => `
     <article class="tarifa ${conRevelado ? 'revelar' : ''} ${t.destacada ? 'tarifa--destacada' : ''}">
@@ -659,7 +564,7 @@ function pintarTarifas(idContenedor) {
         <li>Mínimo de noches<span>${t.minNoches}</span></li>
         ${t.incluye.map(([k, v]) => `<li>${k}<span>${v}</span></li>`).join('')}
       </ul>
-      <a class="boton boton--linea" href="#reservas" data-reservar>Ver disponibilidad</a>
+      <a class="boton boton--linea" href="reserva.html" data-reservar>Ver disponibilidad</a>
     </article>`).join('');
 }
 
@@ -680,44 +585,12 @@ function pintarUnidades() {
     </article>`).join('');
 }
 
-/** Variante B: una banda por unidad, alternando el lado de la foto. */
-function pintarBandas() {
-  const cont = document.getElementById('bandas-unidades');
-  if (!cont) return;
-
-  const rev = animacionesListas ? '' : ' revelar revelar--foto';
-  cont.innerHTML = CONFIG.modalidades.map((m, i) => `
-    <article class="banda${rev}${i === 0 ? ' banda--principal' : ''}">
-      <img class="banda__foto" src="${FOTO_UNIDAD[m.id]}" alt="${m.nombre}" loading="lazy">
-      <div class="banda__cuerpo">
-        <h3>${m.nombre}</h3>
-        <p class="banda__meta">${m.plazas} plazas · ${m.detalle}</p>
-        <p class="banda__texto">${m.texto}</p>
-        <p class="banda__desde">desde <strong>${pesos(precioDesde(m.id))}</strong> la noche</p>
-      </div>
-    </article>`).join('');
-}
-
-function aplicarVarianteAlquiler() {
-  const v = Variantes.get('alquiler');
-  const a = document.getElementById('alquiler-a');
-  const b = document.getElementById('alquiler-b');
-  if (!a || !b) return;
-  a.hidden = v !== 'a';
-  b.hidden = v !== 'b';
-}
-
 function pintarAlquiler() {
   pintarUnidades();
-  pintarBandas();
   pintarTarifas('tarifas-grid');
-  pintarTarifas('tarifas-grid-b');
 
   document.getElementById('notas-tarifas').innerHTML =
     CONFIG.notasTarifas.map(n => `<li>${n}</li>`).join('');
-
-  aplicarVarianteAlquiler();
-  Variantes.alCambiar('alquiler', aplicarVarianteAlquiler);
 }
 
 /* ------------------------------------------------------------------ faq -- */
@@ -734,24 +607,11 @@ function htmlFaq(lista) {
     </details>`).join('');
 }
 
-function aplicarVariantePreguntas() {
-  const v = Variantes.get('preguntas');
-  const seccion = document.getElementById('preguntas');
-  if (!seccion) return;
-
-  seccion.hidden = v === 'c';
-  document.getElementById('nav-preguntas').href = v === 'c' ? 'preguntas.html' : '#preguntas';
-
-  document.getElementById('faq').innerHTML = v === 'a' ? htmlFaq(FAQ_DESTACADAS.map(i => FAQ[i])) : '';
-  document.getElementById('preguntas-bajada').textContent = v === 'a'
-    ? 'Las que más nos preguntan. El resto, un clic más allá.'
-    : 'Reunimos todo lo que solemos responder por WhatsApp en una sola página.';
-}
-
 function pintarFaq() {
   // Sólo se publica `p` y `r`. El campo `revisar` es una nota interna.
-  aplicarVariantePreguntas();
-  Variantes.alCambiar('preguntas', aplicarVariantePreguntas);
+  document.getElementById('faq').innerHTML = htmlFaq(FAQ_DESTACADAS.map(i => FAQ[i]).filter(Boolean));
+  document.getElementById('preguntas-bajada').textContent =
+    'Las que más nos preguntan. El resto, un clic más allá.';
 
   const pendientes = FAQ.filter(f => f.revisar);
   if (pendientes.length) {
@@ -774,9 +634,6 @@ function pintarContacto() {
   const url = `https://wa.me/${c.whatsapp}?text=${encodeURIComponent(mensajeBase)}`;
 
   document.querySelectorAll('[data-wsp]').forEach(a => { a.href = url; });
-
-  document.getElementById('check-in').textContent = CONFIG.reglas.horaCheckIn;
-  document.getElementById('check-out').textContent = CONFIG.reglas.horaCheckOut;
 }
 
 /* ------------------------------------------------------------- arranque -- */
@@ -786,8 +643,8 @@ function pintarContacto() {
 
     La galería va incluida: si la editaron y sólo se repintaran los textos,
     quedaría la lista vieja de fotos en pantalla aunque FOTOS ya tenga la
-    nueva. Se respeta el filtro y la variante que estén activos, para no
-    devolver al visitante a "todas" si estaba mirando una categoría. */
+    nueva. Si el visor de "todas las fotos" está abierto en una categoría
+    puntual, se respeta esa categoría al repintar. */
 function pintarDesdeConfig() {
   pintarTextosCasa();
   pintarCifras();
@@ -800,9 +657,7 @@ function pintarDesdeConfig() {
   pintarPie({ cta: true, enInicio: true });
   pintarContacto();
 
-  const filtroActivo = document.querySelector('#filtros .tab[aria-selected="true"]');
-  pintarGaleria(filtroActivo ? filtroActivo.dataset.cat : 'todas');
-  aplicarVarianteGaleria();
+  pintarMosaico();
   if (typeof tfCategoria !== 'undefined') pintarTodasLasFotos(tfCategoria);
 }
 
@@ -814,18 +669,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   pintarTextosCasa();
   pintarCifras();
   pintarComodidades();
-  pintarAmbientes('todas');
   iniciarTabsAmbientes();
   iniciarCarruselAmbientes();
-  aplicarVarianteAmbientes();
-  Variantes.alCambiar('ambientes', aplicarVarianteAmbientes);
+  pintarCarruselAmbientes('todas');
   pintarFaq();
-  pintarGaleria('todas');
-  iniciarFiltros();
+  pintarMosaico();
   iniciarTodasLasFotos();
   iniciarTodasActividades();
-  aplicarVarianteGaleria();
-  Variantes.alCambiar('galeria', aplicarVarianteGaleria);
   pintarActividades();
   pintarResenas();
   pintarDistancias();
@@ -836,5 +686,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   iniciarNav();
   iniciarRevelado();
   iniciarReservas();
-  Variantes.iniciar();
 });
