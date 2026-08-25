@@ -194,6 +194,17 @@ a { color: var(--terracota); }
   align-items: center;
   transition: background .3s ease, box-shadow .3s ease;
 }
+/* Se esconde sola y vuelve al acercar el mouse arriba — pero sólo con mouse
+   de verdad. En touch (celulares) "acercar el cursor" no existe, y ahí entra
+   la mayoría de las visitas (WhatsApp, Instagram): esconder la barra las
+   dejaría sin forma de ver "Reservar" ni el menú. */
+@media (hover: hover) and (pointer: fine) {
+  .nav {
+    transform: translateY(-160%);
+    transition: transform .35s cubic-bezier(.2,.7,.3,1), background .3s ease, box-shadow .3s ease;
+  }
+  .nav--visible { transform: translateY(0); }
+}
 /* Grilla de 3 columnas y no flex: así el logo queda centrado de verdad sin
    importar si "Reservar" pesa distinto que el botón de puntos del otro lado. */
 .nav__interior {

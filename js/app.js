@@ -51,6 +51,29 @@ function iniciarNav() {
   velo.addEventListener('click', cerrarMenu);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarMenu(); });
   links.querySelectorAll('a').forEach(a => a.addEventListener('click', cerrarMenu));
+
+  // La barra se esconde sola y vuelve al acercar el mouse arriba — nada más
+  // en desktop con mouse de verdad (ver el porqué en el CSS, junto a
+  // `@media (hover: hover)`). Arranca visible unos segundos para que se note
+  // que existe, y después se esconde; con el menú abierto no se esconde.
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    let escondida = null;
+    const mostrar = () => {
+      nav.classList.add('nav--visible');
+      clearTimeout(escondida);
+    };
+    const programarEsconder = () => {
+      clearTimeout(escondida);
+      escondida = setTimeout(() => {
+        if (!links.classList.contains('abierto')) nav.classList.remove('nav--visible');
+      }, 2000);
+    };
+    document.addEventListener('mousemove', e => { if (e.clientY < 120) mostrar(); });
+    nav.addEventListener('mouseenter', mostrar);
+    nav.addEventListener('mouseleave', programarEsconder);
+    mostrar();
+    programarEsconder();
+  }
 }
 
 /* ------------------------------------------------------------ animaciones */
