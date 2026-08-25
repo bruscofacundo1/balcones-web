@@ -21,6 +21,7 @@ function iniciarNav() {
   const nav = document.getElementById('nav');
   const burger = document.getElementById('nav-burger');
   const links = document.getElementById('nav-links');
+  const velo = document.getElementById('nav-velo');
 
   // El "Reservar" del menú late una sola vez, la primera vez que se deja
   // atrás el inicio: ahí desaparece de la vista el botón grande del hero y
@@ -37,16 +38,19 @@ function iniciarNav() {
   alScrollear();
   window.addEventListener('scroll', alScrollear, { passive: true });
 
+  function cerrarMenu() {
+    links.classList.remove('abierto');
+    velo.classList.remove('abierto');
+    burger.setAttribute('aria-expanded', 'false');
+  }
   burger.addEventListener('click', () => {
     const abierto = links.classList.toggle('abierto');
+    velo.classList.toggle('abierto', abierto);
     burger.setAttribute('aria-expanded', String(abierto));
   });
-  links.querySelectorAll('a').forEach(a => {
-    a.addEventListener('click', () => {
-      links.classList.remove('abierto');
-      burger.setAttribute('aria-expanded', 'false');
-    });
-  });
+  velo.addEventListener('click', cerrarMenu);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarMenu(); });
+  links.querySelectorAll('a').forEach(a => a.addEventListener('click', cerrarMenu));
 }
 
 /* ------------------------------------------------------------ animaciones */
