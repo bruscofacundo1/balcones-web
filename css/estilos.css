@@ -157,18 +157,6 @@ a { color: var(--terracota); }
 .boton--primario { background: var(--terracota); color: #fff; box-shadow: var(--sombra-sm); }
 .boton--primario:hover { background: var(--terracota-osc); box-shadow: var(--sombra); }
 
-/* El botón de la portada, como el de las tres referencias medidas: 12px, en
-   mayúsculas y con mucho espaciado entre letras. Chico y ancho se lee más
-   caro que grande y apretado. */
-.boton--hero {
-  font-family: var(--mono);
-  font-size: .72rem;
-  font-weight: 500;
-  letter-spacing: .22em;
-  text-transform: uppercase;
-  padding: 18px 40px;
-}
-
 .boton--wsp { background: #1faf54; color: #fff; }
 .boton--wsp:hover { background: #17913f; }
 
@@ -202,23 +190,27 @@ a { color: var(--terracota); }
   align-items: center;
   transition: background .3s ease, box-shadow .3s ease;
 }
+/* Grilla de 3 columnas y no flex: así el logo queda centrado de verdad sin
+   importar si "Reservar" pesa distinto que el botón de puntos del otro lado. */
 .nav__interior {
   width: 100%;
   max-width: var(--ancho);
   margin-inline: auto;
   padding-inline: 24px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 24px;
 }
 .nav__marca {
+  grid-column: 2;
+  justify-self: center;
   display: flex;
   align-items: center;
   gap: 12px;
   text-decoration: none;
 }
-.nav__logo { height: 36px; width: auto; transition: opacity .2s ease; }
+.nav__logo { height: 38px; width: auto; transition: opacity .2s ease; }
 .nav__logo--oscura { display: none; }
 .nav--solida .nav__logo--clara { display: none; }
 .nav--solida .nav__logo--oscura { display: block; }
@@ -240,34 +232,53 @@ a { color: var(--terracota); }
   opacity: .8;
   margin-top: 3px;
 }
-.nav__links { display: flex; align-items: center; gap: 30px; }
+/* El menú (La casa / Tarifas / Galería...) vive siempre detrás del botón de
+   puntos, en cualquier tamaño de pantalla: no es un menú de descubrimiento
+   —es una sola página larga, todo aparece bajando— así que no hace falta
+   que compita con el logo por espacio en la primera pantalla. */
+.nav__links {
+  position: fixed; inset: var(--nav-h) 0 auto 0;
+  z-index: 89;
+  background: var(--crema);
+  display: flex; flex-direction: column; align-items: stretch;
+  gap: 0; padding: 12px 24px 24px;
+  box-shadow: var(--sombra);
+  transform: translateY(-130%);
+  transition: transform .3s cubic-bezier(.2,.7,.3,1);
+}
+.nav__links.abierto { transform: none; }
 .nav__links a {
-  color: rgba(255,255,255,.9);
+  color: var(--carbon);
   text-decoration: none;
-  font-size: .92rem;
+  font-size: .95rem;
   font-weight: 500;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--borde);
   transition: color .2s ease;
 }
-.nav__links a:hover { color: #fff; }
-.nav__links .boton { padding: 13px 26px; }
-/* El "Reservar" del menú, con el mismo tratamiento que el de la portada:
-   chico, en mayúsculas y muy espaciado. Es el mismo gesto en las tres webs
-   de referencia (12px, letter-spacing de ~0.24em). */
-.nav__links .boton--reservar {
-  font-family: var(--mono); font-size: .68rem; font-weight: 500;
-  letter-spacing: .2em; text-transform: uppercase;
-}
+.nav__links a:hover { color: var(--terracota); }
 
 .nav--solida { background: rgba(253,252,250,.94); backdrop-filter: blur(10px); box-shadow: 0 1px 0 var(--borde); }
 .nav--solida .nav__marca-texto { color: var(--carbon); }
-.nav--solida .nav__links a { color: var(--carbon-suave); }
-.nav--solida .nav__links a:hover { color: var(--terracota); }
 .nav--solida .boton--fantasma { color: var(--carbon); border-color: var(--borde); }
 .nav--solida .boton--fantasma:hover { background: var(--carbon); color: #fff; border-color: var(--carbon); }
 
-/* las reglas de color de los links del menú le ganaban al botón */
-.nav__links .boton--reservar,
-.nav--solida .nav__links .boton--reservar { color: #fff; }
+/* El botón de "Reservar" del nav, suelto a la derecha del logo. La
+   tipografía es la que se vio en unyoked.co para su "Book Now": una sans de
+   trazo grueso en vez de la mono en mayúsculas que usa el resto del sitio —
+   "Archivo" es lo más parecido que hay en Google Fonts a su "Plain", que es
+   paga. Va en negrita normal, sin versalitas ni tracking. */
+.nav .boton--reservar {
+  grid-column: 3;
+  justify-self: end;
+  font-family: 'Archivo', var(--texto);
+  font-size: .85rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 13px 26px;
+  color: #fff;
+}
 
 /* Un latido corto, una sola vez, cuando el menú se vuelve sólido: es el
    momento en que se dejó atrás el botón grande del inicio y éste pasa a ser
@@ -281,21 +292,24 @@ a { color: var(--terracota); }
 }
 .nav--llamar .boton--reservar { animation: latido-reservar 1.4s ease-out .2s 2; }
 
+/* El botón de puntos reemplaza al típico "≡": tres puntos en vez de tres
+   rayas. Antes esto sólo se veía en celular; ahora es la única forma de
+   llegar al menú en cualquier tamaño, así que queda visible siempre. */
 .nav__burger {
-  display: none;
+  grid-column: 1;
+  justify-self: start;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
   width: 44px; height: 44px;
   border: 0; background: transparent; cursor: pointer;
   padding: 10px;
 }
 .nav__burger span {
-  display: block; height: 2px; background: #fff; border-radius: 2px;
-  transition: transform .25s ease, opacity .25s ease, background .3s ease;
+  width: 4px; height: 4px; border-radius: 50%; flex: none;
+  background: #fff;
+  transition: background .25s ease, transform .25s ease;
 }
-.nav__burger span + span { margin-top: 6px; }
 .nav--solida .nav__burger span { background: var(--carbon); }
-.nav__burger[aria-expanded="true"] span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
-.nav__burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
-.nav__burger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+.nav__burger[aria-expanded="true"] span { background: var(--terracota); transform: scale(1.25); }
 
 /* ----------------------------------------------------------------- hero -- */
 /* La portada va centrada y con una sola acción. Es la única sección centrada
@@ -354,8 +368,6 @@ a { color: var(--terracota); }
   color: rgba(255,255,255,.92);
   margin: 0 auto 38px;
 }
-.hero__acciones { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
-
 /* Los puntos de la portada. Van pegados abajo y no debajo del botón para que
    no compitan con la acción: se leen como "hay más fotos", no como un menú. */
 .hero__puntos {
@@ -379,7 +391,6 @@ a { color: var(--terracota); }
      título y es justo lo contrario de lo que hacen las referencias. */
   .hero h1 { font-size: clamp(2.15rem, 8.5vw, 3.2rem); max-width: 15ch; }
   .hero__texto { font-size: 1rem; max-width: 34ch; margin-bottom: 30px; }
-  .boton--hero { padding: 17px 30px; letter-spacing: .18em; }
 }
 
 /* ------------------------------------- por qué reservar acá (bajo la portada) */
@@ -1863,7 +1874,6 @@ html.anim .revelar--foto.visible { transform: none; }
 }
 .hero__contenido > * { animation: hero-texto-entra .9s cubic-bezier(.2,.7,.3,1) both; }
 .hero__contenido > *:nth-child(2) { animation-delay: .12s; }
-.hero__contenido > *:nth-child(3) { animation-delay: .22s; }
 
 @media (prefers-reduced-motion: reduce) {
   html.anim .revelar { opacity: 1; transform: none; transition: none; }
@@ -1891,23 +1901,9 @@ html.anim .revelar--foto.visible { transform: none; }
 
 @media (max-width: 760px) {
   body { font-size: 16px; }
-  .nav__links {
-    position: fixed; inset: var(--nav-h) 0 auto 0;
-    background: var(--crema);
-    flex-direction: column; align-items: stretch;
-    gap: 0; padding: 12px 24px 24px;
-    box-shadow: var(--sombra);
-    transform: translateY(-130%);
-    transition: transform .3s cubic-bezier(.2,.7,.3,1);
-  }
-  .nav__links.abierto { transform: none; }
-  .nav__links a { color: var(--carbon); padding: 14px 0; border-bottom: 1px solid var(--borde); }
-  .nav__links .boton { margin-top: 14px; justify-content: center; }
-  .nav__burger { display: block; }
   .unidades { grid-template-columns: 1fr; gap: 30px; }
   .unidad--principal .unidad__foto { aspect-ratio: 16 / 10; }
   .campos { grid-template-columns: 1fr; }
   .lightbox__btn--prev { left: 8px; }
   .lightbox__btn--next { right: 8px; }
-  .hero__acciones .boton { flex: 1 1 100%; }
 }

@@ -270,12 +270,12 @@ const CONFIG = {
       { titulo: 'Seña del {sena}%',
         texto: 'El resto se abona al ingresar, en efectivo o transferencia.' }
     ],
-    heroTitulo: 'Una casa de campo con el valle entero de frente',
-    // Corta a propósito: en la portada el trabajo lo hace la foto. El detalle
-    // (las dos plantas, las galerías, la vista) está tres secciones más abajo
-    // en "La casa", donde alguien lo va a leer de verdad.
-    heroBajada: 'Arroyo de los Patos, entre Nono y Mina Clavero. ' +
-                'Dos plantas independientes para nueve personas.',
+    // El título es el nombre de la casa, nada más: en la portada el trabajo
+    // lo hace la foto, no una frase de venta. El detalle (las dos plantas,
+    // las galerías, la vista) está tres secciones más abajo en "La casa",
+    // donde alguien lo va a leer de verdad.
+    heroTitulo: 'Balcones del Arroyo',
+    heroBajada: 'Arroyo de los Patos, entre Nono y Mina Clavero.',
     casaTitulo: 'Dos plantas independientes, una sola vista',
     casaTexto: [
       'Cada planta funciona sola: tiene su cocina completa, su baño y su acceso propio. ' +

@@ -27,11 +27,11 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=49">
+<link rel="stylesheet" href="css/estilos.css?v=50">
 
 <script type="application/ld+json">
 {
@@ -57,20 +57,24 @@
 <body>
 
 <!-- ====================================================== NAVEGACIÓN ==== -->
+<!-- El logo va solo (sin el nombre al lado) y centrado, como en unyoked.co:
+     con el nombre bien grande en la portada un renglón abajo, repetirlo acá
+     es ruido. Los links de siempre (La casa, Tarifas...) no desaparecieron:
+     viven detrás del botón de puntos, que ahora se ve en cualquier tamaño de
+     pantalla y no sólo en celular — es la misma idea que ya existía, sólo que
+     antes se escondía nada más en mobile. -->
 <header class="nav" id="nav">
   <div class="nav__interior">
-    <a class="nav__marca" href="#inicio">
-      <img class="nav__logo nav__logo--clara" src="img/logo-icono-blanco.png" alt="" aria-hidden="true">
-      <img class="nav__logo nav__logo--oscura" src="img/logo-icono-oscuro.png" alt="" aria-hidden="true">
-      <span class="nav__marca-texto">
-        Balcones del Arroyo
-        <span>Traslasierra · Córdoba</span>
-      </span>
-    </a>
-
     <button class="nav__burger" id="nav-burger" aria-expanded="false" aria-label="Abrir menú" aria-controls="nav-links">
       <span></span><span></span><span></span>
     </button>
+
+    <a class="nav__marca" href="#inicio" aria-label="Balcones del Arroyo — inicio">
+      <img class="nav__logo nav__logo--clara" src="img/logo-icono-blanco.png" alt="" aria-hidden="true">
+      <img class="nav__logo nav__logo--oscura" src="img/logo-icono-oscuro.png" alt="" aria-hidden="true">
+    </a>
+
+    <a class="boton boton--reservar" href="reserva.html" data-reservar>Reservar</a>
 
     <nav class="nav__links" id="nav-links">
       <!-- el orden sigue el de la página: tarifas pasó a estar arriba, pegada
@@ -80,9 +84,6 @@
       <a href="#galeria">Galería</a>
       <a href="#ubicacion">Ubicación</a>
       <a href="#preguntas" id="nav-preguntas">Preguntas</a>
-      <!-- "Disponibilidad" hacía lo mismo que "Reservar": los dos abrían el
-           calendario. Quedó uno solo. -->
-      <a class="boton boton--reservar" href="reserva.html" data-reservar>Reservar</a>
     </nav>
   </div>
 </header>
@@ -97,12 +98,12 @@
     <img class="hero__slide hero__slide--activa" src="img/balcon-atardecer-3.jpg"
          alt="La galería de la casa con el atardecer sobre el valle" fetchpriority="high">
   </div>
+  <!-- Sin botón acá abajo a propósito: "Reservar" ya está arriba, en el nav,
+       siempre a la vista. Repetir la acción en la portada era el tipo de
+       texto de más que se decidió sacar en esta pasada. -->
   <div class="contenedor hero__contenido">
-    <h1 id="hero-titulo">Una casa de campo con el valle entero de frente</h1>
+    <h1 id="hero-titulo">Balcones del Arroyo</h1>
     <p class="hero__texto" id="hero-bajada"></p>
-    <div class="hero__acciones">
-      <a class="boton boton--primario boton--hero" href="reserva.html" data-reservar>Ver disponibilidad</a>
-    </div>
   </div>
   <div class="hero__puntos" id="hero-puntos" role="tablist" aria-label="Fotos de portada"></div>
 </section>
@@ -391,11 +392,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=49"></script>
-<script src="js/contenido.js?v=49"></script>
-<script src="js/disponibilidad.js?v=49"></script>
-<script src="js/precios.js?v=49"></script><script src="js/calendario.js?v=49"></script>
-<script src="js/pie.js?v=49"></script>
-<script src="js/app.js?v=49"></script>
+<script src="js/config.js?v=50"></script>
+<script src="js/contenido.js?v=50"></script>
+<script src="js/disponibilidad.js?v=50"></script>
+<script src="js/precios.js?v=50"></script><script src="js/calendario.js?v=50"></script>
+<script src="js/pie.js?v=50"></script>
+<script src="js/app.js?v=50"></script>
 </body>
 </html>
