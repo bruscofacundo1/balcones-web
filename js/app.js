@@ -738,6 +738,28 @@ function pintarContacto() {
   document.querySelectorAll('[data-wsp]').forEach(a => { a.href = url; });
 }
 
+/* El bloque de abajo del menú lateral, con la dirección y el WhatsApp — la
+   misma idea que tiene vivood.com en su cajón. Mismos datos que el pie
+   (CONFIG.contacto), para que no haga falta mantenerlos en dos lugares. */
+function pintarNavContacto() {
+  const cont = document.getElementById('nav-contacto');
+  if (!cont) return;
+  const c = CONFIG.contacto;
+  const mensaje = '¡Hola! Vi la web de Balcones del Arroyo y quiero consultar disponibilidad.';
+  const wsp = `https://wa.me/${c.whatsapp}?text=${encodeURIComponent(mensaje)}`;
+
+  const redes = [];
+  if (c.instagram) redes.push(`<a href="${c.instagram}" target="_blank" rel="noopener">Instagram</a>`);
+  if (c.facebook) redes.push(`<a href="${c.facebook}" target="_blank" rel="noopener">Facebook</a>`);
+
+  cont.innerHTML = `
+    <span class="antetitulo">Contacto</span>
+    <p class="nav__contacto-direccion">${c.direccion}</p>
+    <a class="nav__contacto-wsp" href="${wsp}" target="_blank" rel="noopener">${c.telefonoVisible}</a>
+    ${redes.length ? `<div class="nav__contacto-redes">${redes.join('')}</div>` : ''}
+  `;
+}
+
 /* ------------------------------------------------------------- arranque -- */
 /** Todo lo que sale de CONFIG y de FOTOS. Se puede volver a llamar sin
     efectos raros: hace falta si el contenido editado desde /admin llega
@@ -759,6 +781,7 @@ function pintarDesdeConfig() {
   pintarAlquiler();
   pintarPie({ cta: true, enInicio: true });
   pintarContacto();
+  pintarNavContacto();
 
   pintarMosaico();
   if (typeof tfCategoria !== 'undefined') pintarTodasLasFotos(tfCategoria);
@@ -787,6 +810,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   pintarAlquiler();
   pintarPie({ cta: true, enInicio: true });
   pintarContacto();
+  pintarNavContacto();
   iniciarLightbox();
   iniciarNav();
   iniciarRevelado();
