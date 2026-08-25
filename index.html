@@ -7,7 +7,7 @@
 
 <meta name="description" content="Casa de campo para alquiler temporario en Arroyo de los Patos, entre Nono y Mina Clavero, Valle de Traslasierra. Cuatro dormitorios, dos plantas, galerías con vista a las Sierras Grandes, asador y parque.">
 <meta name="author" content="Balcones del Arroyo">
-<meta name="theme-color" content="#b4552f">
+<meta name="theme-color" content="#8a5233">
 <link rel="canonical" href="https://balconesdelarroyo.com.ar/">
 
 <meta property="og:type" content="website">
@@ -27,11 +27,11 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=46">
+<link rel="stylesheet" href="css/estilos.css?v=49">
 
 <script type="application/ld+json">
 {
@@ -89,16 +89,31 @@
 
 <!-- ============================================================ HERO ==== -->
 <section class="hero" id="inicio">
-  <div class="hero__fondo">
-    <img src="img/casa-atardecer.jpg" alt="La casa Balcones del Arroyo con el valle de Traslasierra de fondo" fetchpriority="high">
+  <!-- Las fotos las pinta pintarHero() desde CONFIG.heroFotos. La primera va
+       acá escrita a mano y con fetchpriority alto para que empiece a bajar
+       antes de que corra el JS: es la imagen más pesada de la página y la
+       primera que se ve. -->
+  <div class="hero__fondo" id="hero-fondo">
+    <img class="hero__slide hero__slide--activa" src="img/balcon-atardecer-3.jpg"
+         alt="La galería de la casa con el atardecer sobre el valle" fetchpriority="high">
   </div>
   <div class="contenedor hero__contenido">
     <h1 id="hero-titulo">Una casa de campo con el valle entero de frente</h1>
     <p class="hero__texto" id="hero-bajada"></p>
     <div class="hero__acciones">
-      <a class="boton boton--primario" href="reserva.html" data-reservar>Ver disponibilidad</a>
-      <a class="boton boton--fantasma" href="#galeria">Recorrer la casa</a>
+      <a class="boton boton--primario boton--hero" href="reserva.html" data-reservar>Ver disponibilidad</a>
     </div>
+  </div>
+  <div class="hero__puntos" id="hero-puntos" role="tablist" aria-label="Fotos de portada"></div>
+</section>
+
+<!-- ============================================== POR QUÉ RESERVAR ACÁ ==== -->
+<!-- Lo primero después de la portada, como en las tres webs de referencia: la
+     razón para reservar en la web propia y no en una plataforma. La lista la
+     pinta pintarReservaDirecta() desde CONFIG.textos.directo. -->
+<section class="seccion seccion--directo" id="directo" aria-label="Por qué reservar en esta web">
+  <div class="contenedor">
+    <ul class="directo" id="directo-lista"></ul>
   </div>
 </section>
 
@@ -376,11 +391,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=46"></script>
-<script src="js/contenido.js?v=46"></script>
-<script src="js/disponibilidad.js?v=46"></script>
-<script src="js/precios.js?v=46"></script><script src="js/calendario.js?v=46"></script>
-<script src="js/pie.js?v=46"></script>
-<script src="js/app.js?v=46"></script>
+<script src="js/config.js?v=49"></script>
+<script src="js/contenido.js?v=49"></script>
+<script src="js/disponibilidad.js?v=49"></script>
+<script src="js/precios.js?v=49"></script><script src="js/calendario.js?v=49"></script>
+<script src="js/pie.js?v=49"></script>
+<script src="js/app.js?v=49"></script>
 </body>
 </html>
