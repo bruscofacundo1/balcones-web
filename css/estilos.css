@@ -40,7 +40,7 @@
   --radio-sm: 0;
 
   --display: 'Fraunces', Georgia, 'Times New Roman', serif;
-  --texto: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --texto: 'Karla', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   /* Tercera familia, para etiquetas y números: antetítulos, precios, metros,
      kilómetros. Libera a la serif para que sólo haga títulos. */
   --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
