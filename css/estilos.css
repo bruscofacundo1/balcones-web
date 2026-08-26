@@ -470,10 +470,13 @@ a { color: var(--terracota); }
 /* Sin líneas divisorias entre los tres — sólo aire entre uno y otro, como
    vivood.com. Antes tenían una línea vertical fina de por medio; con más
    espacio de por sí no hacía falta. */
+/* 3 columnas fijas y no auto-fit: son siempre 3 beneficios, y con el ancho
+   angosto de esta columna (860px menos lo que ocupa el título de al lado)
+   auto-fit los cortaba a 2 por fila y el tercero quedaba solo abajo. */
 .directo {
   list-style: none; padding: 0; margin: 0;
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: clamp(28px, 4vw, 48px);
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(20px, 3vw, 40px);
 }
 .directo li { padding: 0; }
 /* Serif, no mono: la mono en mayúsculas se leía muy "dato técnico" para
@@ -487,6 +490,7 @@ a { color: var(--terracota); }
 
 @media (max-width: 820px) {
   .directo__layout { grid-template-columns: 1fr; }
+  .directo { grid-template-columns: 1fr; }
   .directo__intro { margin-bottom: 8px; }
   .directo li { border-top: 1px solid var(--borde); padding: 22px 0 0; }
   .directo li:first-child { border-top: 0; padding-top: 2px; }
