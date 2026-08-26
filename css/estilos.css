@@ -192,7 +192,7 @@ a { color: var(--terracota); }
   z-index: 90;
   display: flex;
   align-items: center;
-  transition: background .3s ease, box-shadow .3s ease;
+  transition: top .3s ease, background .3s ease, box-shadow .3s ease;
 }
 /* Grilla de 3 columnas y no flex: así el logo queda centrado de verdad sin
    importar si "Reservar" pesa distinto que el botón de puntos del otro lado.
@@ -299,7 +299,11 @@ a { color: var(--terracota); }
 .nav__contacto-redes a { font-size: .8rem; color: var(--piedra); text-decoration: none; }
 .nav__contacto-redes a:hover { color: var(--terracota); }
 
-.nav--solida { background: rgba(253,252,250,.94); backdrop-filter: blur(10px); box-shadow: 0 1px 0 var(--borde); }
+/* Sólida ya no flota: el hueco de arriba tenía sentido con la barra
+   transparente sobre la foto, pero con fondo sólido dejaba ver un hilo de lo
+   que scrollea justo arriba, que quedaba mal (más todavía si pasaba un
+   título grande justo por ahí). Sólida se pega del todo al borde. */
+.nav--solida { top: 0; background: rgba(253,252,250,.94); backdrop-filter: blur(10px); box-shadow: 0 1px 0 var(--borde); }
 .nav--solida .nav__marca-texto { color: var(--carbon); }
 .nav--solida .boton--fantasma { color: var(--carbon); border-color: var(--borde); }
 .nav--solida .boton--fantasma:hover { background: var(--carbon); color: #fff; border-color: var(--carbon); }
