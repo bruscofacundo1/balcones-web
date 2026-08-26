@@ -265,8 +265,6 @@ const CONFIG = {
         texto: 'Sin comisión de plataforma.' },
       { titulo: 'Trato directo',
         texto: 'Te contestamos nosotros, por WhatsApp.' },
-      { titulo: 'Podés reprogramar',
-        texto: 'Hasta {dias} días antes, sin costo.' },
       { titulo: 'Seña del {sena}%',
         texto: 'El resto, en efectivo o transferencia.' }
     ],

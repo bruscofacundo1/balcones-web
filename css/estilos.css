@@ -456,23 +456,28 @@ a { color: var(--terracota); }
   align-items: center;
 }
 .directo__intro h2 { font-size: clamp(1.5rem, 2.4vw, 1.9rem); margin: 6px 0 20px; }
+/* Sin líneas divisorias entre los tres — sólo aire entre uno y otro, como
+   vivood.com. Antes tenían una línea vertical fina de por medio; con más
+   espacio de por sí no hacía falta. */
 .directo {
   list-style: none; padding: 0; margin: 0;
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: clamp(28px, 4vw, 48px);
 }
-.directo li { border-left: 1px solid var(--borde); padding: 2px 30px; }
-.directo li:first-child { border-left: 0; padding-left: 0; }
+.directo li { padding: 0; }
+/* Serif, no mono: la mono en mayúsculas se leía muy "dato técnico" para
+   frases completas como éstas — acá va el mismo criterio que un subtítulo
+   chico (Fraunces, como el resto de los títulos del sitio). */
 .directo h3 {
-  font-family: var(--mono); font-size: .7rem; font-weight: 500;
-  letter-spacing: .15em; text-transform: uppercase;
-  color: var(--carbon); margin: 0 0 9px;
+  font-family: var(--display); font-size: 1.15rem; font-weight: 500;
+  color: var(--carbon); margin: 0 0 8px;
 }
 .directo p { font-size: .9rem; color: var(--piedra); margin: 0; max-width: 30ch; }
 
 @media (max-width: 820px) {
   .directo__layout { grid-template-columns: 1fr; }
   .directo__intro { margin-bottom: 8px; }
-  .directo li { border-left: 0; border-top: 1px solid var(--borde); padding: 22px 0 0; }
+  .directo li { border-top: 1px solid var(--borde); padding: 22px 0 0; }
   .directo li:first-child { border-top: 0; padding-top: 2px; }
   .directo p { max-width: none; }
 }
