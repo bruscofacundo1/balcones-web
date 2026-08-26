@@ -6,6 +6,13 @@ HTML, CSS y JavaScript sin frameworks ni compilación: se abre `index.html` y an
 Este documento cuenta **qué se hizo, por qué, y qué falta**. Si retomás el
 proyecto (vos, otra persona o Claude en otra sesión), leé esto primero.
 
+> **Hay un rediseño visual en curso, sin mergear todavía**, en la rama
+> `rediseno-2026-08` (paleta, tipografía, nav, portada — inspirado en trece
+> sitios de referencia del rubro). Todo el detalle —qué se probó, qué quedó,
+> qué falta, y un par de gotchas de la herramienta de pruebas— está en
+> [REDISENO-2026-08.md](REDISENO-2026-08.md). Si estás por tocar algo del nav,
+> el hero o los colores, leé eso primero para no pisar trabajo en curso.
+
 ---
 
 ## La migración de Vercel a Cloudflare (22/08/2026)

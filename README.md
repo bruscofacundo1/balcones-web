@@ -124,3 +124,7 @@ línea `<link rel="canonical">` de `index.html` con la dirección definitiva.
 **[CONTEXTO.md](CONTEXTO.md)** explica qué se hizo, por qué, cómo funciona el
 flujo de reserva, las decisiones de diseño y qué falta. Leerlo antes de meter
 mano.
+
+**[REDISENO-2026-08.md](REDISENO-2026-08.md)** es el rediseño visual en
+curso (rama `rediseno-2026-08`, todavía sin mergear) — sitios de referencia,
+qué se aplicó, qué falta y cómo seguirlo.
