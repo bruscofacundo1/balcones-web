@@ -449,7 +449,12 @@ a { color: var(--terracota); }
 /* Título + botón a la izquierda, la lista de beneficios ocupando el resto —
    como vivood.com. La columna angosta no lleva ancho fijo: "auto" para que
    el botón y el título definan su lugar y el resto se lo lleve la lista. */
+/* Mismo ancho que .casa__intro de arriba (860px) y centrado igual — antes
+   ocupaba las 1180px del contenedor general y quedaba corrido respecto de
+   "La casa", y los tres beneficios de la derecha se estiraban de más. */
 .directo__layout {
+  max-width: 860px;
+  margin-inline: auto;
   display: grid;
   grid-template-columns: minmax(220px, 300px) 1fr;
   gap: clamp(32px, 5vw, 56px);
@@ -509,6 +514,11 @@ a { color: var(--terracota); }
 .seccion--foto .faq__respuesta { color: rgba(255, 255, 255, .82); }
 
 /* ------------------------------------------------------------- la casa --- */
+/* Menos aire abajo que el padding estándar de sección: "La casa" y "por qué
+   reservar acá" son un solo bloque del mismo tono, no dos secciones
+   separadas — con el padding de siempre quedaban demasiado lejos entre sí. */
+#la-casa { padding-bottom: clamp(32px, 5vw, 56px); }
+
 /* Sin foto: todo centrado y angosto (más que "angosto" general) para que
    los renglones no se estiren de punta a punta — se lee bien en bloques
    cortos, no en párrafos que van de un extremo al otro. El título en
