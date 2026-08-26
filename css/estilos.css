@@ -491,10 +491,6 @@ a { color: var(--terracota); }
 .seccion--foto .faq__respuesta { color: rgba(255, 255, 255, .82); }
 
 /* ------------------------------------------------------------- la casa --- */
-/* Layout asimétrico: el texto respeta el contenedor y la foto sangra hasta
-   el borde derecho de la pantalla, para que no se lea como una card más. */
-.seccion--sangra { overflow-x: clip; }
-
 .casa__layout {
   width: 100%;
   max-width: var(--ancho);
@@ -506,20 +502,6 @@ a { color: var(--terracota); }
   align-items: center;
   margin-bottom: clamp(44px, 6vw, 72px);
 }
-/* Versión 1 en prueba: sin foto, todo centrado — título, texto y cifras. Un
-   ancho más angosto que el de "angosto" general para que los renglones no
-   queden larguísimos: centrado se lee bien en bloques cortos, no en párrafos
-   que estiran de punta a punta. Las comodidades de abajo quedan alineadas a
-   la izquierda como siempre — una lista se lee mejor así que centrada. */
-/* #la-casa .casa__intro y no sólo .casa__intro: así le gana en especificidad
-   a .contenedor--angosto (780px) sin importar en qué orden queden las dos
-   reglas en el archivo. */
-#la-casa .casa__intro {
-  max-width: 640px;
-  text-align: center;
-  margin-inline: auto;
-  margin-bottom: clamp(36px, 5vw, 56px);
-}
 .casa__cifras {
   margin-top: 22px;
   font-size: .85rem; letter-spacing: .04em;
@@ -527,23 +509,12 @@ a { color: var(--terracota); }
   color: var(--piedra);
 }
 
-/* Saca la foto de la grilla hasta el borde derecho de la pantalla.
-   No sirve un 50% acá: en un grid item los porcentajes se resuelven contra
-   su columna, no contra el contenedor. */
 .casa__foto {
   position: relative;
-  margin-right: calc((min(100vw, var(--ancho)) - 100vw) / 2 - 24px);
 }
 .casa__foto-grande {
   width: 100%; aspect-ratio: 4/3; object-fit: cover;
-  border-radius: var(--radio) 0 0 var(--radio);
-}
-.casa__foto-chica {
-  position: absolute; left: -44px; bottom: -36px;
-  width: 190px; aspect-ratio: 1; object-fit: cover;
-  border-radius: var(--radio-sm);
-  border: 6px solid var(--crema);
-  box-shadow: var(--sombra);
+  border-radius: var(--radio);
 }
 
 .comodidades {
@@ -1943,10 +1914,7 @@ html.anim .revelar--foto.visible { transform: none; }
 /* ---------------------------------------------------------- responsive --- */
 @media (max-width: 1000px) {
   .casa__layout, .ubicacion__layout, .contacto__layout { grid-template-columns: 1fr; }
-  /* la foto deja de sangrar a la derecha y pasa a ocupar todo el ancho */
-  .casa__foto { margin-right: -24px; margin-left: -24px; }
-  .casa__foto-grande { border-radius: 0; aspect-ratio: 16/10; }
-  .casa__foto-chica { display: none; }
+  .casa__foto-grande { aspect-ratio: 16/10; }
   .resumen { position: static; }
   .galeria { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 180px; }
   .cal__meses { grid-template-columns: 1fr; }
