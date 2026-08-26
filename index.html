@@ -31,7 +31,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=61">
+<link rel="stylesheet" href="css/estilos.css?v=62">
 
 <script type="application/ld+json">
 {
@@ -142,10 +142,16 @@
 <!-- ============================================== POR QUÉ RESERVAR ACÁ ==== -->
 <!-- Pasa a ir después de "La casa" y no antes: primero se muestra qué es,
      después por qué conviene reservarla directo (villadeplan.com y
-     masaguilo.com hacen lo mismo). La lista la pinta pintarReservaDirecta()
-     desde CONFIG.textos.directo. -->
+     masaguilo.com hacen lo mismo). El título y el botón de la izquierda son
+     fijos (van en el HTML, no en CONFIG); la lista de la derecha la pinta
+     pintarReservaDirecta() desde CONFIG.textos.directo. -->
 <section class="seccion seccion--arena seccion--directo" id="directo" aria-label="Por qué reservar en esta web">
-  <div class="contenedor">
+  <div class="contenedor directo__layout">
+    <div class="directo__intro">
+      <span class="antetitulo">Sólo reservando acá</span>
+      <h2>Beneficios de reservar directo</h2>
+      <a class="boton boton--primario" href="reserva.html" data-reservar>Reservar</a>
+    </div>
     <ul class="directo" id="directo-lista"></ul>
   </div>
 </section>
@@ -405,11 +411,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=61"></script>
-<script src="js/contenido.js?v=61"></script>
-<script src="js/disponibilidad.js?v=61"></script>
-<script src="js/precios.js?v=61"></script><script src="js/calendario.js?v=61"></script>
-<script src="js/pie.js?v=61"></script>
-<script src="js/app.js?v=61"></script>
+<script src="js/config.js?v=62"></script>
+<script src="js/contenido.js?v=62"></script>
+<script src="js/disponibilidad.js?v=62"></script>
+<script src="js/precios.js?v=62"></script><script src="js/calendario.js?v=62"></script>
+<script src="js/pie.js?v=62"></script>
+<script src="js/app.js?v=62"></script>
 </body>
 </html>
