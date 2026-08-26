@@ -31,7 +31,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=59">
+<link rel="stylesheet" href="css/estilos.css?v=60">
 
 <script type="application/ld+json">
 {
@@ -116,15 +116,22 @@
 </section>
 
 <!-- ========================================================= LA CASA ==== -->
-<!-- Versión 1 de 2 en prueba: sin foto, texto centrado (la otra es con una
-     foto grande al costado, estilo vivood.com — se compara viendo cada una
-     en la preview, no las dos a la vez). -->
-<section class="seccion" id="la-casa">
-  <div class="contenedor contenedor--angosto casa__intro revelar">
-    <span class="antetitulo">La casa</span>
-    <h2 id="casa-titulo"></h2>
-    <div id="casa-texto"></div>
-    <p class="casa__cifras" id="casa-cifras"></p>
+<!-- Versión 2 de 2 en prueba: foto grande al costado del texto, estilo
+     vivood.com (la otra versión era sin foto, texto centrado — quedó en el
+     historial de git). Una sola foto, no dos superpuestas como antes de
+     probar estas dos versiones: la segunda fotito en la esquina era un
+     recurso que ninguna de las referencias usa. -->
+<section class="seccion seccion--sangra" id="la-casa">
+  <div class="casa__layout">
+    <div class="revelar">
+      <span class="antetitulo">La casa</span>
+      <h2 id="casa-titulo"></h2>
+      <div id="casa-texto"></div>
+      <p class="casa__cifras" id="casa-cifras"></p>
+    </div>
+    <div class="casa__foto revelar revelar--foto">
+      <img class="casa__foto-grande" src="img/casa-parque.jpg" alt="La casa vista desde el parque" loading="lazy">
+    </div>
   </div>
   <div class="contenedor">
     <ul class="comodidades revelar" id="comodidades"></ul>
@@ -397,11 +404,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=59"></script>
-<script src="js/contenido.js?v=59"></script>
-<script src="js/disponibilidad.js?v=59"></script>
-<script src="js/precios.js?v=59"></script><script src="js/calendario.js?v=59"></script>
-<script src="js/pie.js?v=59"></script>
-<script src="js/app.js?v=59"></script>
+<script src="js/config.js?v=60"></script>
+<script src="js/contenido.js?v=60"></script>
+<script src="js/disponibilidad.js?v=60"></script>
+<script src="js/precios.js?v=60"></script><script src="js/calendario.js?v=60"></script>
+<script src="js/pie.js?v=60"></script>
+<script src="js/app.js?v=60"></script>
 </body>
 </html>
