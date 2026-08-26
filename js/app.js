@@ -38,41 +38,40 @@ function iniciarNav() {
   alScrollear();
   window.addEventListener('scroll', alScrollear, { passive: true });
 
+  function abrirMenu() {
+    links.classList.add('abierto');
+    velo.classList.add('abierto');
+    burger.setAttribute('aria-expanded', 'true');
+  }
   function cerrarMenu() {
     links.classList.remove('abierto');
     velo.classList.remove('abierto');
     burger.setAttribute('aria-expanded', 'false');
   }
   burger.addEventListener('click', () => {
-    const abierto = links.classList.toggle('abierto');
-    velo.classList.toggle('abierto', abierto);
-    burger.setAttribute('aria-expanded', String(abierto));
+    links.classList.contains('abierto') ? cerrarMenu() : abrirMenu();
   });
   velo.addEventListener('click', cerrarMenu);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarMenu(); });
   links.querySelectorAll('a').forEach(a => a.addEventListener('click', cerrarMenu));
 
-  // La barra se esconde sola y vuelve al acercar el mouse arriba — nada más
-  // en desktop con mouse de verdad (ver el porqué en el CSS, junto a
-  // `@media (hover: hover)`). Arranca visible unos segundos para que se note
-  // que existe, y después se esconde; con el menú abierto no se esconde.
+  // En desktop con mouse de verdad, alcanza con pasar por los puntos para
+  // que el cajón se abra solo, sin clickear — igual que vivood.com — y se
+  // cierra solo al sacar el mouse de ahí. El clic sigue andando igual (hace
+  // falta para teclado y para touch, que no tiene "pasar el mouse").
   if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    let escondida = null;
-    const mostrar = () => {
-      nav.classList.add('nav--visible');
-      clearTimeout(escondida);
+    let cerrando = null;
+    const abrirPorHover = () => { clearTimeout(cerrando); abrirMenu(); };
+    // Un respiro antes de cerrar: al ir del botón de puntos al cajón se pasa
+    // un instante por afuera de los dos, y sin esto el menú parpadeaba.
+    const programarCierre = () => {
+      clearTimeout(cerrando);
+      cerrando = setTimeout(cerrarMenu, 250);
     };
-    const programarEsconder = () => {
-      clearTimeout(escondida);
-      escondida = setTimeout(() => {
-        if (!links.classList.contains('abierto')) nav.classList.remove('nav--visible');
-      }, 2000);
-    };
-    document.addEventListener('mousemove', e => { if (e.clientY < 120) mostrar(); });
-    nav.addEventListener('mouseenter', mostrar);
-    nav.addEventListener('mouseleave', programarEsconder);
-    mostrar();
-    programarEsconder();
+    burger.addEventListener('mouseenter', abrirPorHover);
+    burger.addEventListener('mouseleave', programarCierre);
+    links.addEventListener('mouseenter', abrirPorHover);
+    links.addEventListener('mouseleave', programarCierre);
   }
 }
 
