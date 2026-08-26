@@ -506,6 +506,20 @@ a { color: var(--terracota); }
   align-items: center;
   margin-bottom: clamp(44px, 6vw, 72px);
 }
+/* Versión 1 en prueba: sin foto, todo centrado — título, texto y cifras. Un
+   ancho más angosto que el de "angosto" general para que los renglones no
+   queden larguísimos: centrado se lee bien en bloques cortos, no en párrafos
+   que estiran de punta a punta. Las comodidades de abajo quedan alineadas a
+   la izquierda como siempre — una lista se lee mejor así que centrada. */
+/* #la-casa .casa__intro y no sólo .casa__intro: así le gana en especificidad
+   a .contenedor--angosto (780px) sin importar en qué orden queden las dos
+   reglas en el archivo. */
+#la-casa .casa__intro {
+  max-width: 640px;
+  text-align: center;
+  margin-inline: auto;
+  margin-bottom: clamp(36px, 5vw, 56px);
+}
 .casa__cifras {
   margin-top: 22px;
   font-size: .85rem; letter-spacing: .04em;

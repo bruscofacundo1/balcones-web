@@ -31,7 +31,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=57">
+<link rel="stylesheet" href="css/estilos.css?v=59">
 
 <script type="application/ld+json">
 {
@@ -115,32 +115,30 @@
   <div class="hero__puntos" id="hero-puntos" role="tablist" aria-label="Fotos de portada"></div>
 </section>
 
-<!-- ============================================== POR QUÉ RESERVAR ACÁ ==== -->
-<!-- Lo primero después de la portada, como en las tres webs de referencia: la
-     razón para reservar en la web propia y no en una plataforma. La lista la
-     pinta pintarReservaDirecta() desde CONFIG.textos.directo. -->
-<section class="seccion seccion--directo" id="directo" aria-label="Por qué reservar en esta web">
-  <div class="contenedor">
-    <ul class="directo" id="directo-lista"></ul>
-  </div>
-</section>
-
 <!-- ========================================================= LA CASA ==== -->
-<section class="seccion seccion--sangra" id="la-casa">
-  <div class="casa__layout">
-    <div class="revelar">
-      <span class="antetitulo">La casa</span>
-      <h2 id="casa-titulo"></h2>
-      <div id="casa-texto"></div>
-      <p class="casa__cifras" id="casa-cifras"></p>
-    </div>
-    <div class="casa__foto revelar revelar--foto">
-      <img class="casa__foto-grande" src="img/casa-parque.jpg" alt="La casa vista desde el parque" loading="lazy">
-      <img class="casa__foto-chica" src="img/galeria-mate.jpg" alt="Mates en la galería" loading="lazy">
-    </div>
+<!-- Versión 1 de 2 en prueba: sin foto, texto centrado (la otra es con una
+     foto grande al costado, estilo vivood.com — se compara viendo cada una
+     en la preview, no las dos a la vez). -->
+<section class="seccion" id="la-casa">
+  <div class="contenedor contenedor--angosto casa__intro revelar">
+    <span class="antetitulo">La casa</span>
+    <h2 id="casa-titulo"></h2>
+    <div id="casa-texto"></div>
+    <p class="casa__cifras" id="casa-cifras"></p>
   </div>
   <div class="contenedor">
     <ul class="comodidades revelar" id="comodidades"></ul>
+  </div>
+</section>
+
+<!-- ============================================== POR QUÉ RESERVAR ACÁ ==== -->
+<!-- Pasa a ir después de "La casa" y no antes: primero se muestra qué es,
+     después por qué conviene reservarla directo (villadeplan.com y
+     masaguilo.com hacen lo mismo). La lista la pinta pintarReservaDirecta()
+     desde CONFIG.textos.directo. -->
+<section class="seccion seccion--arena seccion--directo" id="directo" aria-label="Por qué reservar en esta web">
+  <div class="contenedor">
+    <ul class="directo" id="directo-lista"></ul>
   </div>
 </section>
 
@@ -399,11 +397,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=57"></script>
-<script src="js/contenido.js?v=57"></script>
-<script src="js/disponibilidad.js?v=57"></script>
-<script src="js/precios.js?v=57"></script><script src="js/calendario.js?v=57"></script>
-<script src="js/pie.js?v=57"></script>
-<script src="js/app.js?v=57"></script>
+<script src="js/config.js?v=59"></script>
+<script src="js/contenido.js?v=59"></script>
+<script src="js/disponibilidad.js?v=59"></script>
+<script src="js/precios.js?v=59"></script><script src="js/calendario.js?v=59"></script>
+<script src="js/pie.js?v=59"></script>
+<script src="js/app.js?v=59"></script>
 </body>
 </html>

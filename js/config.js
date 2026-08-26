@@ -262,13 +262,13 @@ const CONFIG = {
        legales.html diría otra cosa. */
     directo: [
       { titulo: 'Sin intermediarios',
-        texto: 'Reservás directo con nosotros, sin comisiones de plataforma.' },
+        texto: 'Sin comisión de plataforma.' },
       { titulo: 'Trato directo',
-        texto: 'Te contestamos nosotros por WhatsApp, antes y durante la estadía.' },
+        texto: 'Te contestamos nosotros, por WhatsApp.' },
       { titulo: 'Podés reprogramar',
-        texto: 'Hasta {dias} días antes de llegar, sin costo.' },
+        texto: 'Hasta {dias} días antes, sin costo.' },
       { titulo: 'Seña del {sena}%',
-        texto: 'El resto se abona al ingresar, en efectivo o transferencia.' }
+        texto: 'El resto, en efectivo o transferencia.' }
     ],
     // El título es el nombre de la casa, nada más: en la portada el trabajo
     // lo hace la foto, no una frase de venta. El detalle (las dos plantas,
