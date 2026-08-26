@@ -514,7 +514,7 @@ a { color: var(--terracota); }
    cortos, no en párrafos que van de un extremo al otro. El título en
    terracota, el color de la casa, en vez del carbón de los demás títulos. */
 #la-casa .casa__intro {
-  max-width: 640px;
+  max-width: 860px;
   text-align: center;
   margin-inline: auto;
 }

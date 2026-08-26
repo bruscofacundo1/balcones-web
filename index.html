@@ -31,7 +31,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=65">
+<link rel="stylesheet" href="css/estilos.css?v=66">
 
 <script type="application/ld+json">
 {
@@ -126,12 +126,11 @@
     <span class="antetitulo">La casa</span>
     <h2 id="casa-titulo"></h2>
     <div id="casa-texto"></div>
-    <!-- Las comodidades (Wifi, cocina, baño...) van en línea, separadas por
-         puntos, con el mismo tratamiento que casa__cifras arriba: en una
-         grilla con guiones quedaban pensadas para un layout con foto al
-         costado, y centradas se leían desparejas. -->
     <p class="casa__cifras" id="casa-cifras"></p>
-    <ul class="comodidades revelar" id="comodidades"></ul>
+    <!-- Las comodidades se sacan de acá por ahora — quedan por definir dónde
+         van. Sigue en el DOM (oculta) para que pintarComodidades() no
+         rompa; sacar el atributo "hidden" cuando se decida dónde mostrarla. -->
+    <ul class="comodidades revelar" id="comodidades" hidden></ul>
   </div>
 </section>
 
@@ -407,11 +406,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=65"></script>
-<script src="js/contenido.js?v=65"></script>
-<script src="js/disponibilidad.js?v=65"></script>
-<script src="js/precios.js?v=65"></script><script src="js/calendario.js?v=65"></script>
-<script src="js/pie.js?v=65"></script>
-<script src="js/app.js?v=65"></script>
+<script src="js/config.js?v=66"></script>
+<script src="js/contenido.js?v=66"></script>
+<script src="js/disponibilidad.js?v=66"></script>
+<script src="js/precios.js?v=66"></script><script src="js/calendario.js?v=66"></script>
+<script src="js/pie.js?v=66"></script>
+<script src="js/app.js?v=66"></script>
 </body>
 </html>
