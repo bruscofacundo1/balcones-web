@@ -509,17 +509,17 @@ a { color: var(--terracota); }
 .seccion--foto .faq__respuesta { color: rgba(255, 255, 255, .82); }
 
 /* ------------------------------------------------------------- la casa --- */
-.casa__layout {
-  width: 100%;
-  max-width: var(--ancho);
+/* Sin foto: todo centrado y angosto (más que "angosto" general) para que
+   los renglones no se estiren de punta a punta — se lee bien en bloques
+   cortos, no en párrafos que van de un extremo al otro. El título en
+   terracota, el color de la casa, en vez del carbón de los demás títulos. */
+#la-casa .casa__intro {
+  max-width: 640px;
+  text-align: center;
   margin-inline: auto;
-  padding-inline: 24px;
-  display: grid;
-  grid-template-columns: 1fr 1.05fr;
-  gap: clamp(32px, 5vw, 64px);
-  align-items: center;
-  margin-bottom: clamp(44px, 6vw, 72px);
 }
+#la-casa .casa__intro h2 { color: var(--terracota); }
+
 .casa__cifras {
   margin-top: 22px;
   font-size: .85rem; letter-spacing: .04em;
@@ -527,27 +527,17 @@ a { color: var(--terracota); }
   color: var(--piedra);
 }
 
-.casa__foto {
-  position: relative;
-}
-.casa__foto-grande {
-  width: 100%; aspect-ratio: 4/3; object-fit: cover;
-  border-radius: var(--radio);
-}
-
+/* En línea, separadas por puntos, centradas — mismo lenguaje que
+   .casa__cifras arriba. La grilla con guiones de antes daba por sentado un
+   layout con foto al costado y muchas columnas; centrada, con una sola
+   columna angosta, se leía desareglada. */
 .comodidades {
-  list-style: none; padding: 0; margin: 32px 0 0;
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px 24px;
+  list-style: none; padding: 0; margin: 28px auto 0; max-width: 520px;
+  display: flex; flex-wrap: wrap; justify-content: center; row-gap: 6px;
 }
-.comodidades li {
-  display: flex; align-items: flex-start; gap: 11px;
-  font-size: .96rem; color: var(--carbon-suave);
-}
-/* Raya fina en vez de punto de color: la viñeta era uno de los nueve lugares
-   donde aparecía el acento, y ninguno de ellos lo necesitaba. */
-.comodidades li::before {
-  content: ''; flex: 0 0 auto; width: 12px; height: 1px; margin-top: 13px;
-  background: var(--borde);
+.comodidades li { font-size: .92rem; color: var(--piedra); }
+.comodidades li:not(:last-child)::after {
+  content: '·'; margin: 0 10px; color: var(--borde);
 }
 
 /* ------------------------------------------------------------ ambientes -- */
@@ -1931,8 +1921,7 @@ html.anim .revelar--foto.visible { transform: none; }
 
 /* ---------------------------------------------------------- responsive --- */
 @media (max-width: 1000px) {
-  .casa__layout, .ubicacion__layout, .contacto__layout { grid-template-columns: 1fr; }
-  .casa__foto-grande { aspect-ratio: 16/10; }
+  .ubicacion__layout, .contacto__layout { grid-template-columns: 1fr; }
   .resumen { position: static; }
   .galeria { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 180px; }
   .cal__meses { grid-template-columns: 1fr; }

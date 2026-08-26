@@ -31,7 +31,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=64">
+<link rel="stylesheet" href="css/estilos.css?v=65">
 
 <script type="application/ld+json">
 {
@@ -116,25 +116,21 @@
 </section>
 
 <!-- ========================================================= LA CASA ==== -->
-<!-- Foto grande al costado del texto, estilo vivood.com — se probó también
-     una versión sin foto con el texto centrado, quedó en el historial de
-     git. Una sola foto, sin la segunda fotito superpuesta que tenía antes:
-     ninguna de las referencias usa ese recurso, y sin sangrar hasta el
-     borde derecho de la pantalla (el dueño prefirió que respete el margen
-     como el resto de las secciones). -->
-<section class="seccion" id="la-casa">
-  <div class="casa__layout">
-    <div class="revelar">
-      <span class="antetitulo">La casa</span>
-      <h2 id="casa-titulo"></h2>
-      <div id="casa-texto"></div>
-      <p class="casa__cifras" id="casa-cifras"></p>
-    </div>
-    <div class="casa__foto revelar revelar--foto">
-      <img class="casa__foto-grande" src="img/casa-parque.jpg" alt="La casa vista desde el parque" loading="lazy">
-    </div>
-  </div>
-  <div class="contenedor">
+<!-- Sin foto: texto centrado, angosto, título grande en terracota — estilo
+     beckons.com. Va en el mismo tono arena que "por qué reservar acá" de
+     abajo, para que las dos se lean como un solo bloque y recién después
+     de "Reservar" se pase a blanco (antes cada sección tenía su propio
+     fondo y quedaba un salto de color de más). -->
+<section class="seccion seccion--arena" id="la-casa">
+  <div class="contenedor contenedor--angosto casa__intro revelar">
+    <span class="antetitulo">La casa</span>
+    <h2 id="casa-titulo"></h2>
+    <div id="casa-texto"></div>
+    <!-- Las comodidades (Wifi, cocina, baño...) van en línea, separadas por
+         puntos, con el mismo tratamiento que casa__cifras arriba: en una
+         grilla con guiones quedaban pensadas para un layout con foto al
+         costado, y centradas se leían desparejas. -->
+    <p class="casa__cifras" id="casa-cifras"></p>
     <ul class="comodidades revelar" id="comodidades"></ul>
   </div>
 </section>
@@ -411,11 +407,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=64"></script>
-<script src="js/contenido.js?v=64"></script>
-<script src="js/disponibilidad.js?v=64"></script>
-<script src="js/precios.js?v=64"></script><script src="js/calendario.js?v=64"></script>
-<script src="js/pie.js?v=64"></script>
-<script src="js/app.js?v=64"></script>
+<script src="js/config.js?v=65"></script>
+<script src="js/contenido.js?v=65"></script>
+<script src="js/disponibilidad.js?v=65"></script>
+<script src="js/precios.js?v=65"></script><script src="js/calendario.js?v=65"></script>
+<script src="js/pie.js?v=65"></script>
+<script src="js/app.js?v=65"></script>
 </body>
 </html>
