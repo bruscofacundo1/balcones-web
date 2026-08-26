@@ -7,7 +7,7 @@
 
 <meta name="description" content="Casa de campo para alquiler temporario en Arroyo de los Patos, entre Nono y Mina Clavero, Valle de Traslasierra. Cuatro dormitorios, dos plantas, galerías con vista a las Sierras Grandes, asador y parque.">
 <meta name="author" content="Balcones del Arroyo">
-<meta name="theme-color" content="#b4552f">
+<meta name="theme-color" content="#8a5233">
 <link rel="canonical" href="https://balconesdelarroyo.com.ar/">
 
 <meta property="og:type" content="website">
@@ -27,11 +27,11 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=46">
+<link rel="stylesheet" href="css/estilos.css?v=67">
 
 <script type="application/ld+json">
 {
@@ -57,20 +57,24 @@
 <body>
 
 <!-- ====================================================== NAVEGACIÓN ==== -->
+<!-- El logo va solo (sin el nombre al lado) y centrado, como en unyoked.co:
+     con el nombre bien grande en la portada un renglón abajo, repetirlo acá
+     es ruido. Los links de siempre (La casa, Tarifas...) no desaparecieron:
+     viven detrás del botón de puntos, que ahora se ve en cualquier tamaño de
+     pantalla y no sólo en celular — es la misma idea que ya existía, sólo que
+     antes se escondía nada más en mobile. -->
 <header class="nav" id="nav">
   <div class="nav__interior">
-    <a class="nav__marca" href="#inicio">
-      <img class="nav__logo nav__logo--clara" src="img/logo-icono-blanco.png" alt="" aria-hidden="true">
-      <img class="nav__logo nav__logo--oscura" src="img/logo-icono-oscuro.png" alt="" aria-hidden="true">
-      <span class="nav__marca-texto">
-        Balcones del Arroyo
-        <span>Traslasierra · Córdoba</span>
-      </span>
-    </a>
-
     <button class="nav__burger" id="nav-burger" aria-expanded="false" aria-label="Abrir menú" aria-controls="nav-links">
       <span></span><span></span><span></span>
     </button>
+
+    <a class="nav__marca" href="#inicio" aria-label="Balcones del Arroyo — inicio">
+      <img class="nav__logo nav__logo--clara" src="img/logo-icono-blanco.png" alt="" aria-hidden="true">
+      <img class="nav__logo nav__logo--oscura" src="img/logo-icono-oscuro.png" alt="" aria-hidden="true">
+    </a>
+
+    <a class="boton boton--reservar" href="reserva.html" data-reservar>Reservar</a>
 
     <nav class="nav__links" id="nav-links">
       <!-- el orden sigue el de la página: tarifas pasó a estar arriba, pegada
@@ -80,44 +84,70 @@
       <a href="#galeria">Galería</a>
       <a href="#ubicacion">Ubicación</a>
       <a href="#preguntas" id="nav-preguntas">Preguntas</a>
-      <!-- "Disponibilidad" hacía lo mismo que "Reservar": los dos abrían el
-           calendario. Quedó uno solo. -->
-      <a class="boton boton--reservar" href="reserva.html" data-reservar>Reservar</a>
+
+      <!-- La dirección y el WhatsApp, iguales a los del pie — quien abre el
+           menú buscando una sección puede terminar necesitando esto en vez
+           de un link más. Lo pinta pintarNavContacto() desde CONFIG.contacto. -->
+      <div class="nav__contacto" id="nav-contacto"></div>
     </nav>
   </div>
 </header>
+<!-- Se oscurece detrás del cajón cuando el menú está abierto; tocarlo lo cierra. -->
+<div class="nav__velo" id="nav-velo"></div>
 
 <!-- ============================================================ HERO ==== -->
 <section class="hero" id="inicio">
-  <div class="hero__fondo">
-    <img src="img/casa-atardecer.jpg" alt="La casa Balcones del Arroyo con el valle de Traslasierra de fondo" fetchpriority="high">
+  <!-- Las fotos las pinta pintarHero() desde CONFIG.heroFotos. La primera va
+       acá escrita a mano y con fetchpriority alto para que empiece a bajar
+       antes de que corra el JS: es la imagen más pesada de la página y la
+       primera que se ve. -->
+  <div class="hero__fondo" id="hero-fondo">
+    <img class="hero__slide hero__slide--activa" src="img/balcon-atardecer-3.jpg"
+         alt="La galería de la casa con el atardecer sobre el valle" fetchpriority="high">
   </div>
+  <!-- Sin botón acá abajo a propósito: "Reservar" ya está arriba, en el nav,
+       siempre a la vista. Repetir la acción en la portada era el tipo de
+       texto de más que se decidió sacar en esta pasada. -->
   <div class="contenedor hero__contenido">
-    <h1 id="hero-titulo">Una casa de campo con el valle entero de frente</h1>
+    <h1 id="hero-titulo">Balcones del Arroyo</h1>
     <p class="hero__texto" id="hero-bajada"></p>
-    <div class="hero__acciones">
-      <a class="boton boton--primario" href="reserva.html" data-reservar>Ver disponibilidad</a>
-      <a class="boton boton--fantasma" href="#galeria">Recorrer la casa</a>
-    </div>
   </div>
+  <div class="hero__puntos" id="hero-puntos" role="tablist" aria-label="Fotos de portada"></div>
 </section>
 
 <!-- ========================================================= LA CASA ==== -->
-<section class="seccion seccion--sangra" id="la-casa">
-  <div class="casa__layout">
-    <div class="revelar">
-      <span class="antetitulo">La casa</span>
-      <h2 id="casa-titulo"></h2>
-      <div id="casa-texto"></div>
-      <p class="casa__cifras" id="casa-cifras"></p>
-    </div>
-    <div class="casa__foto revelar revelar--foto">
-      <img class="casa__foto-grande" src="img/casa-parque.jpg" alt="La casa vista desde el parque" loading="lazy">
-      <img class="casa__foto-chica" src="img/galeria-mate.jpg" alt="Mates en la galería" loading="lazy">
-    </div>
+<!-- Sin foto: texto centrado, angosto, título grande en terracota — estilo
+     beckons.com. Va en el mismo tono arena que "por qué reservar acá" de
+     abajo, para que las dos se lean como un solo bloque y recién después
+     de "Reservar" se pase a blanco (antes cada sección tenía su propio
+     fondo y quedaba un salto de color de más). -->
+<section class="seccion seccion--arena" id="la-casa">
+  <div class="contenedor contenedor--angosto casa__intro revelar">
+    <span class="antetitulo">La casa</span>
+    <h2 id="casa-titulo"></h2>
+    <div id="casa-texto"></div>
+    <p class="casa__cifras" id="casa-cifras"></p>
+    <!-- Las comodidades se sacan de acá por ahora — quedan por definir dónde
+         van. Sigue en el DOM (oculta) para que pintarComodidades() no
+         rompa; sacar el atributo "hidden" cuando se decida dónde mostrarla. -->
+    <ul class="comodidades revelar" id="comodidades" hidden></ul>
   </div>
-  <div class="contenedor">
-    <ul class="comodidades revelar" id="comodidades"></ul>
+</section>
+
+<!-- ============================================== POR QUÉ RESERVAR ACÁ ==== -->
+<!-- Pasa a ir después de "La casa" y no antes: primero se muestra qué es,
+     después por qué conviene reservarla directo (villadeplan.com y
+     masaguilo.com hacen lo mismo). El título y el botón de la izquierda son
+     fijos (van en el HTML, no en CONFIG); la lista de la derecha la pinta
+     pintarReservaDirecta() desde CONFIG.textos.directo. -->
+<section class="seccion seccion--arena seccion--directo" id="directo" aria-label="Por qué reservar en esta web">
+  <div class="contenedor directo__layout">
+    <div class="directo__intro">
+      <span class="antetitulo">Sólo reservando acá</span>
+      <h2>Beneficios de reservar directo</h2>
+      <a class="boton boton--primario" href="reserva.html" data-reservar>Reservar</a>
+    </div>
+    <ul class="directo" id="directo-lista"></ul>
   </div>
 </section>
 
@@ -376,11 +406,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=46"></script>
-<script src="js/contenido.js?v=46"></script>
-<script src="js/disponibilidad.js?v=46"></script>
-<script src="js/precios.js?v=46"></script><script src="js/calendario.js?v=46"></script>
-<script src="js/pie.js?v=46"></script>
-<script src="js/app.js?v=46"></script>
+<script src="js/config.js?v=67"></script>
+<script src="js/contenido.js?v=67"></script>
+<script src="js/disponibilidad.js?v=67"></script>
+<script src="js/precios.js?v=67"></script><script src="js/calendario.js?v=67"></script>
+<script src="js/pie.js?v=67"></script>
+<script src="js/app.js?v=67"></script>
 </body>
 </html>

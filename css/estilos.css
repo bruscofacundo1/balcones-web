@@ -4,17 +4,22 @@
    ========================================================================== */
 
 :root {
-  --arena:        #f6f1e8;
-  --arena-osc:    #ece3d5;
-  --crema:        #fffdf9;
-  --terracota:    #b4552f;
-  --terracota-osc:#8e4224;
-  --ocre:         #d89a4a;
-  --oliva:        #5c6b4a;
-  --carbon:       #2b2621;
-  --carbon-suave: #4a423a;
-  --piedra:       #8a7f72;
-  --borde:        #e0d6c6;
+  /* Paleta revisada 24/08/2026. El criterio salió de medir en el navegador
+     masaguilo.com, villadeplan.com y hotelnafarrola.com: sus acentos son
+     tierras apagadas (#867446, #5f7548), no naranjas saturados, y el salto
+     entre bandas de fondo es de pocos puntos por canal, no una franja. */
+  --arena:        #f7f5f1;   /* antes #f6f1e8 — la banda ahora casi no se ve */
+  --arena-osc:    #eeeae2;
+  --crema:        #fdfcfa;   /* antes #fffdf9 — menos amarillo */
+  --terracota:    #8a5233;   /* antes #b4552f — misma familia, sin el naranja */
+  --terracota-osc:#6e3f27;
+  --ocre:         #867446;   /* antes #d89a4a — bronce, el de Mas Aguiló */
+  --oliva:        #5f7548;
+  --carbon:       #1d1c1a;
+  --carbon-suave: #4b4740;
+  --piedra:       #746e64;   /* oscurecido para que los antetítulos y metadatos
+                                en mono, que son chicos, pasen 4.5:1 de contraste */
+  --borde:        #e6e2da;
 
   /* estados del calendario */
   --dia-libre:      #e7f0e2;
@@ -22,18 +27,28 @@
   --dia-ocupado:    #f6ddd8;
   --dia-ocupado-bd: #e2b4ab;
 
-  --sombra-sm: 0 1px 3px rgba(43, 38, 33, .08);
-  --sombra:    0 4px 20px rgba(43, 38, 33, .10);
-  --sombra-lg: 0 18px 50px rgba(43, 38, 33, .18);
+  /* Una sola sombra, y muy suave. Las tres referencias no usan ninguna en el
+     contenido; queda sólo para lo que flota de verdad (modales, lightbox). */
+  --sombra-sm: 0 1px 2px rgba(29, 28, 26, .04);
+  --sombra:    0 1px 2px rgba(29, 28, 26, .04), 0 12px 32px -16px rgba(29, 28, 26, .14);
+  --sombra-lg: 0 24px 60px -20px rgba(29, 28, 26, .28);
 
-  --radio:    6px;
-  --radio-sm: 4px;
+  /* Radio 0: las tres referencias medidas lo tienen en 0 en todo — fotos,
+     botones, tarjetas y campos. Es lo que más rápido separa "editorial" de
+     "plantilla de app". */
+  --radio:    0;
+  --radio-sm: 0;
 
   --display: 'Fraunces', Georgia, 'Times New Roman', serif;
-  --texto: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --texto: 'Karla', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Tercera familia, para etiquetas y números: antetítulos, precios, metros,
+     kilómetros. Libera a la serif para que sólo haga títulos. */
+  --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
-  --nav-h: 72px;
+  --nav-h: 88px;   /* antes 72 — las tres referencias andan entre 90 y 100 */
+  --nav-gap: 16px; /* separación de la barra con el borde de arriba: flota, no toca */
   --ancho: 1180px;
+  --sec-y: clamp(96px, 12vw, 170px);   /* antes clamp(64px, 9vw, 112px) */
 }
 
 /* --------------------------------------------------------------- reset -- */
@@ -44,7 +59,7 @@
    elemento seguía viéndose. */
 [hidden] { display: none !important; }
 
-html { scroll-behavior: smooth; scroll-padding-top: var(--nav-h); }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--nav-h) + var(--nav-gap)); }
 
 body {
   margin: 0;
@@ -58,18 +73,24 @@ body {
 
 img { max-width: 100%; display: block; }
 
+/* Peso 400, no 600. Las dos referencias que más gustaron usan Cormorant
+   Garamond en 400: serif de trazo fino y mucho contraste. Fraunces en 600 es
+   maciza y de trazo parejo, y eso es lo que hacía que se leyera "sólida" en
+   vez de "cuidada". */
 h1, h2, h3, h4 {
   font-family: var(--display);
   color: var(--carbon);
-  line-height: 1.15;
-  font-weight: 600;
+  line-height: 1.08;
+  font-weight: 400;
+  letter-spacing: -.012em;
   margin: 0 0 .5em;
+  text-wrap: balance;
 }
 
 h2 { font-size: clamp(1.9rem, 4vw, 2.9rem); }
 h3 { font-size: clamp(1.25rem, 2.2vw, 1.6rem); }
 
-p { margin: 0 0 1em; }
+p { margin: 0 0 1em; max-width: 68ch; }
 
 a { color: var(--terracota); }
 
@@ -80,25 +101,35 @@ a { color: var(--terracota); }
   padding-inline: 24px;
 }
 
-.seccion { padding: clamp(64px, 9vw, 112px) 0; }
+.seccion { padding: var(--sec-y) 0; }
 .seccion--arena { background: var(--arena); }
 .seccion--carbon { background: var(--carbon); color: #d9d2c8; }
 .seccion--carbon h2, .seccion--carbon h3 { color: var(--crema); }
 
-.encabezado-seccion { max-width: 660px; margin-bottom: 48px; }
-.encabezado-seccion--centro { margin-inline: auto; text-align: center; }
+/* El encabezado va a todo el ancho para que la línea de abajo cruce la
+   sección de punta a punta (el gesto de villadeplan.com); el texto de adentro
+   sigue midiendo lo mismo que antes. */
+.encabezado-seccion {
+  margin-bottom: 56px; padding-bottom: 28px;
+  border-bottom: 1px solid var(--borde);
+}
+.encabezado-seccion > * { max-width: 660px; }
+/* Antes esta variante centraba. Se dejó de usar: alternar izquierda y centro
+   entre secciones era lo que hacía sentir el sitio "armado por partes". Se
+   mantiene la clase para no tocar el HTML de cada sección. */
+.encabezado-seccion--centro { margin-inline: 0; text-align: left; }
 
 .antetitulo {
   display: block;
-  font-family: var(--texto);
-  font-size: .78rem;
-  font-weight: 600;
-  letter-spacing: .16em;
+  font-family: var(--mono);
+  font-size: .7rem;
+  font-weight: 400;
+  letter-spacing: .2em;
   text-transform: uppercase;
-  color: var(--terracota);
-  margin-bottom: 14px;
+  color: var(--piedra);
+  margin-bottom: 16px;
 }
-.seccion--carbon .antetitulo { color: var(--ocre); }
+.seccion--carbon .antetitulo { color: #a89e91; }
 
 .bajada { font-size: 1.08rem; color: var(--piedra); }
 .seccion--carbon .bajada { color: #a89e91; }
@@ -120,8 +151,9 @@ a { color: var(--terracota); }
   cursor: pointer;
   transition: transform .18s ease, background .18s ease, color .18s ease, box-shadow .18s ease;
 }
-.boton:hover { transform: translateY(-2px); }
-.boton:active { transform: translateY(0); }
+/* Sin salto en hover: el botón que se levanta al pasar el mouse es un tic de
+   plantilla. Alcanza con el cambio de fondo. */
+.boton:active { transform: translateY(1px); }
 
 .boton--primario { background: var(--terracota); color: #fff; box-shadow: var(--sombra-sm); }
 .boton--primario:hover { background: var(--terracota-osc); box-shadow: var(--sombra); }
@@ -140,43 +172,53 @@ a { color: var(--terracota); }
    ocre éste no se confunde con los demás. El texto va en carbón y no en
    blanco porque sobre el ocre el blanco casi no se lee. */
 .boton--reservar {
-  background: var(--ocre); color: var(--carbon);
-  border-color: transparent; box-shadow: var(--sombra-sm);
+  background: var(--ocre); color: #fff;
+  border-color: transparent; box-shadow: none;
 }
 .boton--reservar:hover {
-  background: #c9862f; color: var(--carbon); border-color: transparent;
-  box-shadow: var(--sombra);
+  background: #6f5f38; color: #fff; border-color: transparent;
 }
 
 .boton[disabled] { opacity: .45; cursor: not-allowed; transform: none; }
 
 /* ------------------------------------------------------------------ nav -- */
+/* Flota separada del borde de arriba en vez de tocarlo — un poco de aire
+   antes de la barra se lee más cuidado que pegarla al borde del vidrio. */
 .nav {
   position: fixed;
-  inset: 0 0 auto 0;
+  top: var(--nav-gap);
+  left: 0; right: 0;
   height: var(--nav-h);
   z-index: 90;
   display: flex;
   align-items: center;
-  transition: background .3s ease, box-shadow .3s ease;
+  transition: top .3s ease, background .3s ease, box-shadow .3s ease;
 }
+/* Grilla de 3 columnas y no flex: así el logo queda centrado de verdad sin
+   importar si "Reservar" pesa distinto que el botón de puntos del otro lado.
+   minmax(0, 1fr) y no 1fr solo: con 1fr solo, la columna del lado que pesa
+   más (Reservar) se queda con una porción más grande que la del otro lado
+   —es lo que hace el 1fr cuando el contenido no entra en la parte que le
+   toca— y el logo del medio quedaba corrido hacia el lado más liviano. */
 .nav__interior {
   width: 100%;
   max-width: var(--ancho);
   margin-inline: auto;
   padding-inline: 24px;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 24px;
 }
 .nav__marca {
+  grid-column: 2;
+  justify-self: center;
   display: flex;
   align-items: center;
   gap: 12px;
   text-decoration: none;
 }
-.nav__logo { height: 36px; width: auto; transition: opacity .2s ease; }
+.nav__logo { height: 54px; width: auto; transition: opacity .2s ease; }
 .nav__logo--oscura { display: none; }
 .nav--solida .nav__logo--clara { display: none; }
 .nav--solida .nav__logo--oscura { display: block; }
@@ -198,27 +240,90 @@ a { color: var(--terracota); }
   opacity: .8;
   margin-top: 3px;
 }
-.nav__links { display: flex; align-items: center; gap: 30px; }
+/* El menú (La casa / Tarifas / Galería...) vive siempre detrás del botón de
+   puntos, en cualquier tamaño de pantalla: no es un menú de descubrimiento
+   —es una sola página larga, todo aparece bajando— así que no hace falta
+   que compita con el logo por espacio en la primera pantalla.
+
+   Se abre como un cajón desde la izquierda (vivood.com) y no como una
+   superposición sobre la foto de fondo (masaguilo.com): acá el menú se puede
+   abrir parado en cualquier sección, no sólo en la portada, y una foto
+   cualquiera oscurecida detrás —la tabla de precios, un formulario— se ve
+   descuidada. El cajón es siempre la misma superficie prolija, pase lo que
+   pase detrás. El nav de arriba (logo, puntos, Reservar) queda por encima del
+   velo con más z-index a propósito: sigue ahí, igual que en la referencia. */
+.nav__velo {
+  position: fixed; inset: 0;
+  z-index: 85;
+  background: rgba(20,16,12,.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .35s ease;
+}
+.nav__velo.abierto { opacity: 1; pointer-events: auto; }
+
+.nav__links {
+  position: fixed; inset: 0 auto 0 0;
+  z-index: 86;
+  width: min(340px, 82vw);
+  background: var(--crema);
+  display: flex; flex-direction: column; align-items: stretch;
+  gap: 0; padding: calc(var(--nav-h) + var(--nav-gap) + 16px) 28px 28px;
+  overflow-y: auto;
+  box-shadow: var(--sombra-lg);
+  transform: translateX(-100%);
+  transition: transform .35s cubic-bezier(.2,.7,.3,1);
+}
+.nav__links.abierto { transform: translateX(0); }
 .nav__links a {
-  color: rgba(255,255,255,.9);
+  color: var(--carbon);
   text-decoration: none;
-  font-size: .92rem;
+  font-size: .95rem;
   font-weight: 500;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--borde);
   transition: color .2s ease;
 }
-.nav__links a:hover { color: #fff; }
-.nav__links .boton { padding: 11px 22px; font-size: .88rem; }
+.nav__links a:hover { color: var(--terracota); }
 
-.nav--solida { background: rgba(255,253,249,.96); backdrop-filter: blur(10px); box-shadow: var(--sombra-sm); }
+.nav__contacto { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--borde); }
+.nav__contacto .antetitulo { margin-bottom: 10px; }
+.nav__contacto-direccion { font-size: .85rem; color: var(--piedra); margin: 0 0 12px; }
+.nav__contacto-wsp {
+  display: block;
+  font-family: var(--display); font-size: 1.05rem; font-weight: 500;
+  color: var(--carbon); text-decoration: none; margin-bottom: 16px;
+}
+.nav__contacto-wsp:hover { color: var(--terracota); }
+.nav__contacto-redes { display: flex; gap: 18px; }
+.nav__contacto-redes a { font-size: .8rem; color: var(--piedra); text-decoration: none; }
+.nav__contacto-redes a:hover { color: var(--terracota); }
+
+/* Sólida ya no flota: el hueco de arriba tenía sentido con la barra
+   transparente sobre la foto, pero con fondo sólido dejaba ver un hilo de lo
+   que scrollea justo arriba, que quedaba mal (más todavía si pasaba un
+   título grande justo por ahí). Sólida se pega del todo al borde. */
+.nav--solida { top: 0; background: rgba(253,252,250,.94); backdrop-filter: blur(10px); box-shadow: 0 1px 0 var(--borde); }
 .nav--solida .nav__marca-texto { color: var(--carbon); }
-.nav--solida .nav__links a { color: var(--carbon-suave); }
-.nav--solida .nav__links a:hover { color: var(--terracota); }
 .nav--solida .boton--fantasma { color: var(--carbon); border-color: var(--borde); }
 .nav--solida .boton--fantasma:hover { background: var(--carbon); color: #fff; border-color: var(--carbon); }
 
-/* las reglas de color de los links del menú le ganaban al botón */
-.nav__links .boton--reservar,
-.nav--solida .nav__links .boton--reservar { color: var(--carbon); }
+/* El botón de "Reservar" del nav, suelto a la derecha del logo. La
+   tipografía es la que se vio en unyoked.co para su "Book Now": una sans de
+   trazo grueso en vez de la mono en mayúsculas que usa el resto del sitio —
+   "Archivo" es lo más parecido que hay en Google Fonts a su "Plain", que es
+   paga. Va en negrita normal, sin versalitas ni tracking. */
+.nav .boton--reservar {
+  grid-column: 3;
+  justify-self: end;
+  font-family: 'Archivo', var(--texto);
+  font-size: .85rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 13px 26px;
+  color: #fff;
+}
 
 /* Un latido corto, una sola vez, cuando el menú se vuelve sólido: es el
    momento en que se dejó atrás el botón grande del inicio y éste pasa a ser
@@ -232,60 +337,164 @@ a { color: var(--terracota); }
 }
 .nav--llamar .boton--reservar { animation: latido-reservar 1.4s ease-out .2s 2; }
 
+/* El botón de puntos reemplaza al típico "≡": tres puntos en vez de tres
+   rayas. Antes esto sólo se veía en celular; ahora es la única forma de
+   llegar al menú en cualquier tamaño, así que queda visible siempre. */
 .nav__burger {
-  display: none;
+  grid-column: 1;
+  justify-self: start;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
   width: 44px; height: 44px;
   border: 0; background: transparent; cursor: pointer;
   padding: 10px;
 }
 .nav__burger span {
-  display: block; height: 2px; background: #fff; border-radius: 2px;
-  transition: transform .25s ease, opacity .25s ease, background .3s ease;
+  width: 4px; height: 4px; border-radius: 50%; flex: none;
+  background: #fff;
+  transition: background .25s ease, transform .25s ease;
 }
-.nav__burger span + span { margin-top: 6px; }
 .nav--solida .nav__burger span { background: var(--carbon); }
-.nav__burger[aria-expanded="true"] span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
-.nav__burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
-.nav__burger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+.nav__burger[aria-expanded="true"] span { background: var(--terracota); transform: scale(1.25); }
 
 /* ----------------------------------------------------------------- hero -- */
+/* La portada va centrada y con una sola acción. Es la única sección centrada
+   del sitio, a propósito: en villadeplan.com pasa lo mismo — el hero al medio
+   y todo lo demás alineado a la izquierda. */
 .hero {
   position: relative;
   min-height: 100svh;
   display: flex;
   align-items: center;
+  text-align: center;
   color: #fff;
   overflow: hidden;
 }
 .hero__fondo { position: absolute; inset: 0; }
-.hero__fondo img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Las fotos se cruzan por opacidad, una encima de la otra. Sólo la activa
+   queda visible; las demás siguen en el DOM para que el cambio no parpadee. */
+.hero__slide {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.4s ease-in-out;
+}
+.hero__slide--activa { opacity: 1; }
+
+/* Con "reducir movimiento" no hay cruce: se ve la primera y listo. Los puntos
+   siguen andando para el que quiera cambiarla a mano. */
+@media (prefers-reduced-motion: reduce) {
+  .hero__slide { transition: none; }
+}
 .hero__fondo::after {
   content: '';
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(20,16,12,.62) 0%, rgba(20,16,12,.28) 42%, rgba(20,16,12,.78) 100%);
+  /* Degradado continuo de abajo hacia arriba. El anterior era transparente al
+     42% de altura, que en el celular es justo donde cae la bajada: quedaba
+     blanco sobre cielo celeste. */
+  background: linear-gradient(0deg, rgba(20,16,12,.86) 0%, rgba(20,16,12,.62) 45%, rgba(20,16,12,.30) 100%);
 }
-.hero__contenido { position: relative; z-index: 2; padding-top: var(--nav-h); }
+@media (max-width: 700px) {
+  .hero__fondo::after {
+    background: linear-gradient(0deg, rgba(20,16,12,.90) 0%, rgba(20,16,12,.72) 55%, rgba(20,16,12,.45) 100%);
+  }
+}
+.hero__contenido { position: relative; z-index: 2; padding-top: calc(var(--nav-h) + var(--nav-gap)); }
 .hero h1 {
-  font-size: clamp(2.6rem, 7.5vw, 5.2rem);
+  font-size: clamp(2.6rem, 7vw, 4.8rem);
   color: #fff;
-  max-width: 14ch;
-  margin-bottom: .35em;
+  max-width: 18ch;
+  margin: 0 auto .38em;
   text-shadow: 0 2px 30px rgba(0,0,0,.3);
 }
 .hero__texto {
-  font-size: clamp(1.05rem, 1.8vw, 1.28rem);
-  max-width: 52ch;
-  color: rgba(255,255,255,.94);
-  margin-bottom: 34px;
+  font-size: clamp(1.02rem, 1.6vw, 1.18rem);
+  max-width: 44ch;
+  color: rgba(255,255,255,.92);
+  margin: 0 auto 38px;
 }
-.hero__acciones { display: flex; flex-wrap: wrap; gap: 14px; }
+/* Los puntos de la portada. Van pegados abajo y no debajo del botón para que
+   no compitan con la acción: se leen como "hay más fotos", no como un menú. */
+.hero__puntos {
+  position: absolute; left: 0; right: 0; bottom: 34px; z-index: 3;
+  display: flex; justify-content: center; gap: 10px;
+}
+.hero__punto {
+  width: 28px; height: 2px; padding: 0; border: 0; cursor: pointer;
+  background: rgba(255,255,255,.38);
+  transition: background .3s ease;
+}
+.hero__punto:hover { background: rgba(255,255,255,.7); }
+.hero__punto--activo { background: #fff; }
+/* El área clickeable real es más alta que la rayita, para el dedo en el celular. */
+.hero__punto::before {
+  content: ''; position: absolute; margin: -14px 0 0 0; width: 28px; height: 30px;
+}
+@media (max-width: 700px) {
+  .hero__puntos { bottom: 26px; }
+  /* El botón NO va a todo el ancho: una barra de lado a lado pesa más que el
+     título y es justo lo contrario de lo que hacen las referencias. */
+  .hero h1 { font-size: clamp(2.15rem, 8.5vw, 3.2rem); max-width: 15ch; }
+  .hero__texto { font-size: 1rem; max-width: 34ch; margin-bottom: 30px; }
+}
+
+/* ------------------------------------- por qué reservar acá (bajo la portada) */
+/* Franja angosta: es un apoyo, no una sección. Cuatro columnas separadas por
+   línea fina, sin cajas ni íconos — el mismo lenguaje que las tarifas. */
+.seccion--directo {
+  padding: clamp(46px, 5.5vw, 70px) 0;
+  border-top: 1px solid var(--borde);
+  border-bottom: 1px solid var(--borde);
+}
+/* Título + botón a la izquierda, la lista de beneficios ocupando el resto —
+   como vivood.com. La columna angosta no lleva ancho fijo: "auto" para que
+   el botón y el título definan su lugar y el resto se lo lleve la lista. */
+/* Mismo ancho que .casa__intro de arriba (860px) y centrado igual — antes
+   ocupaba las 1180px del contenedor general y quedaba corrido respecto de
+   "La casa", y los tres beneficios de la derecha se estiraban de más. */
+.directo__layout {
+  max-width: 860px;
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) 1fr;
+  gap: clamp(32px, 5vw, 56px);
+  align-items: center;
+}
+.directo__intro h2 { font-size: clamp(1.5rem, 2.4vw, 1.9rem); margin: 6px 0 20px; }
+/* Sin líneas divisorias entre los tres — sólo aire entre uno y otro, como
+   vivood.com. Antes tenían una línea vertical fina de por medio; con más
+   espacio de por sí no hacía falta. */
+.directo {
+  list-style: none; padding: 0; margin: 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: clamp(28px, 4vw, 48px);
+}
+.directo li { padding: 0; }
+/* Serif, no mono: la mono en mayúsculas se leía muy "dato técnico" para
+   frases completas como éstas — acá va el mismo criterio que un subtítulo
+   chico (Fraunces, como el resto de los títulos del sitio). */
+.directo h3 {
+  font-family: var(--display); font-size: 1.15rem; font-weight: 500;
+  color: var(--carbon); margin: 0 0 8px;
+}
+.directo p { font-size: .9rem; color: var(--piedra); margin: 0; max-width: 30ch; }
+
+@media (max-width: 820px) {
+  .directo__layout { grid-template-columns: 1fr; }
+  .directo__intro { margin-bottom: 8px; }
+  .directo li { border-top: 1px solid var(--borde); padding: 22px 0 0; }
+  .directo li:first-child { border-top: 0; padding-top: 2px; }
+  .directo p { max-width: none; }
+}
 
 /* ------------------------------------------------ sección con foto de fondo */
 /* Reemplaza a la vieja franja-foto (una banda suelta con la foto de las
    sierras y la frase "Cae la tarde..."). En vez de una parada más en la home,
    esa misma foto pasa a ser el fondo de "Preguntas frecuentes": el respiro
    visual y la sección son ahora la misma cosa. */
-.seccion--foto { position: relative; overflow: hidden; color: rgba(255,255,255,.88); }
+/* Fondo oscuro de respaldo: si la foto no carga, la sección quedaba blanco
+   sobre blanco y las preguntas eran ilegibles. */
+.seccion--foto { position: relative; overflow: hidden; background: var(--carbon); color: rgba(255,255,255,.88); }
 .seccion__fondo {
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
   filter: blur(3px) brightness(.45) saturate(1.05);
@@ -305,21 +514,22 @@ a { color: var(--terracota); }
 .seccion--foto .faq__respuesta { color: rgba(255, 255, 255, .82); }
 
 /* ------------------------------------------------------------- la casa --- */
-/* Layout asimétrico: el texto respeta el contenedor y la foto sangra hasta
-   el borde derecho de la pantalla, para que no se lea como una card más. */
-.seccion--sangra { overflow-x: clip; }
+/* Menos aire abajo que el padding estándar de sección: "La casa" y "por qué
+   reservar acá" son un solo bloque del mismo tono, no dos secciones
+   separadas — con el padding de siempre quedaban demasiado lejos entre sí. */
+#la-casa { padding-bottom: clamp(32px, 5vw, 56px); }
 
-.casa__layout {
-  width: 100%;
-  max-width: var(--ancho);
+/* Sin foto: todo centrado y angosto (más que "angosto" general) para que
+   los renglones no se estiren de punta a punta — se lee bien en bloques
+   cortos, no en párrafos que van de un extremo al otro. El título en
+   terracota, el color de la casa, en vez del carbón de los demás títulos. */
+#la-casa .casa__intro {
+  max-width: 860px;
+  text-align: center;
   margin-inline: auto;
-  padding-inline: 24px;
-  display: grid;
-  grid-template-columns: 1fr 1.05fr;
-  gap: clamp(32px, 5vw, 64px);
-  align-items: center;
-  margin-bottom: clamp(44px, 6vw, 72px);
 }
+#la-casa .casa__intro h2 { color: var(--terracota); }
+
 .casa__cifras {
   margin-top: 22px;
   font-size: .85rem; letter-spacing: .04em;
@@ -327,36 +537,17 @@ a { color: var(--terracota); }
   color: var(--piedra);
 }
 
-/* Saca la foto de la grilla hasta el borde derecho de la pantalla.
-   No sirve un 50% acá: en un grid item los porcentajes se resuelven contra
-   su columna, no contra el contenedor. */
-.casa__foto {
-  position: relative;
-  margin-right: calc((min(100vw, var(--ancho)) - 100vw) / 2 - 24px);
-}
-.casa__foto-grande {
-  width: 100%; aspect-ratio: 4/3; object-fit: cover;
-  border-radius: var(--radio) 0 0 var(--radio);
-}
-.casa__foto-chica {
-  position: absolute; left: -44px; bottom: -36px;
-  width: 190px; aspect-ratio: 1; object-fit: cover;
-  border-radius: var(--radio-sm);
-  border: 6px solid var(--crema);
-  box-shadow: var(--sombra);
-}
-
+/* En línea, separadas por puntos, centradas — mismo lenguaje que
+   .casa__cifras arriba. La grilla con guiones de antes daba por sentado un
+   layout con foto al costado y muchas columnas; centrada, con una sola
+   columna angosta, se leía desareglada. */
 .comodidades {
-  list-style: none; padding: 0; margin: 32px 0 0;
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px 24px;
+  list-style: none; padding: 0; margin: 28px auto 0; max-width: 520px;
+  display: flex; flex-wrap: wrap; justify-content: center; row-gap: 6px;
 }
-.comodidades li {
-  display: flex; align-items: flex-start; gap: 11px;
-  font-size: .96rem; color: var(--carbon-suave);
-}
-.comodidades li::before {
-  content: ''; flex: 0 0 auto; width: 7px; height: 7px; margin-top: 9px;
-  border-radius: 50%; background: var(--ocre);
+.comodidades li { font-size: .92rem; color: var(--piedra); }
+.comodidades li:not(:last-child)::after {
+  content: '·'; margin: 0 10px; color: var(--borde);
 }
 
 /* ------------------------------------------------------------ ambientes -- */
@@ -367,7 +558,7 @@ a { color: var(--terracota); }
   font-family: var(--texto); font-size: .92rem; font-weight: 600; color: var(--carbon-suave);
   transition: all .18s ease;
 }
-.tab:hover { border-color: var(--ocre); }
+.tab:hover { border-color: var(--piedra); }
 .tab[aria-selected="true"] { background: var(--carbon); border-color: var(--carbon); color: #fff; }
 
 /* ------------------------------------------------------------- carrusel -- */
@@ -451,7 +642,7 @@ a { color: var(--terracota); }
   background: var(--borde); border-radius: 2px; cursor: pointer;
   transition: background .2s ease;
 }
-.carrusel__punto--activo { background: var(--terracota); }
+.carrusel__punto--activo { background: var(--carbon); }
 
 /* ------------------------------------------ carrusel a pantalla (var. C) - */
 /* Misma mecánica que el de arriba, otra piel: la foto ocupa casi todo el alto
@@ -847,7 +1038,7 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
   display: flex; align-items: center; justify-content: center;
   text-align: center; padding: 10px;
 }
-.mosaico__boton { grid-column: 1 / -1; justify-self: center; margin-top: 8px; }
+.mosaico__boton { grid-column: 1 / -1; justify-self: start; margin-top: 18px; }
 
 @media (max-width: 760px) {
   .mosaico { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 120px; gap: 8px; }
@@ -1010,11 +1201,11 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 .distancias { list-style: none; padding: 0; margin: 28px 0 0; }
 .distancias li {
   display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
-  padding: 13px 0; border-bottom: 1px dashed var(--borde);
+  padding: 13px 0; border-bottom: 1px solid var(--borde);
 }
 .distancias li:last-child { border-bottom: 0; }
 .distancias .lugar { font-weight: 500; color: var(--carbon); }
-.distancias .dist { font-family: var(--display); font-size: 1.05rem; color: var(--terracota); white-space: nowrap; }
+.distancias .dist { font-family: var(--mono); font-size: .88rem; color: var(--carbon); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .mapa {
   border-radius: var(--radio); overflow: hidden;
   box-shadow: var(--sombra); border: 1px solid var(--borde);
@@ -1041,7 +1232,7 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 .actividad__cuerpo h3 { color: #fff; font-size: 1.22rem; margin-bottom: 5px; }
 .actividad__cuerpo p { font-size: .88rem; color: rgba(255,255,255,.82); margin: 0; }
 
-.actividades__pie { text-align: center; margin: 30px 0 0; }
+.actividades__pie { margin: 34px 0 0; }
 
 /* ------------------------------------------------------------ opiniones -- */
 /* Tira a todo el ancho (se sale del .contenedor, mismo truco que
@@ -1083,14 +1274,17 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
   background: var(--crema); border: 1px solid var(--borde); border-radius: var(--radio);
   padding: 28px 26px;
 }
-.opinion__estrellas { color: var(--ocre); font-size: 1.05rem; letter-spacing: 3px; margin-bottom: 14px; }
+.opinion__estrellas { color: var(--ocre); font-size: .82rem; letter-spacing: 4px; margin-bottom: 16px; }
 .opinion__texto {
   font-family: var(--display); font-size: 1.05rem; font-style: italic;
   color: var(--carbon); line-height: 1.55; margin: 0 0 18px;
 }
-.opinion__fuente { font-size: .8rem; color: var(--piedra); margin: 0; }
+.opinion__fuente {
+  font-family: var(--mono); font-size: .72rem; letter-spacing: .01em;
+  color: var(--piedra); margin: 0;
+}
 
-.opiniones__pie { text-align: center; margin-top: 34px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.opiniones__pie { margin-top: 40px; display: flex; gap: 14px; flex-wrap: wrap; }
 
 /* La capa de "todas las actividades" reusa el cabezal fijo de .todas-fotos
    (mismo componente que la galería); acá abajo sólo el cuerpo, que es un
@@ -1102,30 +1296,47 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 .todas-actividades__cuerpo { flex: 1 1 auto; overflow-y: auto; padding: 28px 0 40px; }
 
 /* --------------------------------------------------------------- tarifas - */
-.tarifas { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 22px; }
+/* Antes eran tres tarjetas con borde, sombra y un badge "Más buscada": el
+   patrón exacto de una tabla de planes de software. Ninguna casa de campo
+   muestra los precios así. Ahora son tres columnas de texto separadas por una
+   línea fina, y los precios van en mono tabular para que se lean como datos y
+   no como oferta. El badge se sacó del todo: temporada alta no es un plan que
+   el huésped elige, es cuándo viene. */
+.tarifas { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0; }
 .tarifa {
-  background: var(--crema); border: 1px solid var(--borde); border-radius: var(--radio);
-  padding: 32px 28px; display: flex; flex-direction: column;
+  background: transparent; border: 0; border-left: 1px solid var(--borde);
+  padding: 2px 34px; display: flex; flex-direction: column;
 }
-.tarifa--destacada { border-color: var(--terracota); box-shadow: var(--sombra); position: relative; }
-.tarifa--destacada::before {
-  content: 'Más buscada'; position: absolute; top: -13px; left: 28px;
-  background: var(--terracota); color: #fff; font-size: .7rem; font-weight: 600;
-  letter-spacing: .12em; text-transform: uppercase; padding: 5px 14px; border-radius: var(--radio-sm);
+.tarifa:first-child { border-left: 0; padding-left: 0; }
+.tarifa--destacada { border-color: var(--borde); box-shadow: none; position: static; }
+.tarifa--destacada::before { content: none; }
+.tarifa__nombre { font-family: var(--display); font-size: 1.5rem; font-weight: 400; color: var(--carbon); margin-bottom: 8px; }
+.tarifa__periodo {
+  font-family: var(--mono); font-size: .74rem; letter-spacing: .01em;
+  color: var(--piedra); margin-bottom: 26px; line-height: 1.65;
 }
-.tarifa__nombre { font-family: var(--display); font-size: 1.4rem; color: var(--carbon); margin-bottom: 4px; }
-.tarifa__periodo { font-size: .84rem; color: var(--piedra); margin-bottom: 22px; }
-.tarifa__precios { list-style: none; padding: 0; margin: 0 0 6px; }
+.tarifa__precios { list-style: none; padding: 0; margin: 0; }
 .tarifa__precios li {
   display: flex; align-items: baseline; justify-content: space-between; gap: 14px;
-  padding: 9px 0; border-bottom: 1px solid var(--arena-osc);
+  padding: 11px 0; border-top: 1px solid var(--borde);
 }
-.tarifa__precios li:last-child { border-bottom: 0; }
-.tarifa__precios span { font-size: .88rem; color: var(--carbon-suave); }
-.tarifa__precios strong { font-family: var(--display); font-size: 1.28rem; color: var(--carbon); font-weight: 600; }
-.tarifa__precios li:first-child span { font-weight: 600; color: var(--carbon); }
-.tarifa__precios li:first-child strong { color: var(--terracota); font-size: 1.6rem; }
-.tarifa__unidad { font-size: .85rem; color: var(--piedra); margin-bottom: 20px; }
+.tarifa__precios li:first-child { border-top: 0; }
+.tarifa__precios span { font-size: .93rem; color: var(--carbon-suave); }
+.tarifa__precios strong {
+  font-family: var(--mono); font-size: .98rem; color: var(--carbon); font-weight: 500;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.tarifa__precios li:first-child span { font-weight: 400; color: var(--carbon-suave); }
+.tarifa__precios li:first-child strong { color: var(--carbon); font-size: .98rem; }
+.tarifa__unidad {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--piedra); margin: 14px 0 0; padding-top: 14px; border-top: 1px solid var(--borde);
+}
+
+@media (max-width: 780px) {
+  .tarifa { border-left: 0; border-top: 1px solid var(--borde); padding: 34px 0 0; }
+  .tarifa:first-child { border-top: 0; padding-top: 2px; }
+}
 
 /* ------------------------------------------------- unidades (variante A) - */
 /* La casa completa ocupa más que las plantas a propósito: es lo que más se
@@ -1143,8 +1354,8 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 .unidad__cuerpo h3 { font-size: 1.2rem; margin-bottom: 4px; }
 .unidad--principal .unidad__cuerpo h3 { font-size: 1.5rem; }
 .unidad__meta {
-  font-size: .8rem; letter-spacing: .03em; color: var(--terracota);
-  font-weight: 600; margin-bottom: 10px;
+  font-family: var(--mono); font-size: .72rem; letter-spacing: .01em;
+  color: var(--piedra); font-weight: 400; margin-bottom: 12px;
 }
 .unidad__texto { font-size: .92rem; color: var(--piedra); margin: 0; }
 
@@ -1161,29 +1372,36 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 .faq summary {
   cursor: pointer; list-style: none;
   padding: 20px 40px 20px 0; position: relative;
-  font-family: var(--display); font-size: 1.1rem; font-weight: 600; color: var(--carbon);
+  font-family: var(--display); font-size: 1.15rem; font-weight: 400; color: var(--carbon);
 }
 .faq summary::-webkit-details-marker { display: none; }
 .faq summary::after {
   content: '+'; position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
-  font-family: var(--texto); font-size: 1.5rem; font-weight: 400; color: var(--terracota);
+  font-family: var(--texto); font-size: 1.5rem; font-weight: 400; color: var(--piedra);
   transition: transform .2s ease;
 }
 .faq details[open] summary::after { content: '−'; }
 .faq summary:hover { color: var(--terracota); }
 .faq__respuesta { padding: 0 40px 22px 0; font-size: .96rem; color: var(--carbon-suave); }
 .faq__respuesta p:last-child { margin-bottom: 0; }
-.preguntas__pie { text-align: center; margin: 30px 0 0; }
-.tarifa__detalle { list-style: none; padding: 0; margin: 0 0 24px; font-size: .9rem; }
-.tarifa__detalle li { padding: 7px 0; border-bottom: 1px solid var(--arena-osc); display: flex; justify-content: space-between; gap: 12px; }
-.tarifa__detalle li:last-child { border-bottom: 0; }
+.preguntas__pie { margin: 34px 0 0; }
+.tarifa__detalle { list-style: none; padding: 0; margin: 0 0 4px; font-size: .88rem; }
+.tarifa__detalle li { padding: 8px 0; border-top: 1px solid var(--borde); display: flex; justify-content: space-between; gap: 12px; }
 .tarifa__detalle span { color: var(--piedra); }
-.tarifa .boton { margin-top: auto; }
+/* El botón de cada columna pasa a ser un link subrayado: tres botones con
+   caja, uno al lado del otro, era parte de lo que hacía leer el bloque como
+   una comparativa de planes. */
+.tarifa .boton {
+  margin-top: auto; align-self: flex-start; padding: 22px 0 0;
+  background: none; border: 0; border-bottom: 1px solid currentColor;
+  color: var(--terracota); font-weight: 500; border-radius: 0;
+}
+.tarifa .boton:hover { color: var(--terracota-osc); background: none; }
 
 .nota-tarifas {
   margin-top: 32px; padding: 22px 26px;
-  background: var(--arena); border-left: 3px solid var(--ocre);
-  border-radius: var(--radio-sm); font-size: .92rem; color: var(--carbon-suave);
+  background: transparent; border-left: 0; border-top: 1px solid var(--borde);
+  padding-left: 0; padding-right: 0; font-size: .92rem; color: var(--carbon-suave);
 }
 .nota-tarifas ul { margin: 8px 0 0; padding-left: 20px; }
 .nota-tarifas li { margin-bottom: 5px; }
@@ -1690,17 +1908,20 @@ html.anim .revelar--foto.visible { transform: none; }
 /* El hero no espera al scroll — es lo primero que se ve, así que entra solo
    al cargar la página. Una vez sola, no se repite. */
 @keyframes hero-entra {
-  from { opacity: 0; transform: scale(1.04); }
-  to   { opacity: 1; transform: none; }
+  from { transform: scale(1.04); }
+  to   { transform: none; }
 }
-.hero__fondo img { animation: hero-entra 1.4s cubic-bezier(.2,.7,.3,1) both; }
+/* Sólo la primera foto, y sin tocar la opacidad. Cuando el hero pasó a ser un
+   carrusel esta regla apuntaba a todas las fotos y las dejaba a todas en
+   opacity:1 — una animación con `both` le gana a la clase, así que la que se
+   veía era la última del DOM y los puntos no hacían nada. */
+.hero__slide:first-child { animation: hero-entra 1.4s cubic-bezier(.2,.7,.3,1) both; }
 @keyframes hero-texto-entra {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: none; }
 }
 .hero__contenido > * { animation: hero-texto-entra .9s cubic-bezier(.2,.7,.3,1) both; }
 .hero__contenido > *:nth-child(2) { animation-delay: .12s; }
-.hero__contenido > *:nth-child(3) { animation-delay: .22s; }
 
 @media (prefers-reduced-motion: reduce) {
   html.anim .revelar { opacity: 1; transform: none; transition: none; }
@@ -1710,11 +1931,7 @@ html.anim .revelar--foto.visible { transform: none; }
 
 /* ---------------------------------------------------------- responsive --- */
 @media (max-width: 1000px) {
-  .casa__layout, .ubicacion__layout, .contacto__layout { grid-template-columns: 1fr; }
-  /* la foto deja de sangrar a la derecha y pasa a ocupar todo el ancho */
-  .casa__foto { margin-right: -24px; margin-left: -24px; }
-  .casa__foto-grande { border-radius: 0; aspect-ratio: 16/10; }
-  .casa__foto-chica { display: none; }
+  .ubicacion__layout, .contacto__layout { grid-template-columns: 1fr; }
   .resumen { position: static; }
   .galeria { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 180px; }
   .cal__meses { grid-template-columns: 1fr; }
@@ -1728,23 +1945,9 @@ html.anim .revelar--foto.visible { transform: none; }
 
 @media (max-width: 760px) {
   body { font-size: 16px; }
-  .nav__links {
-    position: fixed; inset: var(--nav-h) 0 auto 0;
-    background: var(--crema);
-    flex-direction: column; align-items: stretch;
-    gap: 0; padding: 12px 24px 24px;
-    box-shadow: var(--sombra);
-    transform: translateY(-130%);
-    transition: transform .3s cubic-bezier(.2,.7,.3,1);
-  }
-  .nav__links.abierto { transform: none; }
-  .nav__links a { color: var(--carbon); padding: 14px 0; border-bottom: 1px solid var(--borde); }
-  .nav__links .boton { margin-top: 14px; justify-content: center; }
-  .nav__burger { display: block; }
   .unidades { grid-template-columns: 1fr; gap: 30px; }
   .unidad--principal .unidad__foto { aspect-ratio: 16 / 10; }
   .campos { grid-template-columns: 1fr; }
   .lightbox__btn--prev { left: 8px; }
   .lightbox__btn--next { right: 8px; }
-  .hero__acciones .boton { flex: 1 1 100%; }
 }

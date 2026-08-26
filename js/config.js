@@ -144,7 +144,7 @@ const CONFIG = {
       // 2 y no 3: con 3, un finde largo de sábado a lunes (2 noches) quedaba
       // rechazado, justo en las fechas que más se piden. Ver CONTEXTO.md.
       minNoches: 2,
-      color: '#b4552f',
+      color: '#8a5233',
       destacada: true,
       rangos: [
         // El 'hasta' de verano dice 02-29 y no 02-28: en un año bisiesto ese
@@ -194,7 +194,10 @@ const CONFIG = {
         baja: 70000
       },
       minNoches: 2,
-      color: '#d89a4a',
+      // Bronce más claro que el #867446 de los botones: acá el color es la
+      // marca de temporada en el calendario y tiene que separarse a simple
+      // vista del clay de temporada alta, no combinar con él.
+      color: '#ac9268',
       destacada: false,
       rangos: [
         { nombre: 'Otoño',     desde: '03-01', hasta: '04-30' },
@@ -215,7 +218,7 @@ const CONFIG = {
         baja: 58000
       },
       minNoches: 2,
-      color: '#5c6b4a',
+      color: '#5f7548',
       destacada: false,
       rangos: [
         { nombre: 'Invierno',         desde: '05-01', hasta: '07-09' },
@@ -238,12 +241,39 @@ const CONFIG = {
     'Los precios pueden actualizarse; confirmá el valor final por WhatsApp.'
   ],
 
+  /* ------------------------------------------------------- fotos del hero
+     La portada pasa sola de una foto a la otra. Van los nombres sin '.jpg':
+     salen de img/. Cuatro o cinco alcanzan — con más, los puntitos de abajo
+     se vuelven una tira y nadie las mira todas igual.
+     El orden cuenta una historia: la galería, la casa, las sierras, el río. */
+  heroFotos: [
+    { f: 'balcon-atardecer-3', alt: 'La galería de la casa con el atardecer sobre el valle' },
+    { f: 'casa-fachada',       alt: 'La casa entera al caer la tarde' },
+    { f: 'sierras-atardecer',  alt: 'El cordón de las Sierras Grandes en luz rosa' },
+    { f: 'rio-sierras',        alt: 'El río con las sierras de fondo' }
+  ],
+
   /* --------------------------------------------------------------- textos */
   textos: {
-    heroTitulo: 'Una casa de campo con el valle entero de frente',
-    heroBajada: 'Una casa de campo en Arroyo de los Patos, entre Nono y Mina Clavero. ' +
-                'Dos plantas independientes para 9 personas —o una sola planta, si son menos— ' +
-                'con galerías largas y las Sierras Grandes de frente.',
+    /* La franja de abajo de la portada. Los {dias} y {sena} los reemplaza
+       pintarReservaDirecta() con los valores reales de `legales.cancelacion`
+       y `reglas.senaPorcentaje`: si acá se escribieran a mano, el día que
+       cambien las condiciones esta franja seguiría prometiendo lo viejo y
+       legales.html diría otra cosa. */
+    directo: [
+      { titulo: 'Sin intermediarios',
+        texto: 'Sin comisión de plataforma.' },
+      { titulo: 'Trato directo',
+        texto: 'Te contestamos nosotros, por WhatsApp.' },
+      { titulo: 'Seña del {sena}%',
+        texto: 'El resto, en efectivo o transferencia.' }
+    ],
+    // El título es el nombre de la casa, nada más: en la portada el trabajo
+    // lo hace la foto, no una frase de venta. El detalle (las dos plantas,
+    // las galerías, la vista) está tres secciones más abajo en "La casa",
+    // donde alguien lo va a leer de verdad.
+    heroTitulo: 'Balcones del Arroyo',
+    heroBajada: 'Arroyo de los Patos, entre Nono y Mina Clavero.',
     casaTitulo: 'Dos plantas independientes, una sola vista',
     casaTexto: [
       'Cada planta funciona sola: tiene su cocina completa, su baño y su acceso propio. ' +

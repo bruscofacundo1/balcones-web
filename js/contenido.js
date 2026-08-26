@@ -582,7 +582,7 @@
       // panel que se cuela en el sitio, no parte del sitio.
       cinta.style.cssText = [
         'position:fixed', 'left:0', 'right:0', 'bottom:0', 'z-index:2147483647',
-        'background:#b4552f', 'color:#fff', 'text-align:center',
+        'background:#8a5233', 'color:#fff', 'text-align:center',
         'font:600 .78rem/1 system-ui,sans-serif', 'letter-spacing:.04em',
         'padding:9px 12px',
         // Sin esto taparía el botón de variantes, que vive en la misma esquina.
@@ -620,11 +620,20 @@
    * marcar cuáles salen en la portada. Si fueran dos copias, la marca del panel
    * y lo que se ve en el sitio se desincronizarían al primer cambio.
    */
+  /* El mosaico de la portada muestra sólo la casa entera y el paisaje. Antes
+     mezclaba las cuatro categorías y entraban baños y dormitorios sueltos,
+     que en miniatura no dicen nada y bajan el promedio de lo que se ve
+     primero. Los interiores siguen estando: se ven al abrir "todas las
+     fotos", que es donde alguien que ya se enganchó los va a buscar.
+     Para volver atrás, alcanza con sumar categorías a `orden`. El orden de
+     esa lista es el orden en que salen: primero la casa, después el paisaje,
+     igual que el título de la sección ("La casa y el lugar"). */
   function fotosDestacadas(lista) {
-    const orden = ['entorno', 'aire-libre', 'casa', 'interiores'];
+    const orden = ['casa', 'entorno'];
+    const porCat = Math.ceil(8 / orden.length);
     const elegidas = [];
     orden.forEach(cat => {
-      lista.filter(f => f.c === cat).slice(0, 3).forEach(f => elegidas.push(f));
+      lista.filter(f => f.c === cat).slice(0, porCat).forEach(f => elegidas.push(f));
     });
     return (elegidas.length ? elegidas : lista).slice(0, 8);
   }

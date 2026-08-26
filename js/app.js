@@ -21,32 +21,68 @@ function iniciarNav() {
   const nav = document.getElementById('nav');
   const burger = document.getElementById('nav-burger');
   const links = document.getElementById('nav-links');
+  const velo = document.getElementById('nav-velo');
 
-  // El "Reservar" del menú late una sola vez, la primera vez que se deja
-  // atrás el inicio: ahí desaparece de la vista el botón grande del hero y
-  // éste pasa a ser la única puerta a reservar. Después no molesta más.
+  // La barra se pone sólida recién cuando la foto del hero termina de pasar
+  // por completo, no a los pocos píxeles de scroll: antes se ponía blanca
+  // con la foto todavía de fondo detrás y quedaba un sánguche oscuro-blanco-
+  // oscuro. "Sólida" se activa justo cuando el borde de abajo del hero llega
+  // al borde de abajo de la barra — el mismo instante que en masaguilo.com.
+  // El "Reservar" late una sola vez en ese momento: ahí desaparece de la
+  // vista el botón grande del hero y éste pasa a ser la única puerta a
+  // reservar.
   let yaLlamo = false;
-  const alScrollear = () => {
-    const solida = window.scrollY > 60;
-    nav.classList.toggle('nav--solida', solida);
-    if (solida && !yaLlamo) {
-      yaLlamo = true;
-      nav.classList.add('nav--llamar');
-    }
-  };
-  alScrollear();
-  window.addEventListener('scroll', alScrollear, { passive: true });
+  const hero = document.getElementById('inicio');
+  if (hero) {
+    const raiz = getComputedStyle(document.documentElement);
+    const espacioNav = parseFloat(raiz.getPropertyValue('--nav-h')) + parseFloat(raiz.getPropertyValue('--nav-gap'));
+    const alScrollear = () => {
+      const solida = hero.getBoundingClientRect().bottom <= espacioNav;
+      nav.classList.toggle('nav--solida', solida);
+      if (solida && !yaLlamo) {
+        yaLlamo = true;
+        nav.classList.add('nav--llamar');
+      }
+    };
+    alScrollear();
+    window.addEventListener('scroll', alScrollear, { passive: true });
+  }
 
+  function abrirMenu() {
+    links.classList.add('abierto');
+    velo.classList.add('abierto');
+    burger.setAttribute('aria-expanded', 'true');
+  }
+  function cerrarMenu() {
+    links.classList.remove('abierto');
+    velo.classList.remove('abierto');
+    burger.setAttribute('aria-expanded', 'false');
+  }
   burger.addEventListener('click', () => {
-    const abierto = links.classList.toggle('abierto');
-    burger.setAttribute('aria-expanded', String(abierto));
+    links.classList.contains('abierto') ? cerrarMenu() : abrirMenu();
   });
-  links.querySelectorAll('a').forEach(a => {
-    a.addEventListener('click', () => {
-      links.classList.remove('abierto');
-      burger.setAttribute('aria-expanded', 'false');
-    });
-  });
+  velo.addEventListener('click', cerrarMenu);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarMenu(); });
+  links.querySelectorAll('a').forEach(a => a.addEventListener('click', cerrarMenu));
+
+  // En desktop con mouse de verdad, alcanza con pasar por los puntos para
+  // que el cajón se abra solo, sin clickear — igual que vivood.com — y se
+  // cierra solo al sacar el mouse de ahí. El clic sigue andando igual (hace
+  // falta para teclado y para touch, que no tiene "pasar el mouse").
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    let cerrando = null;
+    const abrirPorHover = () => { clearTimeout(cerrando); abrirMenu(); };
+    // Un respiro antes de cerrar: al ir del botón de puntos al cajón se pasa
+    // un instante por afuera de los dos, y sin esto el menú parpadeaba.
+    const programarCierre = () => {
+      clearTimeout(cerrando);
+      cerrando = setTimeout(cerrarMenu, 250);
+    };
+    burger.addEventListener('mouseenter', abrirPorHover);
+    burger.addEventListener('mouseleave', programarCierre);
+    links.addEventListener('mouseenter', abrirPorHover);
+    links.addEventListener('mouseleave', programarCierre);
+  }
 }
 
 /* ------------------------------------------------------------ animaciones */
@@ -92,6 +128,104 @@ function pintarCifras() {
 function pintarComodidades() {
   document.getElementById('comodidades').innerHTML =
     CONFIG.comodidades.map(c => `<li>${c}</li>`).join('');
+}
+
+/* ------------------------------------------------------- portada (hero) --
+   Pasa sola de una foto a la otra cada 6 segundos. Tres cuidados:
+   - la primera foto ya viene escrita en el HTML, así que acá se saltea: si la
+     volviéramos a crear, el navegador la bajaría de nuevo;
+   - las demás van con loading="lazy" — no se ven hasta pasados 6 segundos y no
+     tienen por qué competir con el resto de la página al abrir;
+   - el intervalo se corta cuando la pestaña queda en segundo plano. Si no, al
+     volver el navegador dispara todos los cambios juntos y la portada
+     parpadea.                                                              */
+let heroTimer = null;
+
+function pintarHero() {
+  const fondo = document.getElementById('hero-fondo');
+  const puntos = document.getElementById('hero-puntos');
+  const fotos = (CONFIG.heroFotos || []).filter(x => x && x.f);
+  if (!fondo || !puntos || fotos.length < 2) return;
+  if (fondo.querySelectorAll('.hero__slide').length > 1) return;   // ya estaba armada
+
+  fotos.slice(1).forEach(foto => {
+    const img = document.createElement('img');
+    img.className = 'hero__slide';
+    img.src = `img/${foto.f}.jpg`;
+    img.alt = foto.alt || '';
+    img.loading = 'lazy';
+    fondo.appendChild(img);
+  });
+
+  const slides = [...fondo.querySelectorAll('.hero__slide')];
+  puntos.innerHTML = fotos.map((foto, i) => `
+    <button class="hero__punto${i === 0 ? ' hero__punto--activo' : ''}" role="tab"
+            aria-selected="${i === 0}" aria-label="Foto ${i + 1} de ${fotos.length}"
+            data-i="${i}"></button>`).join('');
+  const bolitas = [...puntos.querySelectorAll('.hero__punto')];
+
+  let actual = 0;
+  function mostrar(i) {
+    actual = (i + slides.length) % slides.length;
+    slides.forEach((s, n) => s.classList.toggle('hero__slide--activa', n === actual));
+    bolitas.forEach((b, n) => {
+      b.classList.toggle('hero__punto--activo', n === actual);
+      b.setAttribute('aria-selected', String(n === actual));
+    });
+  }
+
+  function arrancar() {
+    detener();
+    heroTimer = setInterval(() => mostrar(actual + 1), 6000);
+  }
+  function detener() {
+    if (heroTimer) { clearInterval(heroTimer); heroTimer = null; }
+  }
+
+  bolitas.forEach(b => b.addEventListener('click', () => {
+    mostrar(Number(b.dataset.i));
+    arrancar();   // reinicia la cuenta: si tocaste, no queremos que cambie enseguida
+  }));
+
+  document.addEventListener('visibilitychange', () => {
+    document.hidden ? detener() : arrancar();
+  });
+
+  arrancar();
+}
+
+/* La franja de "por qué reservar acá", debajo de la portada.
+
+   Los números NO se escriben en el texto: vienen de las mismas variables que
+   usan legales.html y el checkout. Un dato de venta que dice una cosa y las
+   condiciones que dicen otra es un problema de defensa del consumidor, no un
+   detalle de redacción, y separarlos es exactamente cómo se desincronizan.
+
+   Se arma con textContent y no con innerHTML: el texto sale del panel, y así
+   no hay forma de que un título con un `<` rompa —o inyecte— nada.          */
+function pintarReservaDirecta() {
+  const cont = document.getElementById('directo-lista');
+  const items = (CONFIG.textos && CONFIG.textos.directo) || [];
+  if (!cont) return;
+  if (!items.length) { cont.closest('.seccion--directo').hidden = true; return; }
+
+  const valores = {
+    dias: CONFIG.legales.cancelacion.diasReprogramar,
+    sena: CONFIG.reglas.senaPorcentaje
+  };
+  const conValores = txt => String(txt || '')
+    .replace(/\{(\w+)\}/g, (m, k) => (k in valores ? valores[k] : m));
+
+  cont.innerHTML = '';
+  for (const item of items) {
+    const li = document.createElement('li');
+    const h = document.createElement('h3');
+    h.textContent = conValores(item.titulo);
+    const p = document.createElement('p');
+    p.textContent = conValores(item.texto);
+    li.append(h, p);
+    cont.appendChild(li);
+  }
 }
 
 function pintarTextosCasa() {
@@ -636,6 +770,28 @@ function pintarContacto() {
   document.querySelectorAll('[data-wsp]').forEach(a => { a.href = url; });
 }
 
+/* El bloque de abajo del menú lateral, con la dirección y el WhatsApp — la
+   misma idea que tiene vivood.com en su cajón. Mismos datos que el pie
+   (CONFIG.contacto), para que no haga falta mantenerlos en dos lugares. */
+function pintarNavContacto() {
+  const cont = document.getElementById('nav-contacto');
+  if (!cont) return;
+  const c = CONFIG.contacto;
+  const mensaje = '¡Hola! Vi la web de Balcones del Arroyo y quiero consultar disponibilidad.';
+  const wsp = `https://wa.me/${c.whatsapp}?text=${encodeURIComponent(mensaje)}`;
+
+  const redes = [];
+  if (c.instagram) redes.push(`<a href="${c.instagram}" target="_blank" rel="noopener">Instagram</a>`);
+  if (c.facebook) redes.push(`<a href="${c.facebook}" target="_blank" rel="noopener">Facebook</a>`);
+
+  cont.innerHTML = `
+    <span class="antetitulo">Contacto</span>
+    <p class="nav__contacto-direccion">${c.direccion}</p>
+    <a class="nav__contacto-wsp" href="${wsp}" target="_blank" rel="noopener">${c.telefonoVisible}</a>
+    ${redes.length ? `<div class="nav__contacto-redes">${redes.join('')}</div>` : ''}
+  `;
+}
+
 /* ------------------------------------------------------------- arranque -- */
 /** Todo lo que sale de CONFIG y de FOTOS. Se puede volver a llamar sin
     efectos raros: hace falta si el contenido editado desde /admin llega
@@ -646,6 +802,7 @@ function pintarContacto() {
     nueva. Si el visor de "todas las fotos" está abierto en una categoría
     puntual, se respeta esa categoría al repintar. */
 function pintarDesdeConfig() {
+  pintarReservaDirecta();
   pintarTextosCasa();
   pintarCifras();
   pintarComodidades();
@@ -656,6 +813,7 @@ function pintarDesdeConfig() {
   pintarAlquiler();
   pintarPie({ cta: true, enInicio: true });
   pintarContacto();
+  pintarNavContacto();
 
   pintarMosaico();
   if (typeof tfCategoria !== 'undefined') pintarTodasLasFotos(tfCategoria);
@@ -666,6 +824,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // espera un instante; después ya no espera nada.
   await Contenido.preparar(CONFIG, { repintar: pintarDesdeConfig });
 
+  pintarHero();          // una sola vez: agrega las fotos al DOM y arranca el intervalo
+  pintarReservaDirecta();
   pintarTextosCasa();
   pintarCifras();
   pintarComodidades();
@@ -682,6 +842,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   pintarAlquiler();
   pintarPie({ cta: true, enInicio: true });
   pintarContacto();
+  pintarNavContacto();
   iniciarLightbox();
   iniciarNav();
   iniciarRevelado();
