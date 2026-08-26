@@ -31,7 +31,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=67">
+<link rel="stylesheet" href="css/estilos.css?v=68">
 
 <script type="application/ld+json">
 {
@@ -140,14 +140,21 @@
      masaguilo.com hacen lo mismo). El título y el botón de la izquierda son
      fijos (van en el HTML, no en CONFIG); la lista de la derecha la pinta
      pintarReservaDirecta() desde CONFIG.textos.directo. -->
-<section class="seccion seccion--arena seccion--directo" id="directo" aria-label="Por qué reservar en esta web">
-  <div class="contenedor directo__layout">
-    <div class="directo__intro">
-      <span class="antetitulo">Sólo reservando acá</span>
-      <h2>Beneficios de reservar directo</h2>
-      <a class="boton boton--primario" href="reserva.html" data-reservar>Reservar</a>
+<section class="seccion--arena seccion--directo" id="directo" aria-label="Por qué reservar en esta web">
+  <!-- La línea marca el ancho estándar del sitio (1180px, con el margen de
+       siempre) — "larga pero sin tocar el borde" — y no la mismo columna
+       angosta de 860px que el contenido de adentro. Con el padding chico
+       queda cerca del texto, como en vivood.com; antes ese mismo padding lo
+       ponía .seccion--directo y era mucho más grande. -->
+  <div class="contenedor directo__marco">
+    <div class="directo__layout">
+      <div class="directo__intro">
+        <span class="antetitulo">Sólo reservando acá</span>
+        <h2>Beneficios de reservar directo</h2>
+        <a class="boton boton--primario" href="reserva.html" data-reservar>Reservar</a>
+      </div>
+      <ul class="directo" id="directo-lista"></ul>
     </div>
-    <ul class="directo" id="directo-lista"></ul>
   </div>
 </section>
 
@@ -406,11 +413,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=67"></script>
-<script src="js/contenido.js?v=67"></script>
-<script src="js/disponibilidad.js?v=67"></script>
-<script src="js/precios.js?v=67"></script><script src="js/calendario.js?v=67"></script>
-<script src="js/pie.js?v=67"></script>
-<script src="js/app.js?v=67"></script>
+<script src="js/config.js?v=68"></script>
+<script src="js/contenido.js?v=68"></script>
+<script src="js/disponibilidad.js?v=68"></script>
+<script src="js/precios.js?v=68"></script><script src="js/calendario.js?v=68"></script>
+<script src="js/pie.js?v=68"></script>
+<script src="js/app.js?v=68"></script>
 </body>
 </html>
