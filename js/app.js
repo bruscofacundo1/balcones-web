@@ -23,20 +23,30 @@ function iniciarNav() {
   const links = document.getElementById('nav-links');
   const velo = document.getElementById('nav-velo');
 
-  // El "Reservar" del menú late una sola vez, la primera vez que se deja
-  // atrás el inicio: ahí desaparece de la vista el botón grande del hero y
-  // éste pasa a ser la única puerta a reservar. Después no molesta más.
+  // La barra se pone sólida recién cuando la foto del hero termina de pasar
+  // por completo, no a los pocos píxeles de scroll: antes se ponía blanca
+  // con la foto todavía de fondo detrás y quedaba un sánguche oscuro-blanco-
+  // oscuro. "Sólida" se activa justo cuando el borde de abajo del hero llega
+  // al borde de abajo de la barra — el mismo instante que en masaguilo.com.
+  // El "Reservar" late una sola vez en ese momento: ahí desaparece de la
+  // vista el botón grande del hero y éste pasa a ser la única puerta a
+  // reservar.
   let yaLlamo = false;
-  const alScrollear = () => {
-    const solida = window.scrollY > 60;
-    nav.classList.toggle('nav--solida', solida);
-    if (solida && !yaLlamo) {
-      yaLlamo = true;
-      nav.classList.add('nav--llamar');
-    }
-  };
-  alScrollear();
-  window.addEventListener('scroll', alScrollear, { passive: true });
+  const hero = document.getElementById('inicio');
+  if (hero) {
+    const raiz = getComputedStyle(document.documentElement);
+    const espacioNav = parseFloat(raiz.getPropertyValue('--nav-h')) + parseFloat(raiz.getPropertyValue('--nav-gap'));
+    const alScrollear = () => {
+      const solida = hero.getBoundingClientRect().bottom <= espacioNav;
+      nav.classList.toggle('nav--solida', solida);
+      if (solida && !yaLlamo) {
+        yaLlamo = true;
+        nav.classList.add('nav--llamar');
+      }
+    };
+    alScrollear();
+    window.addEventListener('scroll', alScrollear, { passive: true });
+  }
 
   function abrirMenu() {
     links.classList.add('abierto');
