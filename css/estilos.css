@@ -1311,69 +1311,84 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
    scrollea, no siendo él mismo el que scrollea. */
 .todas-actividades__cuerpo { flex: 1 1 auto; overflow-y: auto; padding: 28px 0 40px; }
 
-/* --------------------------------------------------------------- tarifas - */
-/* Antes eran tres tarjetas con borde, sombra y un badge "Más buscada": el
-   patrón exacto de una tabla de planes de software. Ninguna casa de campo
-   muestra los precios así. Ahora son tres columnas de texto separadas por una
-   línea fina, y los precios van en mono tabular para que se lean como datos y
-   no como oferta. El badge se sacó del todo: temporada alta no es un plan que
-   el huésped elige, es cuándo viene. */
-.tarifas { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0; }
-.tarifa {
-  background: transparent; border: 0; border-left: 1px solid var(--borde);
-  padding: 2px 34px; display: flex; flex-direction: column;
+/* ------------------------------------------------------ unidades + tarifas */
+/* Una columna por unidad, no dos filas de tarjetas separadas: antes las tres
+   unidades (foto + descripción) iban arriba y las tres temporadas (sólo
+   precio) abajo, y el nombre de cada unidad se repetía en las dos. Ahora cada
+   columna trae su foto, su descripción, su precio por temporada y un
+   desplegable con lo que incluye — mismo lenguaje de columnas separadas por
+   una línea fina que el resto del sitio, no tarjetas con borde y sombra. */
+.unidades-tarifa {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
 }
-.tarifa:first-child { border-left: 0; padding-left: 0; }
-.tarifa--destacada { border-color: var(--borde); box-shadow: none; position: static; }
-.tarifa--destacada::before { content: none; }
-.tarifa__nombre { font-family: var(--display); font-size: 1.5rem; font-weight: 400; color: var(--carbon); margin-bottom: 8px; }
-.tarifa__periodo {
-  font-family: var(--mono); font-size: .74rem; letter-spacing: .01em;
-  color: var(--piedra); margin-bottom: 26px; line-height: 1.65;
+.unidad-tarifa {
+  border-left: 1px solid var(--borde);
+  padding: 0 32px; display: flex; flex-direction: column;
 }
-.tarifa__precios { list-style: none; padding: 0; margin: 0; }
-.tarifa__precios li {
+.unidad-tarifa:first-child { border-left: 0; padding-left: 0; }
+.unidad-tarifa:last-child { padding-right: 0; }
+
+.unidad-tarifa__foto {
+  width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
+  border-radius: var(--radio-sm); margin-bottom: 18px;
+}
+.unidad-tarifa__cuerpo h3 { font-size: 1.25rem; margin-bottom: 4px; }
+.unidad-tarifa__meta {
+  font-family: var(--mono); font-size: .72rem; letter-spacing: .01em;
+  color: var(--piedra); margin-bottom: 12px;
+}
+.unidad-tarifa__texto { font-size: .92rem; color: var(--piedra); margin: 0 0 22px; }
+
+.unidad-tarifa__precios { list-style: none; padding: 0; margin: 0; }
+.unidad-tarifa__precios li {
   display: flex; align-items: baseline; justify-content: space-between; gap: 14px;
   padding: 11px 0; border-top: 1px solid var(--borde);
 }
-.tarifa__precios li:first-child { border-top: 0; }
-.tarifa__precios span { font-size: .93rem; color: var(--carbon-suave); }
-.tarifa__precios strong {
-  font-family: var(--mono); font-size: .98rem; color: var(--carbon); font-weight: 500;
+.unidad-tarifa__precios li:first-child { border-top: 0; }
+.unidad-tarifa__precios span { font-size: .9rem; color: var(--carbon-suave); display: flex; flex-direction: column; }
+.unidad-tarifa__precios small { font-size: .72rem; color: var(--piedra); margin-top: 2px; }
+.unidad-tarifa__precios strong {
+  font-family: var(--mono); font-size: .95rem; color: var(--carbon); font-weight: 500;
   font-variant-numeric: tabular-nums; white-space: nowrap;
 }
-.tarifa__precios li:first-child span { font-weight: 400; color: var(--carbon-suave); }
-.tarifa__precios li:first-child strong { color: var(--carbon); font-size: .98rem; }
-.tarifa__unidad {
+.unidad-tarifa__nota {
   font-family: var(--mono); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--piedra); margin: 14px 0 0; padding-top: 14px; border-top: 1px solid var(--borde);
+  color: var(--piedra); margin: 12px 0 24px; padding-top: 14px; border-top: 1px solid var(--borde);
 }
+
+/* Mismo gesto que las preguntas frecuentes (+ que pasa a − al abrir), a
+   escala de tarjeta. */
+.unidad-tarifa__incluye { border-top: 1px solid var(--borde); margin-bottom: 6px; }
+.unidad-tarifa__incluye summary {
+  cursor: pointer; list-style: none; position: relative;
+  padding: 15px 30px 15px 0;
+  font-size: .92rem; font-weight: 500; color: var(--carbon);
+}
+.unidad-tarifa__incluye summary::-webkit-details-marker { display: none; }
+.unidad-tarifa__incluye summary::after {
+  content: '+'; position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+  font-size: 1.3rem; color: var(--piedra);
+}
+.unidad-tarifa__incluye[open] summary::after { content: '−'; }
+.unidad-tarifa__incluye ul { list-style: none; padding: 0; margin: 0 0 18px; }
+.unidad-tarifa__incluye li {
+  padding: 7px 0; font-size: .88rem; color: var(--piedra);
+  border-top: 1px solid var(--borde);
+}
+.unidad-tarifa__incluye li:first-child { border-top: 0; }
+
+.unidad-tarifa__boton {
+  margin-top: auto; align-self: flex-start; padding: 0 0 2px;
+  background: none; border: 0; border-bottom: 1px solid currentColor;
+  color: var(--terracota); font-weight: 500; border-radius: 0;
+}
+.unidad-tarifa__boton:hover { color: var(--terracota-osc); background: none; }
 
 @media (max-width: 780px) {
-  .tarifa { border-left: 0; border-top: 1px solid var(--borde); padding: 34px 0 0; }
-  .tarifa:first-child { border-top: 0; padding-top: 2px; }
+  .unidades-tarifa { grid-template-columns: 1fr; }
+  .unidad-tarifa { border-left: 0; border-top: 1px solid var(--borde); padding: 34px 0 0; }
+  .unidad-tarifa:first-child { border-top: 0; padding-top: 0; }
 }
-
-/* ------------------------------------------------- unidades (variante A) - */
-/* La casa completa ocupa más que las plantas a propósito: es lo que más se
-   alquila y no quedan tres columnas iguales. */
-.unidades {
-  display: grid; grid-template-columns: 1.4fr 1fr 1fr;
-  gap: 22px; margin-bottom: 54px; align-items: start;
-}
-.unidad { display: flex; flex-direction: column; }
-.unidad__foto {
-  width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
-  border-radius: var(--radio-sm); margin-bottom: 16px;
-}
-.unidad--principal .unidad__foto { aspect-ratio: 16 / 10; }
-.unidad__cuerpo h3 { font-size: 1.2rem; margin-bottom: 4px; }
-.unidad--principal .unidad__cuerpo h3 { font-size: 1.5rem; }
-.unidad__meta {
-  font-family: var(--mono); font-size: .72rem; letter-spacing: .01em;
-  color: var(--piedra); font-weight: 400; margin-bottom: 12px;
-}
-.unidad__texto { font-size: .92rem; color: var(--piedra); margin: 0; }
 
 
 #modalidades { margin-bottom: 22px; }
@@ -1401,18 +1416,6 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 .faq__respuesta { padding: 0 40px 22px 0; font-size: .96rem; color: var(--carbon-suave); }
 .faq__respuesta p:last-child { margin-bottom: 0; }
 .preguntas__pie { margin: 34px 0 0; }
-.tarifa__detalle { list-style: none; padding: 0; margin: 0 0 4px; font-size: .88rem; }
-.tarifa__detalle li { padding: 8px 0; border-top: 1px solid var(--borde); display: flex; justify-content: space-between; gap: 12px; }
-.tarifa__detalle span { color: var(--piedra); }
-/* El botón de cada columna pasa a ser un link subrayado: tres botones con
-   caja, uno al lado del otro, era parte de lo que hacía leer el bloque como
-   una comparativa de planes. */
-.tarifa .boton {
-  margin-top: auto; align-self: flex-start; padding: 22px 0 0;
-  background: none; border: 0; border-bottom: 1px solid currentColor;
-  color: var(--terracota); font-weight: 500; border-radius: 0;
-}
-.tarifa .boton:hover { color: var(--terracota-osc); background: none; }
 
 .nota-tarifas {
   margin-top: 32px; padding: 22px 26px;
@@ -1952,17 +1955,12 @@ html.anim .revelar--foto.visible { transform: none; }
   .galeria { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 180px; }
   .cal__meses { grid-template-columns: 1fr; }
   /* la casa completa arriba a lo ancho y las dos plantas debajo */
-  .unidades { grid-template-columns: 1fr 1fr; }
-  .unidad--principal { grid-column: 1 / -1; }
-  .unidad--principal .unidad__foto { aspect-ratio: 21 / 9; }
   .banda__foto, .banda--principal .banda__foto { width: 240px; }
   .banda { gap: 26px; }
 }
 
 @media (max-width: 760px) {
   body { font-size: 16px; }
-  .unidades { grid-template-columns: 1fr; gap: 30px; }
-  .unidad--principal .unidad__foto { aspect-ratio: 16 / 10; }
   .campos { grid-template-columns: 1fr; }
   .lightbox__btn--prev { left: 8px; }
   .lightbox__btn--next { right: 8px; }

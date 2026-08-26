@@ -669,59 +669,47 @@ function iniciarLightbox() {
    precios por temporada. Las plazas y el detalle de cada unidad se dicen
    una sola vez, arriba. */
 
-/** Cuadro de precios por temporada. */
-function pintarTarifas(idContenedor) {
-  const cont = document.getElementById(idContenedor);
+/** Una columna por unidad: foto, descripción, precio por temporada y qué
+    incluye. Antes eran dos filas de tarjetas separadas (las unidades arriba,
+    las temporadas abajo) que repetían el nombre de cada unidad dos veces. */
+function pintarUnidadesTarifas() {
+  const cont = document.getElementById('unidades-tarifa');
   if (!cont) return;
 
   // `&& !animacionesListas`: si esto se repinta después de que corrió
   // iniciarRevelado(), un .revelar nuevo no lo observa nadie y la tarjeta
   // queda en opacity:0 PARA SIEMPRE. Un repintado tardío aparece sin animar.
-  const conRevelado = !animacionesListas;
+  const rev = animacionesListas ? '' : ' revelar';
 
-  cont.innerHTML = CONFIG.temporadas.map(t => `
-    <article class="tarifa ${conRevelado ? 'revelar' : ''} ${t.destacada ? 'tarifa--destacada' : ''}">
-      <h3 class="tarifa__nombre">${t.nombre}</h3>
-      <p class="tarifa__periodo">${t.periodo}</p>
-      <ul class="tarifa__precios">
-        ${CONFIG.modalidades.map(m => `
-          <li>
-            <span>${m.nombre}</span>
-            <strong>${pesos(t.precios[m.id])}</strong>
-          </li>`).join('')}
-      </ul>
-      <p class="tarifa__unidad">por noche</p>
-      <ul class="tarifa__detalle">
-        <!-- El mínimo sale de minNoches, no de incluye: es editable desde
-             /admin, y tenerlo escrito dos veces hacía que la tarjeta siguiera
-             mostrando el número viejo después de cambiarlo. -->
-        <li>Mínimo de noches<span>${t.minNoches}</span></li>
-        ${t.incluye.map(([k, v]) => `<li>${k}<span>${v}</span></li>`).join('')}
-      </ul>
-      <a class="boton boton--linea" href="reserva.html" data-reservar>Ver disponibilidad</a>
-    </article>`).join('');
-}
-
-/** Variante A: las tres unidades, la casa completa más ancha que las plantas. */
-function pintarUnidades() {
-  const cont = document.getElementById('unidades-tira');
-  if (!cont) return;
-
-  const rev = animacionesListas ? '' : ' revelar revelar--foto';
-  cont.innerHTML = CONFIG.modalidades.map((m, i) => `
-    <article class="unidad${rev}${i === 0 ? ' unidad--principal' : ''}">
-      <img class="unidad__foto" src="${FOTO_UNIDAD[m.id]}" alt="" loading="lazy">
-      <div class="unidad__cuerpo">
+  cont.innerHTML = CONFIG.modalidades.map(m => `
+    <article class="unidad-tarifa${rev}">
+      <img class="unidad-tarifa__foto" src="${FOTO_UNIDAD[m.id]}" alt="" loading="lazy">
+      <div class="unidad-tarifa__cuerpo">
         <h3>${m.nombre}</h3>
-        <p class="unidad__meta">${m.plazas} plazas · ${m.detalle}</p>
-        <p class="unidad__texto">${m.texto}</p>
+        <p class="unidad-tarifa__meta">${m.plazas} plazas</p>
+        <p class="unidad-tarifa__texto">${m.texto}</p>
+
+        <ul class="unidad-tarifa__precios">
+          ${CONFIG.temporadas.map(t => `
+            <li>
+              <span>${t.nombre}<small>mín. ${t.minNoches} noches</small></span>
+              <strong>${pesos(t.precios[m.id])}</strong>
+            </li>`).join('')}
+        </ul>
+        <p class="unidad-tarifa__nota">Por noche</p>
+
+        <details class="unidad-tarifa__incluye">
+          <summary>Qué incluye</summary>
+          <ul>${CONFIG.comodidades.map(c => `<li>${c}</li>`).join('')}</ul>
+        </details>
+
+        <a class="boton unidad-tarifa__boton" href="reserva.html" data-reservar>Ver disponibilidad</a>
       </div>
     </article>`).join('');
 }
 
 function pintarAlquiler() {
-  pintarUnidades();
-  pintarTarifas('tarifas-grid');
+  pintarUnidadesTarifas();
 
   document.getElementById('notas-tarifas').innerHTML =
     CONFIG.notasTarifas.map(n => `<li>${n}</li>`).join('');

@@ -31,7 +31,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=69">
+<link rel="stylesheet" href="css/estilos.css?v=70">
 
 <script type="application/ld+json">
 {
@@ -159,9 +159,11 @@
 </section>
 
 <!-- ============================================== CÓMO SE ALQUILA + PRECIOS ==== -->
-<!-- Antes eran dos secciones ("Cómo se alquila" arriba de los ambientes y
-     "Tarifas" abajo de todo) y repetían lo mismo: el nombre, las plazas y el
-     detalle de cada unidad aparecían en las dos. Ahora es una sola.
+<!-- Antes había tres tarjetas describiendo cada unidad (foto + texto) y,
+     más abajo, tres tarjetas de precio por temporada que volvían a nombrar
+     esas mismas unidades — el mismo dato contado dos veces. Ahora es una
+     sola fila: cada unidad es una columna con su foto, su descripción, su
+     precio por temporada y un desplegable con lo que incluye.
 
      Va acá, pegada a "La casa", porque la sección que sigue tiene las pestañas
      "Planta alta / Planta baja": esas etiquetas no significan nada hasta que se
@@ -176,10 +178,7 @@
         época del año y el calendario calcula el total exacto de tus fechas.</p>
     </div>
 
-    <div id="alquiler-a">
-      <div class="unidades cascada" id="unidades-tira"></div>
-      <div class="tarifas cascada" id="tarifas-grid"></div>
-    </div>
+    <div class="unidades-tarifa cascada" id="unidades-tarifa"></div>
 
     <div class="nota-tarifas revelar">
       <strong>Buenos a saber</strong>
@@ -413,11 +412,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=69"></script>
-<script src="js/contenido.js?v=69"></script>
-<script src="js/disponibilidad.js?v=69"></script>
-<script src="js/precios.js?v=69"></script><script src="js/calendario.js?v=69"></script>
-<script src="js/pie.js?v=69"></script>
-<script src="js/app.js?v=69"></script>
+<script src="js/config.js?v=70"></script>
+<script src="js/contenido.js?v=70"></script>
+<script src="js/disponibilidad.js?v=70"></script>
+<script src="js/precios.js?v=70"></script><script src="js/calendario.js?v=70"></script>
+<script src="js/pie.js?v=70"></script>
+<script src="js/app.js?v=70"></script>
 </body>
 </html>

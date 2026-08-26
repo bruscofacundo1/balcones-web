@@ -178,10 +178,6 @@ const CONFIG = {
         { nombre: 'Finde largo del 9 de julio', desde: '2027-07-09', hasta: '2027-07-11' },
         { nombre: 'Finde largo de agosto',    desde: '2027-08-14', hasta: '2027-08-16' },
         { nombre: 'Finde largo de octubre',   desde: '2027-10-09', hasta: '2027-10-11' }
-      ],
-      incluye: [
-        ['Ropa blanca', 'Incluida'],
-        ['Servicios', 'Todo incluido']
       ]
     },
     {
@@ -202,10 +198,6 @@ const CONFIG = {
       rangos: [
         { nombre: 'Otoño',     desde: '03-01', hasta: '04-30' },
         { nombre: 'Primavera', desde: '10-01', hasta: '12-19' }
-      ],
-      incluye: [
-        ['Ropa blanca', 'Incluida'],
-        ['Servicios', 'Todo incluido']
       ]
     },
     {
@@ -223,10 +215,6 @@ const CONFIG = {
       rangos: [
         { nombre: 'Invierno',         desde: '05-01', hasta: '07-09' },
         { nombre: 'Fin del invierno', desde: '07-26', hasta: '09-30' }
-      ],
-      incluye: [
-        ['Ropa blanca', 'Incluida'],
-        ['Estadías largas', 'Consultar descuento']
       ]
     }
   ],
@@ -238,6 +226,7 @@ const CONFIG = {
     'Incluye ropa de cama y toallas, gas, luz, agua y wifi.',
     'Se abona una seña del 30% para confirmar la reserva y el saldo al ingresar.',
     'Fines de semana largos y Semana Santa se cobran con tarifa de temporada alta.',
+    'En temporada baja, las estadías largas tienen descuento — consultá por WhatsApp.',
     'Los precios pueden actualizarse; confirmá el valor final por WhatsApp.'
   ],
 
