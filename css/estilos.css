@@ -1312,94 +1312,66 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 .todas-actividades__cuerpo { flex: 1 1 auto; overflow-y: auto; padding: 28px 0 40px; }
 
 /* ------------------------------------------------------ unidades + tarifas */
-/* Una columna por unidad, no dos filas de tarjetas separadas: antes las tres
-   unidades (foto + descripción) iban arriba y las tres temporadas (sólo
-   precio) abajo, y el nombre de cada unidad se repetía en las dos. Ahora cada
-   columna trae su foto, su descripción, su precio por temporada y un
-   desplegable con lo que incluye — mismo lenguaje de columnas separadas por
-   una línea fina que el resto del sitio, no tarjetas con borde y sombra. */
-.unidades-tarifa {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
-}
+/* Una fila por unidad, a todo el ancho, con la foto alternando de lado —
+   estilo hotelnafarrola.com. Pasó por dos formatos antes de llegar acá: dos
+   filas de tarjetas separadas (unidades arriba, temporadas abajo, repitiendo
+   el nombre de cada una dos veces) y después 3 columnas una al lado de la
+   otra. La foto estira a la altura que pida el texto (align-items: stretch +
+   object-fit: cover), no al revés. */
+.unidades-tarifa { display: flex; flex-direction: column; gap: 64px; }
 .unidad-tarifa {
-  border-left: 1px solid var(--borde);
-  padding: 0 32px; display: flex; flex-direction: column;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: clamp(32px, 5vw, 64px); align-items: stretch;
 }
-.unidad-tarifa:first-child { border-left: 0; padding-left: 0; }
-.unidad-tarifa:last-child { padding-right: 0; }
+/* de a una sí, de a una no: la foto pasa al segundo lugar */
+.unidad-tarifa:nth-child(even) .unidad-tarifa__foto { order: 2; }
 
-.unidad-tarifa__foto {
-  width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
-  border-radius: var(--radio-sm); margin-bottom: 18px;
+.unidad-tarifa__foto { min-height: 320px; }
+.unidad-tarifa__foto img {
+  width: 100%; height: 100%; object-fit: cover; border-radius: var(--radio-sm);
 }
-.unidad-tarifa__cuerpo h3 { font-size: 1.25rem; margin-bottom: 4px; }
+.unidad-tarifa__cuerpo { display: flex; flex-direction: column; justify-content: center; }
+.unidad-tarifa__cuerpo h3 { font-size: 1.6rem; margin-bottom: 4px; }
 .unidad-tarifa__meta {
   font-family: var(--mono); font-size: .72rem; letter-spacing: .01em;
-  color: var(--piedra); margin-bottom: 12px;
+  color: var(--piedra); margin-bottom: 14px;
 }
-.unidad-tarifa__texto { font-size: .92rem; color: var(--piedra); margin: 0 0 22px; }
+.unidad-tarifa__texto { font-size: .96rem; color: var(--piedra); margin: 0 0 24px; max-width: 46ch; }
 
-.unidad-tarifa__precios { list-style: none; padding: 0; margin: 0; }
-.unidad-tarifa__precios li {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 14px;
-  padding: 11px 0; border-top: 1px solid var(--borde);
+/* Los íconos son de un solo trazo, sin relleno, agrupados por categoría (ver
+   ICONOS_COMODIDAD en app.js) — no un dibujo distinto para cada una de las
+   20 comodidades. */
+.unidad-tarifa__comodidades {
+  list-style: none; padding: 0; margin: 0 0 26px;
+  display: flex; flex-wrap: wrap; gap: 14px 22px;
 }
-.unidad-tarifa__precios li:first-child { border-top: 0; }
-.unidad-tarifa__precios span { font-size: .9rem; color: var(--carbon-suave); display: flex; flex-direction: column; }
-.unidad-tarifa__precios small { font-size: .72rem; color: var(--piedra); margin-top: 2px; }
-.unidad-tarifa__precios strong {
-  font-family: var(--mono); font-size: .95rem; color: var(--carbon); font-weight: 500;
-  font-variant-numeric: tabular-nums; white-space: nowrap;
+.unidad-tarifa__comodidades li {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .82rem; color: var(--carbon-suave);
 }
-.unidad-tarifa__nota {
-  font-family: var(--mono); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--piedra); margin: 12px 0 24px; padding-top: 14px; border-top: 1px solid var(--borde);
-}
+.unidad-tarifa__comodidades svg { width: 18px; height: 18px; flex: none; color: var(--piedra); }
 
-/* Versión 2 en prueba: en vez del desglose de las 3 temporadas, un solo
-   precio de referencia ("desde"). El número exacto por fecha ya lo calcula
-   bien el paso siguiente cuando eligen las fechas reales. */
 .unidad-tarifa__desde {
-  font-size: 1rem; color: var(--carbon-suave);
-  margin: 4px 0 22px; padding-top: 18px; border-top: 1px solid var(--borde);
+  font-size: 1.05rem; color: var(--carbon-suave);
+  margin: 0 0 20px; padding-top: 20px; border-top: 1px solid var(--borde);
 }
 .unidad-tarifa__desde strong {
   font-family: var(--mono); font-weight: 500; color: var(--carbon);
   font-variant-numeric: tabular-nums;
 }
 
-/* Mismo gesto que las preguntas frecuentes (+ que pasa a − al abrir), a
-   escala de tarjeta. */
-.unidad-tarifa__incluye { border-top: 1px solid var(--borde); margin-bottom: 6px; }
-.unidad-tarifa__incluye summary {
-  cursor: pointer; list-style: none; position: relative;
-  padding: 15px 30px 15px 0;
-  font-size: .92rem; font-weight: 500; color: var(--carbon);
-}
-.unidad-tarifa__incluye summary::-webkit-details-marker { display: none; }
-.unidad-tarifa__incluye summary::after {
-  content: '+'; position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
-  font-size: 1.3rem; color: var(--piedra);
-}
-.unidad-tarifa__incluye[open] summary::after { content: '−'; }
-.unidad-tarifa__incluye ul { list-style: none; padding: 0; margin: 0 0 18px; }
-.unidad-tarifa__incluye li {
-  padding: 7px 0; font-size: .88rem; color: var(--piedra);
-  border-top: 1px solid var(--borde);
-}
-.unidad-tarifa__incluye li:first-child { border-top: 0; }
-
 .unidad-tarifa__boton {
-  margin-top: auto; align-self: flex-start; padding: 0 0 2px;
+  align-self: flex-start; padding: 0 0 2px;
   background: none; border: 0; border-bottom: 1px solid currentColor;
   color: var(--terracota); font-weight: 500; border-radius: 0;
 }
 .unidad-tarifa__boton:hover { color: var(--terracota-osc); background: none; }
 
 @media (max-width: 780px) {
-  .unidades-tarifa { grid-template-columns: 1fr; }
-  .unidad-tarifa { border-left: 0; border-top: 1px solid var(--borde); padding: 34px 0 0; }
-  .unidad-tarifa:first-child { border-top: 0; padding-top: 0; }
+  .unidades-tarifa { gap: 44px; }
+  .unidad-tarifa { grid-template-columns: 1fr; }
+  .unidad-tarifa:nth-child(even) .unidad-tarifa__foto { order: 0; }
+  .unidad-tarifa__foto { min-height: 0; aspect-ratio: 4/3; }
 }
 
 

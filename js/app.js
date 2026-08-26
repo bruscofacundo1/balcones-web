@@ -669,12 +669,59 @@ function iniciarLightbox() {
    precios por temporada. Las plazas y el detalle de cada unidad se dicen
    una sola vez, arriba. */
 
-/** Una columna por unidad: foto, descripción, qué incluye y un precio
-    "desde" — no el desglose de las 3 temporadas. El precio exacto por fecha
-    ya lo calcula bien el paso siguiente cuando eligen las fechas reales; acá
-    alcanza con una referencia. Antes eran dos filas de tarjetas separadas
+/* Íconos chicos para las comodidades, estilo hotelnafarrola.com — un trazo
+   fino, sin relleno, nada ilustrativo. Se agrupan por categoría (todo lo que
+   tiene que ver con agua usa la misma gotita, por ejemplo) en vez de un
+   ícono distinto para cada una de las 20: son variaciones del mismo tipo de
+   cosa, y buscarle un dibujo único a "Vestidor en la suite" no suma nada.
+   Van por palabra clave (no por texto exacto) para no romper si alguien
+   edita la lista de comodidades desde /admin. */
+const ICONOS_COMODIDAD = {
+  wifi: '<path d="M3 8.5a13 13 0 0 1 18 0"/><path d="M6.5 12a8 8 0 0 1 11 0"/><path d="M10 15.5a3 3 0 0 1 4 0"/><circle cx="12" cy="19" r="1" fill="currentColor" stroke="none"/>',
+  clima: '<rect x="10" y="3" width="4" height="12" rx="2"/><circle cx="12" cy="18" r="3"/>',
+  agua: '<path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11Z"/>',
+  cocina: '<rect x="4" y="5" width="16" height="15" rx="1.5"/><circle cx="8.5" cy="9.5" r="1.4"/><circle cx="15.5" cy="9.5" r="1.4"/><circle cx="8.5" cy="15.5" r="1.4"/><circle cx="15.5" cy="15.5" r="1.4"/>',
+  bano: '<path d="M7 9a5 5 0 0 1 10 0"/><line x1="6" y1="9" x2="18" y2="9"/><line x1="8" y1="13" x2="8" y2="13.01"/><line x1="12" y1="13" x2="12" y2="13.01"/><line x1="16" y1="13" x2="16" y2="13.01"/><line x1="8" y1="17" x2="8" y2="17.01"/><line x1="12" y1="17" x2="12" y2="17.01"/><line x1="16" y1="17" x2="16" y2="17.01"/>',
+  fuego: '<path d="M12 3c-1 3-5 6-5 10a5 5 0 0 0 10 0c0-1.5-.6-2.4-1-3 .2 1.5-.6 2-1.3 2-1 0-1.3-.8-.9-1.8.8-2 .5-4.4-1.8-7.2Z"/>',
+  arbol: '<path d="M12 3 7 11h2.5L6 17h5v4h2v-4h5l-3.5-6H17L12 3Z"/>',
+  hamaca: '<path d="M4 8v3M20 8v3M4 11c0 3 4 4 8 4s8-1 8-4"/>',
+  pingpong: '<circle cx="9" cy="9" r="4"/><line x1="12" y1="12" x2="17" y2="17"/><line x1="16" y1="18" x2="18" y2="16"/>',
+  auto: '<path d="M5 16V11l2-5h10l2 5v5"/><line x1="3" y1="16" x2="21" y2="16"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/>',
+  cama: '<path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6"/><path d="M3 14h18"/><path d="M7 12V9a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3"/><line x1="3" y1="18" x2="3" y2="20"/><line x1="21" y1="18" x2="21" y2="20"/>',
+  puerta: '<rect x="5" y="3" width="10" height="18" rx="1"/><circle cx="11.5" cy="12" r="1" fill="currentColor" stroke="none"/>',
+  pata: '<circle cx="8" cy="8" r="1.6"/><circle cx="12" cy="6.5" r="1.6"/><circle cx="16" cy="8" r="1.6"/><path d="M8 13c0-2 2-3 4-3s4 1 4 3c0 2.5-2 4-4 4s-4-1.5-4-4Z"/>',
+  generico: '<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.3 2.3L16 10"/>'
+};
+/** Palabra clave → ícono. La primera que aparece en el texto gana. Con
+    límite de palabra (\b) donde la clave es corta o puede colarse adentro de
+    otra: sin eso, "agua" hacía match dentro de "paraguaya" y "Hamaca
+    paraguaya" terminaba con el ícono de la gotita en vez del de la hamaca. */
+const CLAVES_ICONO = [
+  [/wifi/i, 'wifi'],
+  [/aire acondicionado|calefac|ventilador/i, 'clima'],
+  [/hamaca/i, 'hamaca'],
+  [/\bagua\b/i, 'agua'],
+  [/cocina/i, 'cocina'],
+  [/baño/i, 'bano'],
+  [/asador|parrilla/i, 'fuego'],
+  [/galería|parque|árbol/i, 'arbol'],
+  [/ping pong/i, 'pingpong'],
+  [/cochera|estacionamiento/i, 'auto'],
+  [/ropa de cama|\btv\b|living|vestidor/i, 'cama'],
+  [/acceso independiente/i, 'puerta'],
+  [/mascota/i, 'pata']
+];
+function iconoComodidad(texto) {
+  const clave = CLAVES_ICONO.find(([re]) => re.test(texto));
+  const key = clave ? clave[1] : 'generico';
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONOS_COMODIDAD[key]}</svg>`;
+}
+
+/** Una fila por unidad, a todo el ancho, con la foto alternando de lado —
+    estilo hotelnafarrola.com. Antes eran dos filas de tarjetas separadas
     (las unidades arriba, las temporadas abajo) que repetían el nombre de
-    cada unidad dos veces. */
+    cada unidad dos veces; después pasó a 3 columnas, y ahora a esto. */
 function pintarUnidadesTarifas() {
   const cont = document.getElementById('unidades-tarifa');
   if (!cont) return;
@@ -691,18 +738,19 @@ function pintarUnidadesTarifas() {
     const desde = Math.min(...CONFIG.temporadas.map(t => t.precios[m.id]));
     return `
     <article class="unidad-tarifa${rev}">
-      <img class="unidad-tarifa__foto" src="${FOTO_UNIDAD[m.id]}" alt="" loading="lazy">
+      <div class="unidad-tarifa__foto">
+        <img src="${FOTO_UNIDAD[m.id]}" alt="" loading="lazy">
+      </div>
       <div class="unidad-tarifa__cuerpo">
         <h3>${m.nombre}</h3>
-        <p class="unidad-tarifa__meta">${m.plazas} plazas</p>
+        <p class="unidad-tarifa__meta">${m.plazas} personas</p>
         <p class="unidad-tarifa__texto">${m.texto}</p>
 
-        <details class="unidad-tarifa__incluye">
-          <summary>Qué incluye</summary>
-          <ul>${CONFIG.comodidades.map(c => `<li>${c}</li>`).join('')}</ul>
-        </details>
+        <ul class="unidad-tarifa__comodidades">
+          ${CONFIG.comodidades.map(c => `<li>${iconoComodidad(c)}<span>${c}</span></li>`).join('')}
+        </ul>
 
-        <p class="unidad-tarifa__desde">Desde <strong>${pesos(desde)}</strong> la noche</p>
+        <p class="unidad-tarifa__desde">Reservá desde <strong>${pesos(desde)}</strong> la noche</p>
         <a class="boton unidad-tarifa__boton" href="reserva.html" data-reservar>Ver disponibilidad</a>
       </div>
     </article>`;
