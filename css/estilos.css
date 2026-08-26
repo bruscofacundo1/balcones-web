@@ -441,17 +441,23 @@ a { color: var(--terracota); }
 /* ------------------------------------- por qué reservar acá (bajo la portada) */
 /* Franja angosta: es un apoyo, no una sección. Cuatro columnas separadas por
    línea fina, sin cajas ni íconos — el mismo lenguaje que las tarifas. */
-.seccion--directo {
-  padding: clamp(46px, 5.5vw, 70px) 0;
+/* La línea marca el ancho estándar del sitio (var(--ancho), 1180px, con el
+   padding de siempre) — larga, pero sin tocar el borde real de la pantalla.
+   El padding es chico a propósito: la línea queda cerca del texto, como en
+   vivood.com. Antes este mismo padding estaba en .seccion--directo y era
+   mucho más grande (pensado para separar dos secciones, no para la
+   distancia entre una línea y el texto que sigue). */
+.directo__marco {
+  padding: clamp(20px, 2.5vw, 30px) 24px;
   border-top: 1px solid var(--borde);
   border-bottom: 1px solid var(--borde);
 }
 /* Título + botón a la izquierda, la lista de beneficios ocupando el resto —
    como vivood.com. La columna angosta no lleva ancho fijo: "auto" para que
-   el botón y el título definan su lugar y el resto se lo lleve la lista. */
-/* Mismo ancho que .casa__intro de arriba (860px) y centrado igual — antes
-   ocupaba las 1180px del contenedor general y quedaba corrido respecto de
-   "La casa", y los tres beneficios de la derecha se estiraban de más. */
+   el botón y el título definan su lugar y el resto se lo lleve la lista.
+   Mismo ancho que .casa__intro de arriba (860px) y centrado igual, más
+   angosto que .directo__marco: la línea es larga, el contenido de adentro
+   no necesita serlo. */
 .directo__layout {
   max-width: 860px;
   margin-inline: auto;
@@ -529,6 +535,12 @@ a { color: var(--terracota); }
   margin-inline: auto;
 }
 #la-casa .casa__intro h2 { color: var(--terracota); }
+/* El reset general de `p` (68ch de ancho máximo, margin: 0) es justo lo que
+   rompía el centrado acá: con margin-left/right en 0 (no "auto"), el párrafo
+   quedaba pegado a la izquierda del bloque de 860px aunque el texto por
+   dentro estuviera centrado — se notaba sobre todo en casa__cifras, que es
+   corto y quedaba bien lejos del centro real. */
+#la-casa .casa__intro p { max-width: none; margin-inline: auto; }
 
 .casa__cifras {
   margin-top: 22px;
