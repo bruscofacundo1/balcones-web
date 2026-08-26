@@ -669,9 +669,12 @@ function iniciarLightbox() {
    precios por temporada. Las plazas y el detalle de cada unidad se dicen
    una sola vez, arriba. */
 
-/** Una columna por unidad: foto, descripción, precio por temporada y qué
-    incluye. Antes eran dos filas de tarjetas separadas (las unidades arriba,
-    las temporadas abajo) que repetían el nombre de cada unidad dos veces. */
+/** Una columna por unidad: foto, descripción, qué incluye y un precio
+    "desde" — no el desglose de las 3 temporadas. El precio exacto por fecha
+    ya lo calcula bien el paso siguiente cuando eligen las fechas reales; acá
+    alcanza con una referencia. Antes eran dos filas de tarjetas separadas
+    (las unidades arriba, las temporadas abajo) que repetían el nombre de
+    cada unidad dos veces. */
 function pintarUnidadesTarifas() {
   const cont = document.getElementById('unidades-tarifa');
   if (!cont) return;
@@ -681,7 +684,12 @@ function pintarUnidadesTarifas() {
   // queda en opacity:0 PARA SIEMPRE. Un repintado tardío aparece sin animar.
   const rev = animacionesListas ? '' : ' revelar';
 
-  cont.innerHTML = CONFIG.modalidades.map(m => `
+  cont.innerHTML = CONFIG.modalidades.map(m => {
+    // El "desde" es el precio más bajo entre las temporadas, no siempre la
+    // baja a mano: si el día de mañana cambia el orden o los valores, esto
+    // sigue siendo correcto sin tocar nada acá.
+    const desde = Math.min(...CONFIG.temporadas.map(t => t.precios[m.id]));
+    return `
     <article class="unidad-tarifa${rev}">
       <img class="unidad-tarifa__foto" src="${FOTO_UNIDAD[m.id]}" alt="" loading="lazy">
       <div class="unidad-tarifa__cuerpo">
@@ -689,23 +697,16 @@ function pintarUnidadesTarifas() {
         <p class="unidad-tarifa__meta">${m.plazas} plazas</p>
         <p class="unidad-tarifa__texto">${m.texto}</p>
 
-        <ul class="unidad-tarifa__precios">
-          ${CONFIG.temporadas.map(t => `
-            <li>
-              <span>${t.nombre}<small>mín. ${t.minNoches} noches</small></span>
-              <strong>${pesos(t.precios[m.id])}</strong>
-            </li>`).join('')}
-        </ul>
-        <p class="unidad-tarifa__nota">Por noche</p>
-
         <details class="unidad-tarifa__incluye">
           <summary>Qué incluye</summary>
           <ul>${CONFIG.comodidades.map(c => `<li>${c}</li>`).join('')}</ul>
         </details>
 
+        <p class="unidad-tarifa__desde">Desde <strong>${pesos(desde)}</strong> la noche</p>
         <a class="boton unidad-tarifa__boton" href="reserva.html" data-reservar>Ver disponibilidad</a>
       </div>
-    </article>`).join('');
+    </article>`;
+  }).join('');
 }
 
 function pintarAlquiler() {

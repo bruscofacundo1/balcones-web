@@ -1356,6 +1356,18 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
   color: var(--piedra); margin: 12px 0 24px; padding-top: 14px; border-top: 1px solid var(--borde);
 }
 
+/* Versión 2 en prueba: en vez del desglose de las 3 temporadas, un solo
+   precio de referencia ("desde"). El número exacto por fecha ya lo calcula
+   bien el paso siguiente cuando eligen las fechas reales. */
+.unidad-tarifa__desde {
+  font-size: 1rem; color: var(--carbon-suave);
+  margin: 4px 0 22px; padding-top: 18px; border-top: 1px solid var(--borde);
+}
+.unidad-tarifa__desde strong {
+  font-family: var(--mono); font-weight: 500; color: var(--carbon);
+  font-variant-numeric: tabular-nums;
+}
+
 /* Mismo gesto que las preguntas frecuentes (+ que pasa a − al abrir), a
    escala de tarjeta. */
 .unidad-tarifa__incluye { border-top: 1px solid var(--borde); margin-bottom: 6px; }
