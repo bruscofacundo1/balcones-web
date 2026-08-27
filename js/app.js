@@ -743,12 +743,14 @@ function pintarUnidadesTarifas() {
       </div>
       <div class="unidad-tarifa__cuerpo">
         <h3>${m.nombre}</h3>
-        <p class="unidad-tarifa__meta">${m.plazas} personas</p>
         <p class="unidad-tarifa__texto">${m.texto}</p>
+        <p class="unidad-tarifa__meta">Personas: ${m.plazas} · m²: ${m.m2}</p>
 
         <ul class="unidad-tarifa__comodidades">
-          ${CONFIG.comodidades.map(c => `<li>${iconoComodidad(c)}<span>${c}</span></li>`).join('')}
+          ${m.comodidades.map(c => `<li title="${c}">${iconoComodidad(c)}<span class="sr-solo">${c}</span></li>`).join('')}
         </ul>
+
+        ${m.distribucion ? `<p class="unidad-tarifa__distribucion">${m.distribucion}</p>` : ''}
 
         <p class="unidad-tarifa__desde">Reservá desde <strong>${pesos(desde)}</strong> la noche</p>
         <a class="boton unidad-tarifa__boton" href="reserva.html" data-reservar>Ver disponibilidad</a>

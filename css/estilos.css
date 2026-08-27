@@ -1336,20 +1336,36 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
   font-family: var(--mono); font-size: .72rem; letter-spacing: .01em;
   color: var(--piedra); margin-bottom: 14px;
 }
-.unidad-tarifa__texto { font-size: .96rem; color: var(--piedra); margin: 0 0 24px; max-width: 46ch; }
+.unidad-tarifa__texto { font-size: .96rem; color: var(--piedra); margin: 0 0 10px; max-width: 46ch; }
 
-/* Los íconos son de un solo trazo, sin relleno, agrupados por categoría (ver
-   ICONOS_COMODIDAD en app.js) — no un dibujo distinto para cada una de las
-   20 comodidades. */
+/* Estilo hotelnafarrola.com: sólo el ícono, en una pastilla circular pareja.
+   Con 15 a 20 comodidades por unidad, poner el texto al lado (como antes)
+   armaba renglones de largo desparejo y quedaba desprolijo; en un grid de
+   celdas fijas el desorden desaparece solo, sea cual sea la cantidad. El
+   nombre de cada una sigue disponible al pasar el mouse (title) y para
+   lectores de pantalla (.sr-solo). */
 .unidad-tarifa__comodidades {
-  list-style: none; padding: 0; margin: 0 0 26px;
-  display: flex; flex-wrap: wrap; gap: 14px 22px;
+  list-style: none; padding: 0; margin: 0 0 22px;
+  display: grid; grid-template-columns: repeat(auto-fill, 36px);
+  gap: 10px;
 }
 .unidad-tarifa__comodidades li {
-  display: flex; align-items: center; gap: 8px;
-  font-size: .82rem; color: var(--carbon-suave);
+  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--borde); border-radius: 50%; color: var(--piedra);
+  transition: border-color .2s ease, color .2s ease;
 }
-.unidad-tarifa__comodidades svg { width: 18px; height: 18px; flex: none; color: var(--piedra); }
+.unidad-tarifa__comodidades li:hover { border-color: var(--terracota); color: var(--terracota); }
+.unidad-tarifa__comodidades svg { width: 17px; height: 17px; flex: none; }
+
+.sr-solo {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+.unidad-tarifa__distribucion {
+  font-size: .84rem; color: var(--piedra); margin: 0 0 24px; max-width: 46ch;
+  padding-left: 12px; border-left: 2px solid var(--borde);
+}
 
 .unidad-tarifa__desde {
   font-size: 1.05rem; color: var(--carbon-suave);

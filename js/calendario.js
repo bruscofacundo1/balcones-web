@@ -432,9 +432,9 @@ function enlaceWsp(texto) {
  */
 /** Foto de portada de cada modalidad. */
 const FOTO_UNIDAD = {
-  completa: 'img/casa-atardecer.jpg',
-  alta: 'img/galeria-mesa.jpg',
-  baja: 'img/living.jpg'
+  completa: 'img/casa-frente.jpg',
+  alta: 'img/dorm-principal.jpg',
+  baja: 'img/dorm-baja-2.jpg'
 };
 
 function pintarOpciones() {

@@ -54,26 +54,63 @@ const CONFIG = {
       id: 'completa',
       nombre: 'Casa completa',
       plazas: 9,
+      m2: 180,                                     // << REVISAR >> superficie real
       // Para estar libre necesita las dos plantas libres
       ocupa: ['alta', 'baja'],
       detalle: '2 plantas · 4 dormitorios · 2 baños · 2 cocinas',
-      texto: 'Las dos plantas para vos. Ideal para familias grandes o dos familias que viajan juntas.'
+      texto: 'Las dos plantas para vos. Ideal para familias grandes o dos familias que viajan juntas.',
+      // Unión de las comodidades de ambas plantas (juntando "una cocina
+      // completa" de cada una en "una cocina completa por planta", etc.)
+      comodidades: [
+        'Wifi', 'Una cocina completa por planta', 'Un baño completo por planta',
+        'Aire acondicionado frío/calor', 'Calefacción a gas', 'Ventiladores de techo',
+        'Agua caliente permanente', 'Agua de red y perforación propia',
+        'Asador, parrilla y disco', 'Galería cubierta con vista', 'Hamaca paraguaya',
+        'Mesa de ping pong', 'Cochera cubierta', 'Ropa de cama y toallas',
+        'TV y living amplio', 'Parque con árboles', 'Vestidor en la suite',
+        'Acceso independiente por planta', 'Se admiten mascotas',
+        'Estacionamiento para varios autos'
+      ]
     },
     {
       id: 'alta',
       nombre: 'Planta alta',
       plazas: 5,
+      m2: 100,                                     // << REVISAR >> superficie real
       ocupa: ['alta'],
       detalle: '2 dormitorios · 1 baño · cocina · galería con vista',
-      texto: 'La suite con cama king y el dormitorio de tres plazas, más el living y la galería del atardecer.'
+      texto: 'La suite con cama queen y el dormitorio de tres camas, más el living y la galería del atardecer.',
+      // Cómo se reparten las camas: no es una comodidad con ícono, es una
+      // aclaración de texto aparte (se muestra debajo de los íconos).
+      distribucion: 'Dos dormitorios: la habitación principal tiene vestidor en suite y cama queen para 2; ' +
+        'la otra tiene 3 camas. El living suma un sofá cama para 2 personas más.',
+      comodidades: [
+        'Wifi', 'Cocina completa', 'Baño completo', 'Aire acondicionado frío/calor',
+        'Calefacción a gas', 'Ventiladores de techo', 'Agua caliente permanente',
+        'Agua de red y perforación propia', 'Asador, parrilla y disco',
+        'Galería cubierta con vista', 'Hamaca paraguaya', 'Ropa de cama y toallas',
+        'TV y living amplio', 'Parque con árboles', 'Vestidor en la suite',
+        'Acceso independiente por planta', 'Se admiten mascotas',
+        'Estacionamiento para varios autos'
+      ]
     },
     {
       id: 'baja',
       nombre: 'Planta baja',
       plazas: 4,
+      m2: 70,                                      // << REVISAR >> superficie real
       ocupa: ['baja'],
-      detalle: '2 dormitorios · 1 baño · cocina · acceso propio',
-      texto: 'Dos dormitorios, cocina completa y entrada independiente. Fresca y tranquila.'
+      detalle: '1 dormitorio · 1 baño · cocina-comedor · acceso propio',
+      texto: 'Una habitación con cama doble y cucheta, cocina-comedor y entrada independiente. Fresca y tranquila.',
+      distribucion: 'Un dormitorio con cama doble y 2 camas simples en cucheta, más cocina-comedor y baño. ' +
+        'Está conectada con el garage doble cerrado.',
+      comodidades: [
+        'Wifi', 'Cocina completa', 'Baño completo', 'Aire acondicionado frío/calor',
+        'Calefacción a gas', 'Ventiladores de techo', 'Agua caliente permanente',
+        'Agua de red y perforación propia', 'Mesa de ping pong', 'Cochera cubierta',
+        'Ropa de cama y toallas', 'Parque con árboles', 'Acceso independiente por planta',
+        'Se admiten mascotas', 'Estacionamiento para varios autos'
+      ]
     }
   ],
 
