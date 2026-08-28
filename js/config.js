@@ -379,12 +379,27 @@ if (typeof module !== 'undefined' && module.exports) module.exports = { CONFIG }
 const AMBIENTES = [
   { foto: 'dorm-principal',   planta: 'alta', titulo: 'Suite principal',
     meta: '2 plazas · Cama king · Vestidor', texto: 'Cama king, tres ventanas al valle y vestidor propio.' },
+  // Segunda foto de la suite (la cómoda y el televisor) — antes vivía en
+  // la galería general como "interiores", ahora acá con el resto de la
+  // suite.
+  { foto: 'dorm-principal-2', planta: 'alta', titulo: 'Cómoda y TV de la suite',
+    meta: 'En la suite principal', texto: 'La cómoda y el televisor de la suite, con espejo y buena luz de mañana.' },
+  { foto: 'vestidor',         planta: 'alta', titulo: 'Vestidor de la suite',
+    meta: 'En la suite principal', texto: 'El placard grande de la suite, con espacio de sobra para guardar todo.' },
   { foto: 'dorm-alta-2',      planta: 'alta', titulo: 'Dormitorio de tres plazas',
     meta: '3 plazas · Persianas', texto: 'Amplio, con dos ventanas con persianas y mucha luz de mañana.' },
+  { foto: 'dorm-alta-3',      planta: 'alta', titulo: 'Escritorio para trabajar',
+    meta: 'Segundo dormitorio', texto: 'Un escritorio para trabajar o estudiar, al lado de una de las tres camas.' },
+  { foto: 'dorm-alta-4',      planta: 'alta', titulo: 'Placard y vista a las sierras',
+    meta: 'Segundo dormitorio', texto: 'Las otras dos camas del cuarto, con placard amplio y ventana a las sierras.' },
   { foto: 'living',           planta: 'alta', titulo: 'Living comedor',
     meta: 'Techo de madera', texto: 'El corazón de la planta alta: mesa larga, techo de madera a dos aguas y salida a la galería.' },
+  { foto: 'living-tv',        planta: 'alta', titulo: 'Estar con TV',
+    meta: 'En el living', texto: 'El otro rincón del living, con la tele y algo del arte de la casa en las paredes.' },
   { foto: 'cocina-alta',      planta: 'alta', titulo: 'Cocina de planta alta',
     meta: 'Totalmente equipada', texto: 'Con horno, heladera con freezer, microondas y todo lo necesario para cocinar para varios.' },
+  { foto: 'cocina-alta-2',    planta: 'alta', titulo: 'Cocina equipada',
+    meta: 'Otro ángulo', texto: 'La cocina de planta alta, con anafe, mucho espacio de guardado y mesada de granito.' },
   { foto: 'bano-alta',        planta: 'alta', titulo: 'Baño de planta alta',
     meta: 'Completo', texto: 'Baño completo con ducha, bidet y bacha de apoyo.' },
   { foto: 'dorm-baja-1',      planta: 'baja', titulo: 'Dormitorio con cucheta',
@@ -422,22 +437,14 @@ const FOTOS = [
   { f: 'casa-parque',         c: 'casa',       t: 'La casa desde el parque' },
   { f: 'casa-noche-gente',    c: 'casa',       t: 'Noches de encuentro' },
 
-  { f: 'living',              c: 'interiores', t: 'Living comedor de planta alta' },
-  { f: 'living-tv',           c: 'interiores', t: 'Estar con TV' },
-  { f: 'cocina-alta',         c: 'interiores', t: 'Cocina principal' },
-  { f: 'cocina-alta-2',       c: 'interiores', t: 'Cocina equipada' },
-  { f: 'cocina-baja',         c: 'interiores', t: 'Cocina de planta baja' },
-  { f: 'dorm-principal',      c: 'interiores', t: 'Suite principal con cama king' },
-  { f: 'dorm-principal-2',    c: 'interiores', t: 'Suite principal' },
-  { f: 'vestidor',            c: 'interiores', t: 'Vestidor de la suite' },
-  { f: 'dorm-alta-2',         c: 'interiores', t: 'Dormitorio de tres plazas' },
-  { f: 'dorm-alta-3',         c: 'interiores', t: 'Dormitorio de planta alta' },
-  { f: 'dorm-alta-4',         c: 'interiores', t: 'Dormitorio de planta alta' },
-  { f: 'dorm-baja-1',         c: 'interiores', t: 'Dormitorio con cucheta' },
-  { f: 'dorm-baja-2',         c: 'interiores', t: 'Dormitorio de planta baja' },
-  { f: 'bano-alta',           c: 'interiores', t: 'Baño de planta alta' },
-  { f: 'bano-baja',           c: 'interiores', t: 'Baño de planta baja' },
-  { f: 'escalera',            c: 'interiores', t: 'Escalera principal' },
+  // La categoría 'interiores' se sacó de acá: esas 16 fotos (living,
+  // cocinas, dormitorios, baños, vestidor, escalera) quedaron duplicadas
+  // con "La casa por dentro" (el carrusel de AMBIENTES, más arriba en la
+  // página) y esta galería es "La casa y el lugar" — pensada para el
+  // exterior de la casa y el entorno, no para repetir los ambientes de
+  // adentro. Las 6 que no tenían su propio ambiente en AMBIENTES
+  // (living-tv, cocina-alta-2, dorm-principal-2, vestidor, dorm-alta-3,
+  // dorm-alta-4) se agregaron ahí para no perderlas.
 
   { f: 'balcon-atardecer-1',  c: 'aire-libre', t: 'Atardecer desde la galería' },
   { f: 'balcon-atardecer-2',  c: 'aire-libre', t: 'La galería al caer el sol' },

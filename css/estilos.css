@@ -1342,6 +1342,14 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
   text-align: center;
 }
 
+/* "La casa y el lugar" centrado — mismo patrón que .ambientes__encabezado
+   de arriba. */
+.galeria__encabezado {
+  max-width: 660px; margin: 0 auto 56px; padding-bottom: 0; border-bottom: 0;
+  text-align: center;
+}
+.galeria__encabezado .bajada { margin-inline: auto; }
+
 /* Una fila por unidad, a todo el ancho de la PANTALLA (no del contenedor) —
    estilo hotelnafarrola.com: la foto toca el borde real del navegador, foto
    y texto van mitad y mitad, y las filas quedan pegadas una a la otra (sin

@@ -620,14 +620,13 @@
    * marcar cuáles salen en la portada. Si fueran dos copias, la marca del panel
    * y lo que se ve en el sitio se desincronizarían al primer cambio.
    */
-  /* El mosaico de la portada muestra sólo la casa entera y el paisaje. Antes
-     mezclaba las cuatro categorías y entraban baños y dormitorios sueltos,
-     que en miniatura no dicen nada y bajan el promedio de lo que se ve
-     primero. Los interiores siguen estando: se ven al abrir "todas las
-     fotos", que es donde alguien que ya se enganchó los va a buscar.
-     Para volver atrás, alcanza con sumar categorías a `orden`. El orden de
-     esa lista es el orden en que salen: primero la casa, después el paisaje,
-     igual que el título de la sección ("La casa y el lugar"). */
+  /* El mosaico de la portada muestra sólo la casa entera y el paisaje.
+     Los interiores (living, cocinas, dormitorios, baños) ya no viven en
+     FOTOS — se sacaron de esta galería porque quedaban duplicados con "La
+     casa por dentro" (el carrusel de AMBIENTES). Para volver atrás,
+     alcanza con sumar categorías a `orden`. El orden de esa lista es el
+     orden en que salen: primero la casa, después el paisaje, igual que el
+     título de la sección ("La casa y el lugar"). */
   function fotosDestacadas(lista) {
     const orden = ['casa', 'entorno'];
     const porCat = Math.ceil(8 / orden.length);

@@ -31,7 +31,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=86">
+<link rel="stylesheet" href="css/estilos.css?v=87">
 
 <script type="application/ld+json">
 {
@@ -205,7 +205,10 @@
 <!-- ========================================================= GALERÍA ==== -->
 <section class="seccion seccion--arena" id="galeria">
   <div class="contenedor">
-    <div class="encabezado-seccion encabezado-seccion--centro revelar">
+    <!-- Centrado con una clase propia, no .encabezado-seccion--centro: esa
+         clase quedó en desuso y hoy en realidad alinea a la izquierda (ver
+         el comentario en estilos.css). -->
+    <div class="encabezado-seccion galeria__encabezado revelar">
       <h2>La casa y el lugar</h2>
       <p class="bajada">Fotos reales, sacadas en distintas épocas del año. Hacé clic para verlas grandes.</p>
     </div>
@@ -398,7 +401,6 @@
   <div class="todas-fotos__filtros filtros" id="tf-filtros">
     <button class="tab" aria-selected="true"  data-cat="todas">Todas</button>
     <button class="tab" aria-selected="false" data-cat="casa">La casa</button>
-    <button class="tab" aria-selected="false" data-cat="interiores">Interiores</button>
     <button class="tab" aria-selected="false" data-cat="aire-libre">Galerías y aire libre</button>
     <button class="tab" aria-selected="false" data-cat="entorno">El entorno</button>
   </div>
@@ -415,11 +417,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=86"></script>
-<script src="js/contenido.js?v=86"></script>
-<script src="js/disponibilidad.js?v=86"></script>
-<script src="js/precios.js?v=86"></script><script src="js/calendario.js?v=86"></script>
-<script src="js/pie.js?v=86"></script>
-<script src="js/app.js?v=86"></script>
+<script src="js/config.js?v=87"></script>
+<script src="js/contenido.js?v=87"></script>
+<script src="js/disponibilidad.js?v=87"></script>
+<script src="js/precios.js?v=87"></script><script src="js/calendario.js?v=87"></script>
+<script src="js/pie.js?v=87"></script>
+<script src="js/app.js?v=87"></script>
 </body>
 </html>

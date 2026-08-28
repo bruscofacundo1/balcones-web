@@ -508,7 +508,7 @@ function pintarTodasLasFotos(categoria = 'todas') {
 /**
  * Las fotos bien apaisadas ocupan dos columnas.
  *
- * De las 56, la mayoría son 4:3, pero hay unas pocas panorámicas (2.22:1).
+ * De las 40, la mayoría son 4:3, pero hay unas pocas panorámicas (2.22:1).
  * En el mismo cuadrito que las demás perdían un 40% del ancho: justo el
  * paisaje que hace que valga la pena la foto. Con el doble de ancho entran
  * casi enteras (se recorta un poco de cielo y de piso, que no molesta) y, de
