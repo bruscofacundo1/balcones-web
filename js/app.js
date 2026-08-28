@@ -670,15 +670,31 @@ function iniciarLightbox() {
    una sola vez, arriba. */
 
 /* Íconos chicos para las comodidades, estilo hotelnafarrola.com — un trazo
-   fino, sin relleno, nada ilustrativo. Se agrupan por categoría (todo lo que
-   tiene que ver con agua usa la misma gotita, por ejemplo) en vez de un
-   ícono distinto para cada una de las 20: son variaciones del mismo tipo de
-   cosa, y buscarle un dibujo único a "Vestidor en la suite" no suma nada.
-   Van por palabra clave (no por texto exacto) para no romper si alguien
-   edita la lista de comodidades desde /admin. */
+   fino, sin relleno, nada ilustrativo. Van por palabra clave (no por texto
+   exacto) para no romper si alguien edita la lista desde /admin.
+
+   Antes "Aire acondicionado", "Calefacción a gas" y "Ventiladores de techo"
+   compartían un solo ícono genérico ('clima'): en una tarjeta con las tres
+   comodidades una al lado de la otra se veía el mismo dibujo repetido 3
+   veces, sin distinguir nada. Ahora cada una tiene el suyo. Lo mismo pasaba
+   con las dos de agua (agua caliente vs. agua de red) y con cochera vs.
+   estacionamiento — separados también. Sólo quedan agrupadas bajo un mismo
+   ícono las que de verdad son variaciones de la misma cosa (por eso
+   "Vestidor en la suite" sigue usando el de 'cama': no amerita un dibujo
+   propio). */
 const ICONOS_COMODIDAD = {
   wifi: '<path d="M3 8.5a13 13 0 0 1 18 0"/><path d="M6.5 12a8 8 0 0 1 11 0"/><path d="M10 15.5a3 3 0 0 1 4 0"/><circle cx="12" cy="19" r="1" fill="currentColor" stroke="none"/>',
-  clima: '<rect x="10" y="3" width="4" height="12" rx="2"/><circle cx="12" cy="18" r="3"/>',
+  // Aire acondicionado: el equipo de pared (rectángulo ancho) + el aire frío
+  // saliendo hacia abajo.
+  ac: '<rect x="3" y="6" width="18" height="7" rx="1.5"/><line x1="7" y1="17" x2="6" y2="20"/><line x1="12" y1="17" x2="12" y2="20"/><line x1="17" y1="17" x2="18" y2="20"/>',
+  // Calefacción a gas: un radiador (panel con aletas verticales) — se
+  // distingue a propósito del fuego abierto del asador.
+  radiador: '<rect x="5" y="4" width="14" height="16" rx="1"/><line x1="9" y1="4" x2="9" y2="20"/><line x1="13" y1="4" x2="13" y2="20"/><line x1="17" y1="4" x2="17" y2="20"/>',
+  // Ventilador de techo: el motor centrado y 3 aspas.
+  fan: '<line x1="12" y1="3" x2="12" y2="7.2"/><circle cx="12" cy="12" r="2.2"/><line x1="12" y1="12" x2="12" y2="7.2"/><line x1="12" y1="12" x2="16.5" y2="14.7"/><line x1="12" y1="12" x2="7.5" y2="14.7"/>',
+  // Agua caliente permanente: el termómetro de siempre — asocia "caliente"
+  // sin repetir la gotita de agua de red.
+  termo: '<rect x="10" y="3" width="4" height="12" rx="2"/><circle cx="12" cy="18" r="3"/>',
   agua: '<path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11Z"/>',
   cocina: '<rect x="4" y="5" width="16" height="15" rx="1.5"/><circle cx="8.5" cy="9.5" r="1.4"/><circle cx="15.5" cy="9.5" r="1.4"/><circle cx="8.5" cy="15.5" r="1.4"/><circle cx="15.5" cy="15.5" r="1.4"/>',
   bano: '<path d="M7 9a5 5 0 0 1 10 0"/><line x1="6" y1="9" x2="18" y2="9"/><line x1="8" y1="13" x2="8" y2="13.01"/><line x1="12" y1="13" x2="12" y2="13.01"/><line x1="16" y1="13" x2="16" y2="13.01"/><line x1="8" y1="17" x2="8" y2="17.01"/><line x1="12" y1="17" x2="12" y2="17.01"/><line x1="16" y1="17" x2="16" y2="17.01"/>',
@@ -687,6 +703,9 @@ const ICONOS_COMODIDAD = {
   hamaca: '<path d="M4 8v3M20 8v3M4 11c0 3 4 4 8 4s8-1 8-4"/>',
   pingpong: '<circle cx="9" cy="9" r="4"/><line x1="12" y1="12" x2="17" y2="17"/><line x1="16" y1="18" x2="18" y2="16"/>',
   auto: '<path d="M5 16V11l2-5h10l2 5v5"/><line x1="3" y1="16" x2="21" y2="16"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/>',
+  // Cochera cubierta: el techo a dos aguas sobre el auto guardado —
+  // distinto del auto "suelto" de estacionamiento.
+  cochera: '<path d="M4 11 12 5l8 6"/><rect x="6" y="11" width="12" height="8" rx="1"/><line x1="6" y1="19" x2="6" y2="21"/><line x1="18" y1="19" x2="18" y2="21"/>',
   cama: '<path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6"/><path d="M3 14h18"/><path d="M7 12V9a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3"/><line x1="3" y1="18" x2="3" y2="20"/><line x1="21" y1="18" x2="21" y2="20"/>',
   puerta: '<rect x="5" y="3" width="10" height="18" rx="1"/><circle cx="11.5" cy="12" r="1" fill="currentColor" stroke="none"/>',
   pata: '<circle cx="8" cy="8" r="1.6"/><circle cx="12" cy="6.5" r="1.6"/><circle cx="16" cy="8" r="1.6"/><path d="M8 13c0-2 2-3 4-3s4 1 4 3c0 2.5-2 4-4 4s-4-1.5-4-4Z"/>',
@@ -695,18 +714,24 @@ const ICONOS_COMODIDAD = {
 /** Palabra clave → ícono. La primera que aparece en el texto gana. Con
     límite de palabra (\b) donde la clave es corta o puede colarse adentro de
     otra: sin eso, "agua" hacía match dentro de "paraguaya" y "Hamaca
-    paraguaya" terminaba con el ícono de la gotita en vez del de la hamaca. */
+    paraguaya" terminaba con el ícono de la gotita en vez del de la hamaca.
+    "agua caliente" va ANTES que \bagua\b por el mismo motivo: si no, "Agua
+    caliente permanente" quedaría con la gotita genérica en vez del termómetro. */
 const CLAVES_ICONO = [
   [/wifi/i, 'wifi'],
-  [/aire acondicionado|calefac|ventilador/i, 'clima'],
+  [/aire acondicionado/i, 'ac'],
+  [/calefac/i, 'radiador'],
+  [/ventilador/i, 'fan'],
   [/hamaca/i, 'hamaca'],
+  [/agua caliente/i, 'termo'],
   [/\bagua\b/i, 'agua'],
   [/cocina/i, 'cocina'],
   [/baño/i, 'bano'],
   [/asador|parrilla/i, 'fuego'],
   [/galería|parque|árbol/i, 'arbol'],
   [/ping pong/i, 'pingpong'],
-  [/cochera|estacionamiento/i, 'auto'],
+  [/cochera/i, 'cochera'],
+  [/estacionamiento/i, 'auto'],
   [/ropa de cama|\btv\b|living|vestidor/i, 'cama'],
   [/acceso independiente/i, 'puerta'],
   [/mascota/i, 'pata']
