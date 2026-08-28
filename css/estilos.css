@@ -704,11 +704,19 @@ a { color: var(--terracota); }
   margin: 0; max-width: 56ch;
 }
 
+/* Antes las flechas heredaban left:0/right:0 de .carrusel__nav — pero acá
+   el carrusel es a todo el ancho de la pantalla (.carrusel--pantalla se
+   sale del contenedor), así que "0" era el borde real del navegador: la
+   flecha quedaba mitad afuera de la vista. Un inset fijo las trae adentro,
+   flotando sobre la foto que asoma al costado — más cerca de cómo se ve
+   en la referencia. */
 .carrusel--pantalla .carrusel__nav {
   top: 50%; width: 54px; height: 54px;
   border-radius: var(--radio-sm);
   background: rgba(255, 255, 255, .9); border-color: transparent;
 }
+.carrusel--pantalla .carrusel__nav--prev { left: max(16px, calc(50vw - var(--ancho) / 2 - 4px)); }
+.carrusel--pantalla .carrusel__nav--next { right: max(16px, calc(50vw - var(--ancho) / 2 - 4px)); }
 
 @media (max-width: 760px) {
   .carrusel, .carrusel__pista { min-height: 430px; }
