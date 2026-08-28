@@ -31,7 +31,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=84">
+<link rel="stylesheet" href="css/estilos.css?v=85">
 
 <script type="application/ld+json">
 {
@@ -185,16 +185,12 @@
 <!-- ======================================================= AMBIENTES ==== -->
 <section class="seccion" id="ambientes-sec">
   <div class="contenedor">
-    <div class="encabezado-seccion revelar">
+    <!-- Centrado (no con .encabezado-seccion--centro: esa clase quedó en
+         desuso hace rato y hoy en realidad alinea a la izquierda — ver el
+         comentario en estilos.css). Regla propia más abajo. -->
+    <div class="encabezado-seccion ambientes__encabezado revelar">
       <span class="antetitulo">Ambiente por ambiente</span>
       <h2>La casa por dentro</h2>
-    </div>
-
-    <div class="tabs" id="tabs-ambientes" role="tablist">
-      <button class="tab" role="tab" aria-selected="true"  data-planta="todas">Todo</button>
-      <button class="tab" role="tab" aria-selected="false" data-planta="alta">Planta alta</button>
-      <button class="tab" role="tab" aria-selected="false" data-planta="baja">Planta baja</button>
-      <button class="tab" role="tab" aria-selected="false" data-planta="exterior">Exterior</button>
     </div>
 
     <div class="carrusel carrusel--pantalla" id="ambientes-carrusel">
@@ -419,11 +415,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=84"></script>
-<script src="js/contenido.js?v=84"></script>
-<script src="js/disponibilidad.js?v=84"></script>
-<script src="js/precios.js?v=84"></script><script src="js/calendario.js?v=84"></script>
-<script src="js/pie.js?v=84"></script>
-<script src="js/app.js?v=84"></script>
+<script src="js/config.js?v=85"></script>
+<script src="js/contenido.js?v=85"></script>
+<script src="js/disponibilidad.js?v=85"></script>
+<script src="js/precios.js?v=85"></script><script src="js/calendario.js?v=85"></script>
+<script src="js/pie.js?v=85"></script>
+<script src="js/app.js?v=85"></script>
 </body>
 </html>

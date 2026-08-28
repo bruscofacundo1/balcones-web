@@ -248,24 +248,15 @@ function pintarDistancias() {
     `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 }
 
-/* -------------------------------------------------------------- ambientes */
-function iniciarTabsAmbientes() {
-  const tabs = document.querySelectorAll('#tabs-ambientes .tab');
-  tabs.forEach(t => {
-    t.addEventListener('click', () => {
-      tabs.forEach(o => o.setAttribute('aria-selected', 'false'));
-      t.setAttribute('aria-selected', 'true');
-      plantaAmbientes = t.dataset.planta;
-      pintarCarruselAmbientes(plantaAmbientes);
-    });
-  });
-}
-
 /* ------------------------------------------------ carrusel de ambientes -- */
 /* Una foto grande por vez, casi a pantalla completa, con las vecinas
-   asomando a los lados y el texto abajo. */
+   asomando a los lados y el texto abajo. Antes tenía pestañas arriba
+   (Todo / Planta alta / Planta baja / Exterior) para filtrar — se
+   sacaron: el usuario prefirió el carrusel siempre con todos los
+   ambientes mezclados. `pintarCarruselAmbientes()` conserva el parámetro
+   `planta` por si algún día vuelven a hacer falta, pero ahora sólo se
+   llama con 'todas'. */
 
-let plantaAmbientes = 'todas';
 let carrIndice = 0;
 let carrLista = [];
 
@@ -955,7 +946,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   pintarTextosCasa();
   pintarCifras();
   pintarComodidades();
-  iniciarTabsAmbientes();
   iniciarCarruselAmbientes();
   pintarCarruselAmbientes('todas');
   pintarFaq();

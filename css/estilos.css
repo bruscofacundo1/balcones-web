@@ -1327,6 +1327,16 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
    terracota) para no inventar un lenguaje nuevo. */
 .tarifas__titulo { text-align: center; color: var(--terracota); margin: 0 0 56px; }
 
+/* "La casa por dentro" centrado, sin filtros por planta (el usuario los
+   sacó: mostraba el carrusel siempre con todos los ambientes mezclados en
+   vez de separados). Sin la línea divisoria de .encabezado-seccion
+   tampoco — los otros títulos centrados del sitio (#la-casa, tarifas) no
+   la llevan; ahí se ve como parte del patrón izquierda, no del centrado. */
+.ambientes__encabezado {
+  max-width: 660px; margin: 0 auto 56px; padding-bottom: 0; border-bottom: 0;
+  text-align: center;
+}
+
 /* Una fila por unidad, a todo el ancho de la PANTALLA (no del contenedor) —
    estilo hotelnafarrola.com: la foto toca el borde real del navegador, foto
    y texto van mitad y mitad, y las filas quedan pegadas una a la otra (sin
