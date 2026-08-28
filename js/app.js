@@ -248,15 +248,30 @@ function pintarDistancias() {
     `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 }
 
+/* -------------------------------------------------------------- ambientes */
+/* Volvieron los filtros: se habían sacado en un momento en que el
+   carrusel andaba con pocos ambientes, pero al sumar los que faltaban
+   (dorm-alta-3, dorm-alta-4, vestidor, etc. — antes vivían en la galería
+   de "La casa y el lugar") llegó a 21, y sin forma de saltar a una planta
+   puntual había que clickear "siguiente" muchas veces para llegar a
+   planta baja. */
+function iniciarTabsAmbientes() {
+  const tabs = document.querySelectorAll('#tabs-ambientes .tab');
+  tabs.forEach(t => {
+    t.addEventListener('click', () => {
+      tabs.forEach(o => o.setAttribute('aria-selected', 'false'));
+      t.setAttribute('aria-selected', 'true');
+      plantaAmbientes = t.dataset.planta;
+      pintarCarruselAmbientes(plantaAmbientes);
+    });
+  });
+}
+
 /* ------------------------------------------------ carrusel de ambientes -- */
 /* Una foto grande por vez, casi a pantalla completa, con las vecinas
-   asomando a los lados y el texto abajo. Antes tenía pestañas arriba
-   (Todo / Planta alta / Planta baja / Exterior) para filtrar — se
-   sacaron: el usuario prefirió el carrusel siempre con todos los
-   ambientes mezclados. `pintarCarruselAmbientes()` conserva el parámetro
-   `planta` por si algún día vuelven a hacer falta, pero ahora sólo se
-   llama con 'todas'. */
+   asomando a los lados y el texto abajo. */
 
+let plantaAmbientes = 'todas';
 let carrIndice = 0;
 let carrLista = [];
 
@@ -946,6 +961,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   pintarTextosCasa();
   pintarCifras();
   pintarComodidades();
+  iniciarTabsAmbientes();
   iniciarCarruselAmbientes();
   pintarCarruselAmbientes('todas');
   pintarFaq();
