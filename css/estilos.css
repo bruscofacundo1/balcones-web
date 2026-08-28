@@ -308,7 +308,17 @@ a { color: var(--terracota); }
    transparente sobre la foto, pero con fondo sólido dejaba ver un hilo de lo
    que scrollea justo arriba, que quedaba mal (más todavía si pasaba un
    título grande justo por ahí). Sólida se pega del todo al borde. */
-.nav--solida { top: 0; background: rgba(253,252,250,.94); backdrop-filter: blur(10px); box-shadow: 0 1px 0 var(--borde); }
+/* Sin backdrop-filter: blur() a propósito — el fondo ya casi opaco (.94)
+   alcanza para el contraste, y backdrop-filter en un ancestro de
+   .nav__links (el cajón del menú, que vive DENTRO de .nav en el HTML)
+   convierte a .nav en el "containing block" de ese hijo fixed. El cajón,
+   pensado para posicionarse relativo a toda la pantalla (inset: 0 auto 0 0,
+   full height), quedaba entonces relativo a la cajita de 88px de .nav: se
+   abría como un rectángulo chico pegado arriba en vez del panel de
+   costado completo. Bug reportado por el usuario: pasaba sólo con la
+   barra en modo "sólida" (después de bajar), que es cuando se agregaba
+   esta clase. */
+.nav--solida { top: 0; background: rgba(253,252,250,.94); box-shadow: 0 1px 0 var(--borde); }
 .nav--solida .nav__marca-texto { color: var(--carbon); }
 .nav--solida .boton--fantasma { color: var(--carbon); border-color: var(--borde); }
 .nav--solida .boton--fantasma:hover { background: var(--carbon); color: #fff; border-color: var(--carbon); }
