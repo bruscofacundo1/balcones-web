@@ -1354,7 +1354,10 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
    "La casa", etc.) en vez de ir literalmente hasta el borde. */
 .unidad-tarifa__cuerpo {
   background: var(--arena);
-  display: flex; flex-direction: column; justify-content: center;
+  /* justify-content: flex-start (no "center"): en la referencia el título
+     arranca pegado arriba, con su rayita, y recién después el texto — no
+     centrado en el medio de la celda. */
+  display: flex; flex-direction: column; justify-content: flex-start;
   padding-block: clamp(40px, 6vw, 72px);
   padding-left: 56px;
   padding-right: max(24px, calc(50vw - var(--ancho) / 2));
@@ -1364,7 +1367,17 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
   padding-right: 56px;
 }
 
-.unidad-tarifa__cuerpo h3 { font-size: 1.6rem; margin-bottom: 4px; }
+/* Título en terracota (no en carbón, el color por defecto de los h3): así
+   se distingue de un vistazo del cuerpo del texto, como el título celeste
+   de hotelnafarrola.com contra su texto gris. La rayita corta debajo es
+   el mismo detalle de esa referencia. */
+.unidad-tarifa__cuerpo h3 {
+  font-size: 1.6rem; margin-bottom: 16px; color: var(--terracota); position: relative;
+}
+.unidad-tarifa__cuerpo h3::after {
+  content: ''; display: block; width: 48px; height: 2px;
+  background: var(--terracota); margin-top: 12px;
+}
 .unidad-tarifa__meta {
   font-family: var(--mono); font-size: .72rem; letter-spacing: .01em;
   color: var(--piedra); margin-bottom: 22px;

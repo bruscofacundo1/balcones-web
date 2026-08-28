@@ -58,12 +58,14 @@ const CONFIG = {
       // Para estar libre necesita las dos plantas libres
       ocupa: ['alta', 'baja'],
       detalle: '2 plantas · 4 dormitorios · 2 baños · 2 cocinas',
-      texto: 'Las dos plantas para vos, cada una con entrada, cocina y baño propios. Arriba, la suite con ' +
-        'cama king, vestidor con placard grande, escritorio y vista a las sierras; el segundo dormitorio ' +
-        'con dos camas de plaza y media más una individual; y un living-comedor con sofá cama, mesa grande ' +
-        'y salida a una terraza enorme con vista al valle. Abajo, un dormitorio con cama doble y cucheta, ' +
-        'cocina-comedor propia y acceso directo desde el garage doble cerrado. El parque se comparte entre ' +
-        'las dos. Ideal para familias grandes o dos familias que viajan juntas.',
+      // Corta, como la de alta y baja: el detalle de cada ambiente ya está
+      // en el popup ("Más info"), acá no hace falta repetirlo — antes esta
+      // modalidad tenía un párrafo larguísimo (juntaba las dos plantas
+      // enteras) y esa era la causa real de que la fila se viera "muy
+      // grande": con align-items:stretch, un texto más largo hace toda la
+      // fila (foto incluida) más alta.
+      texto: 'Las dos plantas para vos, cada una con su cocina, baño y entrada propia. Ideal para ' +
+        'familias grandes o dos familias que viajan juntas.',
       // Unión de las comodidades de ambas plantas. "Cocina completa", "baño
       // completo", "TV y living", "vestidor" y "galería" quedan afuera de
       // esta lista: ya están explicados (con más detalle) en el texto y en
