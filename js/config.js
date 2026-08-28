@@ -163,8 +163,8 @@ const CONFIG = {
      texto conviene que lo revise alguien del rubro.                        */
   legales: {
     // Quién es el responsable frente al huésped (Ley 24.240, art. 4)
-    titular: 'Balcones del Arroyo',               // << REVISAR >> nombre o razón social real
-    cuit: '',                                     // << REVISAR >> ej: '20-12345678-9'
+    titular: 'Enrique Ramón Brusco',               // dato real, confirmado por el usuario el 2026-08-28
+    cuit: '20-17626507-9',                         // dato real, confirmado por el usuario el 2026-08-28
     domicilio: 'Arroyo de los Patos, Nono, Córdoba, Argentina',
     // Número del Registro de alojamientos turísticos (Córdoba, Ley 6483) y/o
     // del Registro Nacional de Viviendas de Alquiler Turístico Temporario.
