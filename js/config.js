@@ -28,11 +28,13 @@ const CONFIG = {
     googleResenas: '',                             // << REVISAR >> ver CONTEXTO.md para cómo conseguir el link correcto
     bookingResenas: '',                            // << REVISAR >>
     direccion: 'Arroyo de los Patos, Nono, Valle de Traslasierra, Córdoba',
-    // Coordenadas aproximadas para el mapa (reemplazá por las exactas de la casa)
+    // Coordenadas reales, de la ficha de "Balcones del Arroyo" en Google Maps
+    // (la que ya tiene 24 reseñas y 4.9 estrellas — confirmada por el usuario
+    // el 2026-08-28). Antes eran un placeholder aproximado.
     mapa: {
-      lat: -31.8060,                              // << REVISAR >>
-      lng: -65.0180,                              // << REVISAR >>
-      zoom: 13
+      lat: -31.7743622,
+      lng: -64.9952442,
+      zoom: 15
     }
   },
 
@@ -54,26 +56,84 @@ const CONFIG = {
       id: 'completa',
       nombre: 'Casa completa',
       plazas: 9,
+      m2: 180,                                     // << REVISAR >> superficie real
       // Para estar libre necesita las dos plantas libres
       ocupa: ['alta', 'baja'],
       detalle: '2 plantas · 4 dormitorios · 2 baños · 2 cocinas',
-      texto: 'Las dos plantas para vos. Ideal para familias grandes o dos familias que viajan juntas.'
+      // Corta, como la de alta y baja: el detalle de cada ambiente ya está
+      // en el popup ("Más info"), acá no hace falta repetirlo — antes esta
+      // modalidad tenía un párrafo larguísimo (juntaba las dos plantas
+      // enteras) y esa era la causa real de que la fila se viera "muy
+      // grande": con align-items:stretch, un texto más largo hace toda la
+      // fila (foto incluida) más alta.
+      texto: 'Las dos plantas para vos, cada una con su cocina, baño y entrada propia. Ideal para ' +
+        'familias grandes o dos familias que viajan juntas.',
+      // Unión de las comodidades de ambas plantas. "Cocina completa", "baño
+      // completo", "TV y living", "vestidor" y "galería" quedan afuera de
+      // esta lista: ya están explicados (con más detalle) en el texto y en
+      // `ambientes` de cada planta — repetirlos acá era decir lo mismo dos
+      // veces con un ícono en el medio.
+      comodidades: [
+        'Wifi', 'Aire acondicionado frío/calor', 'Calefacción a gas', 'Ventiladores de techo',
+        'Agua caliente permanente', 'Agua de red y perforación propia',
+        'Asador, parrilla y disco', 'Hamaca paraguaya', 'Mesa de ping pong',
+        'Cochera cubierta', 'Ropa de cama y toallas', 'Parque con árboles',
+        'Acceso independiente por planta', 'Se admiten mascotas',
+        'Estacionamiento para varios autos'
+      ]
     },
     {
       id: 'alta',
       nombre: 'Planta alta',
       plazas: 5,
+      m2: 100,                                     // << REVISAR >> superficie real
       ocupa: ['alta'],
       detalle: '2 dormitorios · 1 baño · cocina · galería con vista',
-      texto: 'La suite con cama king y el dormitorio de tres plazas, más el living y la galería del atardecer.'
+      texto: 'Dos dormitorios y un living-comedor con vista a las sierras y al valle desde cualquier ' +
+        'rincón — es la planta más alta de la casa.',
+      // Ficha por ambiente: es el detalle real de cada espacio (camas,
+      // muebles, calefacción propia), separado de `comodidades` para no
+      // repetir en el ícono lo que ya se explica acá con más precisión.
+      ambientes: [
+        { label: 'Dormitorio principal',
+          detalle: 'Cama king, vestidor con placard grande, escritorio, TV, calefactor y aire acondicionado propios.' },
+        { label: 'Segundo dormitorio',
+          detalle: '2 camas de 1½ plaza + 1 individual, escritorio, placard grande, calefactor y ventilador de techo.' },
+        { label: 'Living y cocina',
+          detalle: 'Sofá cama, mesa grande, TV, aire acondicionado, cocina totalmente equipada (heladera, horno, microondas, pava eléctrica, tostadora, licuadora). Sale a una terraza enorme con la misma vista.' },
+        { label: 'Baño', detalle: 'Muy amplio.' }
+      ],
+      comodidades: [
+        'Wifi', 'Aire acondicionado frío/calor', 'Calefacción a gas', 'Ventiladores de techo',
+        'Agua caliente permanente', 'Agua de red y perforación propia',
+        'Asador, parrilla y disco', 'Hamaca paraguaya', 'Ropa de cama y toallas',
+        'Parque con árboles', 'Acceso independiente por planta', 'Se admiten mascotas',
+        'Estacionamiento para varios autos'
+      ]
     },
     {
       id: 'baja',
       nombre: 'Planta baja',
       plazas: 4,
+      m2: 70,                                      // << REVISAR >> superficie real
       ocupa: ['baja'],
-      detalle: '2 dormitorios · 1 baño · cocina · acceso propio',
-      texto: 'Dos dormitorios, cocina completa y entrada independiente. Fresca y tranquila.'
+      detalle: '1 dormitorio · 1 baño · cocina-comedor · acceso propio',
+      texto: 'Un dormitorio con cama doble y cucheta, con entrada independiente por el garage.',
+      ambientes: [
+        { label: 'Dormitorio',
+          detalle: 'Cama doble + 2 camas cucheta individuales, placard grande, ventilador de techo, ventana al parque.' },
+        { label: 'Cocina-comedor', detalle: 'Ambiente aparte, heladera, pava eléctrica, buena vajilla.' },
+        { label: 'Baño', detalle: 'Amplio.' },
+        { label: 'Garage',
+          detalle: 'Doble, cerrado, conecta directo con la cocina-comedor — bajás del auto y ya estás adentro. De uso exclusivo de esta planta cuando se alquila por separado.' }
+      ],
+      comodidades: [
+        'Wifi', 'Aire acondicionado frío/calor', 'Calefacción a gas', 'Ventiladores de techo',
+        'Agua caliente permanente', 'Agua de red y perforación propia',
+        'Mesa de ping pong', 'Cochera cubierta', 'Ropa de cama y toallas',
+        'Parque con árboles', 'Acceso independiente por planta', 'Se admiten mascotas',
+        'Estacionamiento para varios autos'
+      ]
     }
   ],
 
@@ -178,10 +238,6 @@ const CONFIG = {
         { nombre: 'Finde largo del 9 de julio', desde: '2027-07-09', hasta: '2027-07-11' },
         { nombre: 'Finde largo de agosto',    desde: '2027-08-14', hasta: '2027-08-16' },
         { nombre: 'Finde largo de octubre',   desde: '2027-10-09', hasta: '2027-10-11' }
-      ],
-      incluye: [
-        ['Ropa blanca', 'Incluida'],
-        ['Servicios', 'Todo incluido']
       ]
     },
     {
@@ -202,10 +258,6 @@ const CONFIG = {
       rangos: [
         { nombre: 'Otoño',     desde: '03-01', hasta: '04-30' },
         { nombre: 'Primavera', desde: '10-01', hasta: '12-19' }
-      ],
-      incluye: [
-        ['Ropa blanca', 'Incluida'],
-        ['Servicios', 'Todo incluido']
       ]
     },
     {
@@ -223,10 +275,6 @@ const CONFIG = {
       rangos: [
         { nombre: 'Invierno',         desde: '05-01', hasta: '07-09' },
         { nombre: 'Fin del invierno', desde: '07-26', hasta: '09-30' }
-      ],
-      incluye: [
-        ['Ropa blanca', 'Incluida'],
-        ['Estadías largas', 'Consultar descuento']
       ]
     }
   ],
@@ -238,6 +286,7 @@ const CONFIG = {
     'Incluye ropa de cama y toallas, gas, luz, agua y wifi.',
     'Se abona una seña del 30% para confirmar la reserva y el saldo al ingresar.',
     'Fines de semana largos y Semana Santa se cobran con tarifa de temporada alta.',
+    'En temporada baja, las estadías largas tienen descuento — consultá por WhatsApp.',
     'Los precios pueden actualizarse; confirmá el valor final por WhatsApp.'
   ],
 
@@ -332,12 +381,27 @@ if (typeof module !== 'undefined' && module.exports) module.exports = { CONFIG }
 const AMBIENTES = [
   { foto: 'dorm-principal',   planta: 'alta', titulo: 'Suite principal',
     meta: '2 plazas · Cama king · Vestidor', texto: 'Cama king, tres ventanas al valle y vestidor propio.' },
+  // Segunda foto de la suite (la cómoda y el televisor) — antes vivía en
+  // la galería general como "interiores", ahora acá con el resto de la
+  // suite.
+  { foto: 'dorm-principal-2', planta: 'alta', titulo: 'Cómoda y TV de la suite',
+    meta: 'En la suite principal', texto: 'La cómoda y el televisor de la suite, con espejo y buena luz de mañana.' },
+  { foto: 'vestidor',         planta: 'alta', titulo: 'Vestidor de la suite',
+    meta: 'En la suite principal', texto: 'El placard grande de la suite, con espacio de sobra para guardar todo.' },
   { foto: 'dorm-alta-2',      planta: 'alta', titulo: 'Dormitorio de tres plazas',
     meta: '3 plazas · Persianas', texto: 'Amplio, con dos ventanas con persianas y mucha luz de mañana.' },
+  { foto: 'dorm-alta-3',      planta: 'alta', titulo: 'Escritorio para trabajar',
+    meta: 'Segundo dormitorio', texto: 'Un escritorio para trabajar o estudiar, al lado de una de las tres camas.' },
+  { foto: 'dorm-alta-4',      planta: 'alta', titulo: 'Placard y vista a las sierras',
+    meta: 'Segundo dormitorio', texto: 'Las otras dos camas del cuarto, con placard amplio y ventana a las sierras.' },
   { foto: 'living',           planta: 'alta', titulo: 'Living comedor',
     meta: 'Techo de madera', texto: 'El corazón de la planta alta: mesa larga, techo de madera a dos aguas y salida a la galería.' },
+  { foto: 'living-tv',        planta: 'alta', titulo: 'Estar con TV',
+    meta: 'En el living', texto: 'El otro rincón del living, con la tele y algo del arte de la casa en las paredes.' },
   { foto: 'cocina-alta',      planta: 'alta', titulo: 'Cocina de planta alta',
     meta: 'Totalmente equipada', texto: 'Con horno, heladera con freezer, microondas y todo lo necesario para cocinar para varios.' },
+  { foto: 'cocina-alta-2',    planta: 'alta', titulo: 'Cocina equipada',
+    meta: 'Otro ángulo', texto: 'La cocina de planta alta, con anafe, mucho espacio de guardado y mesada de granito.' },
   { foto: 'bano-alta',        planta: 'alta', titulo: 'Baño de planta alta',
     meta: 'Completo', texto: 'Baño completo con ducha, bidet y bacha de apoyo.' },
   { foto: 'dorm-baja-1',      planta: 'baja', titulo: 'Dormitorio con cucheta',
@@ -375,22 +439,14 @@ const FOTOS = [
   { f: 'casa-parque',         c: 'casa',       t: 'La casa desde el parque' },
   { f: 'casa-noche-gente',    c: 'casa',       t: 'Noches de encuentro' },
 
-  { f: 'living',              c: 'interiores', t: 'Living comedor de planta alta' },
-  { f: 'living-tv',           c: 'interiores', t: 'Estar con TV' },
-  { f: 'cocina-alta',         c: 'interiores', t: 'Cocina principal' },
-  { f: 'cocina-alta-2',       c: 'interiores', t: 'Cocina equipada' },
-  { f: 'cocina-baja',         c: 'interiores', t: 'Cocina de planta baja' },
-  { f: 'dorm-principal',      c: 'interiores', t: 'Suite principal con cama king' },
-  { f: 'dorm-principal-2',    c: 'interiores', t: 'Suite principal' },
-  { f: 'vestidor',            c: 'interiores', t: 'Vestidor de la suite' },
-  { f: 'dorm-alta-2',         c: 'interiores', t: 'Dormitorio de tres plazas' },
-  { f: 'dorm-alta-3',         c: 'interiores', t: 'Dormitorio de planta alta' },
-  { f: 'dorm-alta-4',         c: 'interiores', t: 'Dormitorio de planta alta' },
-  { f: 'dorm-baja-1',         c: 'interiores', t: 'Dormitorio con cucheta' },
-  { f: 'dorm-baja-2',         c: 'interiores', t: 'Dormitorio de planta baja' },
-  { f: 'bano-alta',           c: 'interiores', t: 'Baño de planta alta' },
-  { f: 'bano-baja',           c: 'interiores', t: 'Baño de planta baja' },
-  { f: 'escalera',            c: 'interiores', t: 'Escalera principal' },
+  // La categoría 'interiores' se sacó de acá: esas 16 fotos (living,
+  // cocinas, dormitorios, baños, vestidor, escalera) quedaron duplicadas
+  // con "La casa por dentro" (el carrusel de AMBIENTES, más arriba en la
+  // página) y esta galería es "La casa y el lugar" — pensada para el
+  // exterior de la casa y el entorno, no para repetir los ambientes de
+  // adentro. Las 6 que no tenían su propio ambiente en AMBIENTES
+  // (living-tv, cocina-alta-2, dorm-principal-2, vestidor, dorm-alta-3,
+  // dorm-alta-4) se agregaron ahí para no perderlas.
 
   { f: 'balcon-atardecer-1',  c: 'aire-libre', t: 'Atardecer desde la galería' },
   { f: 'balcon-atardecer-2',  c: 'aire-libre', t: 'La galería al caer el sol' },

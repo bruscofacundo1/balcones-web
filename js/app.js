@@ -249,6 +249,12 @@ function pintarDistancias() {
 }
 
 /* -------------------------------------------------------------- ambientes */
+/* Volvieron los filtros: se habían sacado en un momento en que el
+   carrusel andaba con pocos ambientes, pero al sumar los que faltaban
+   (dorm-alta-3, dorm-alta-4, vestidor, etc. — antes vivían en la galería
+   de "La casa y el lugar") llegó a 21, y sin forma de saltar a una planta
+   puntual había que clickear "siguiente" muchas veces para llegar a
+   planta baja. */
 function iniciarTabsAmbientes() {
   const tabs = document.querySelectorAll('#tabs-ambientes .tab');
   tabs.forEach(t => {
@@ -517,7 +523,7 @@ function pintarTodasLasFotos(categoria = 'todas') {
 /**
  * Las fotos bien apaisadas ocupan dos columnas.
  *
- * De las 56, la mayoría son 4:3, pero hay unas pocas panorámicas (2.22:1).
+ * De las 40, la mayoría son 4:3, pero hay unas pocas panorámicas (2.22:1).
  * En el mismo cuadrito que las demás perdían un 40% del ancho: justo el
  * paisaje que hace que valga la pena la foto. Con el doble de ancho entran
  * casi enteras (se recorta un poco de cielo y de piso, que no molesta) y, de
@@ -669,59 +675,185 @@ function iniciarLightbox() {
    precios por temporada. Las plazas y el detalle de cada unidad se dicen
    una sola vez, arriba. */
 
-/** Cuadro de precios por temporada. */
-function pintarTarifas(idContenedor) {
-  const cont = document.getElementById(idContenedor);
+/* Íconos chicos para las comodidades, estilo hotelnafarrola.com — un trazo
+   fino, sin relleno, nada ilustrativo. Van por palabra clave (no por texto
+   exacto) para no romper si alguien edita la lista desde /admin.
+
+   Antes "Aire acondicionado", "Calefacción a gas" y "Ventiladores de techo"
+   compartían un solo ícono genérico ('clima'): en una tarjeta con las tres
+   comodidades una al lado de la otra se veía el mismo dibujo repetido 3
+   veces, sin distinguir nada. Ahora cada una tiene el suyo. Lo mismo pasaba
+   con las dos de agua (agua caliente vs. agua de red) y con cochera vs.
+   estacionamiento — separados también. Sólo quedan agrupadas bajo un mismo
+   ícono las que de verdad son variaciones de la misma cosa (por eso
+   "Vestidor en la suite" sigue usando el de 'cama': no amerita un dibujo
+   propio). */
+const ICONOS_COMODIDAD = {
+  wifi: '<path d="M3 8.5a13 13 0 0 1 18 0"/><path d="M6.5 12a8 8 0 0 1 11 0"/><path d="M10 15.5a3 3 0 0 1 4 0"/><circle cx="12" cy="19" r="1" fill="currentColor" stroke="none"/>',
+  // Aire acondicionado: el equipo de pared (rectángulo ancho) + el aire frío
+  // saliendo hacia abajo.
+  ac: '<rect x="3" y="6" width="18" height="7" rx="1.5"/><line x1="7" y1="17" x2="6" y2="20"/><line x1="12" y1="17" x2="12" y2="20"/><line x1="17" y1="17" x2="18" y2="20"/>',
+  // Calefacción a gas: un radiador (panel con aletas verticales) — se
+  // distingue a propósito del fuego abierto del asador.
+  radiador: '<rect x="5" y="4" width="14" height="16" rx="1"/><line x1="9" y1="4" x2="9" y2="20"/><line x1="13" y1="4" x2="13" y2="20"/><line x1="17" y1="4" x2="17" y2="20"/>',
+  // Ventilador de techo: el motor centrado y 3 aspas.
+  fan: '<line x1="12" y1="3" x2="12" y2="7.2"/><circle cx="12" cy="12" r="2.2"/><line x1="12" y1="12" x2="12" y2="7.2"/><line x1="12" y1="12" x2="16.5" y2="14.7"/><line x1="12" y1="12" x2="7.5" y2="14.7"/>',
+  // Agua caliente permanente: el termómetro de siempre — asocia "caliente"
+  // sin repetir la gotita de agua de red.
+  termo: '<rect x="10" y="3" width="4" height="12" rx="2"/><circle cx="12" cy="18" r="3"/>',
+  agua: '<path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11Z"/>',
+  cocina: '<rect x="4" y="5" width="16" height="15" rx="1.5"/><circle cx="8.5" cy="9.5" r="1.4"/><circle cx="15.5" cy="9.5" r="1.4"/><circle cx="8.5" cy="15.5" r="1.4"/><circle cx="15.5" cy="15.5" r="1.4"/>',
+  bano: '<path d="M7 9a5 5 0 0 1 10 0"/><line x1="6" y1="9" x2="18" y2="9"/><line x1="8" y1="13" x2="8" y2="13.01"/><line x1="12" y1="13" x2="12" y2="13.01"/><line x1="16" y1="13" x2="16" y2="13.01"/><line x1="8" y1="17" x2="8" y2="17.01"/><line x1="12" y1="17" x2="12" y2="17.01"/><line x1="16" y1="17" x2="16" y2="17.01"/>',
+  fuego: '<path d="M12 3c-1 3-5 6-5 10a5 5 0 0 0 10 0c0-1.5-.6-2.4-1-3 .2 1.5-.6 2-1.3 2-1 0-1.3-.8-.9-1.8.8-2 .5-4.4-1.8-7.2Z"/>',
+  arbol: '<path d="M12 3 7 11h2.5L6 17h5v4h2v-4h5l-3.5-6H17L12 3Z"/>',
+  hamaca: '<path d="M4 8v3M20 8v3M4 11c0 3 4 4 8 4s8-1 8-4"/>',
+  pingpong: '<circle cx="9" cy="9" r="4"/><line x1="12" y1="12" x2="17" y2="17"/><line x1="16" y1="18" x2="18" y2="16"/>',
+  auto: '<path d="M5 16V11l2-5h10l2 5v5"/><line x1="3" y1="16" x2="21" y2="16"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/>',
+  // Cochera cubierta: el techo a dos aguas sobre el auto guardado —
+  // distinto del auto "suelto" de estacionamiento.
+  cochera: '<path d="M4 11 12 5l8 6"/><rect x="6" y="11" width="12" height="8" rx="1"/><line x1="6" y1="19" x2="6" y2="21"/><line x1="18" y1="19" x2="18" y2="21"/>',
+  cama: '<path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6"/><path d="M3 14h18"/><path d="M7 12V9a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3"/><line x1="3" y1="18" x2="3" y2="20"/><line x1="21" y1="18" x2="21" y2="20"/>',
+  puerta: '<rect x="5" y="3" width="10" height="18" rx="1"/><circle cx="11.5" cy="12" r="1" fill="currentColor" stroke="none"/>',
+  pata: '<circle cx="8" cy="8" r="1.6"/><circle cx="12" cy="6.5" r="1.6"/><circle cx="16" cy="8" r="1.6"/><path d="M8 13c0-2 2-3 4-3s4 1 4 3c0 2.5-2 4-4 4s-4-1.5-4-4Z"/>',
+  generico: '<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.3 2.3L16 10"/>'
+};
+/** Palabra clave → ícono. La primera que aparece en el texto gana. Con
+    límite de palabra (\b) donde la clave es corta o puede colarse adentro de
+    otra: sin eso, "agua" hacía match dentro de "paraguaya" y "Hamaca
+    paraguaya" terminaba con el ícono de la gotita en vez del de la hamaca.
+    "agua caliente" va ANTES que \bagua\b por el mismo motivo: si no, "Agua
+    caliente permanente" quedaría con la gotita genérica en vez del termómetro. */
+const CLAVES_ICONO = [
+  [/wifi/i, 'wifi'],
+  [/aire acondicionado/i, 'ac'],
+  [/calefac/i, 'radiador'],
+  [/ventilador/i, 'fan'],
+  [/hamaca/i, 'hamaca'],
+  [/agua caliente/i, 'termo'],
+  [/\bagua\b/i, 'agua'],
+  [/cocina/i, 'cocina'],
+  [/baño/i, 'bano'],
+  [/asador|parrilla/i, 'fuego'],
+  [/galería|parque|árbol/i, 'arbol'],
+  [/ping pong/i, 'pingpong'],
+  [/cochera/i, 'cochera'],
+  [/estacionamiento/i, 'auto'],
+  [/ropa de cama|\btv\b|living|vestidor/i, 'cama'],
+  [/acceso independiente/i, 'puerta'],
+  [/mascota/i, 'pata']
+];
+function iconoComodidad(texto) {
+  const clave = CLAVES_ICONO.find(([re]) => re.test(texto));
+  const key = clave ? clave[1] : 'generico';
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONOS_COMODIDAD[key]}</svg>`;
+}
+
+/** Devuelve la ficha de ambientes que le corresponde mostrar a una
+    modalidad. "alta" y "baja" tienen la suya propia en config.js; "completa"
+    no repite las dos enteras ahí (sería un dato más para mantener sincronizado
+    con las otras dos) — la arma al vuelo combinando `alta` y `baja`, con un
+    título de grupo para no perder de qué planta es cada ambiente. */
+function obtenerGruposAmbientes(m) {
+  if (m.ambientes) return [{ grupo: null, items: m.ambientes }];
+  if (m.id === 'completa') {
+    return CONFIG.modalidades
+      .filter(x => x.id !== 'completa' && x.ambientes)
+      .map(x => ({ grupo: x.nombre, items: x.ambientes }));
+  }
+  return [];
+}
+
+/** Una fila por unidad, a todo el ancho de la pantalla, con la foto
+    alternando de lado — estilo hotelnafarrola.com. Pasó por varios formatos
+    antes de llegar acá (ver el comentario de .unidad-tarifa en estilos.css
+    para la historia completa). */
+function pintarUnidadesTarifas() {
+  const cont = document.getElementById('unidades-tarifa');
   if (!cont) return;
 
   // `&& !animacionesListas`: si esto se repinta después de que corrió
   // iniciarRevelado(), un .revelar nuevo no lo observa nadie y la tarjeta
   // queda en opacity:0 PARA SIEMPRE. Un repintado tardío aparece sin animar.
-  const conRevelado = !animacionesListas;
+  const rev = animacionesListas ? '' : ' revelar';
 
-  cont.innerHTML = CONFIG.temporadas.map(t => `
-    <article class="tarifa ${conRevelado ? 'revelar' : ''} ${t.destacada ? 'tarifa--destacada' : ''}">
-      <h3 class="tarifa__nombre">${t.nombre}</h3>
-      <p class="tarifa__periodo">${t.periodo}</p>
-      <ul class="tarifa__precios">
-        ${CONFIG.modalidades.map(m => `
-          <li>
-            <span>${m.nombre}</span>
-            <strong>${pesos(t.precios[m.id])}</strong>
-          </li>`).join('')}
-      </ul>
-      <p class="tarifa__unidad">por noche</p>
-      <ul class="tarifa__detalle">
-        <!-- El mínimo sale de minNoches, no de incluye: es editable desde
-             /admin, y tenerlo escrito dos veces hacía que la tarjeta siguiera
-             mostrando el número viejo después de cambiarlo. -->
-        <li>Mínimo de noches<span>${t.minNoches}</span></li>
-        ${t.incluye.map(([k, v]) => `<li>${k}<span>${v}</span></li>`).join('')}
-      </ul>
-      <a class="boton boton--linea" href="reserva.html" data-reservar>Ver disponibilidad</a>
-    </article>`).join('');
+  cont.innerHTML = CONFIG.modalidades.map(m => {
+    // El "desde" es el precio más bajo entre las temporadas, no siempre la
+    // baja a mano: si el día de mañana cambia el orden o los valores, esto
+    // sigue siendo correcto sin tocar nada acá.
+    const desde = Math.min(...CONFIG.temporadas.map(t => t.precios[m.id]));
+    const tieneAmbientes = obtenerGruposAmbientes(m).length > 0;
+    return `
+    <article class="unidad-tarifa${rev}">
+      <div class="unidad-tarifa__foto">
+        <img src="${FOTO_UNIDAD[m.id]}" alt="" loading="lazy">
+      </div>
+      <div class="unidad-tarifa__cuerpo">
+        <h3>${m.nombre}</h3>
+        <p class="unidad-tarifa__texto">${m.texto}</p>
+        <p class="unidad-tarifa__meta">Personas: ${m.plazas} · m²: ${m.m2}</p>
+
+        <ul class="unidad-tarifa__comodidades">
+          ${m.comodidades.map(c => `<li tabindex="0" data-tip="${c}">${iconoComodidad(c)}<span class="sr-solo">${c}</span></li>`).join('')}
+        </ul>
+
+        <div class="unidad-tarifa__acciones">
+          <a class="boton boton--primario unidad-tarifa__boton" href="reserva.html" data-reservar>Reservar desde <strong>${pesos(desde)}</strong></a>
+          ${tieneAmbientes ? `<button type="button" class="boton boton--linea" data-ambientes="${m.id}">Más info</button>` : ''}
+        </div>
+      </div>
+    </article>`;
+  }).join('');
 }
 
-/** Variante A: las tres unidades, la casa completa más ancha que las plantas. */
-function pintarUnidades() {
-  const cont = document.getElementById('unidades-tira');
-  if (!cont) return;
+/* --------------------------------------- popup "Ver los ambientes" ----- */
+function abrirModalAmbientes(id) {
+  const modal = document.getElementById('modal-amb');
+  const m = CONFIG.modalidades.find(x => x.id === id);
+  if (!modal || !m) return;
 
-  const rev = animacionesListas ? '' : ' revelar revelar--foto';
-  cont.innerHTML = CONFIG.modalidades.map((m, i) => `
-    <article class="unidad${rev}${i === 0 ? ' unidad--principal' : ''}">
-      <img class="unidad__foto" src="${FOTO_UNIDAD[m.id]}" alt="" loading="lazy">
-      <div class="unidad__cuerpo">
-        <h3>${m.nombre}</h3>
-        <p class="unidad__meta">${m.plazas} plazas · ${m.detalle}</p>
-        <p class="unidad__texto">${m.texto}</p>
-      </div>
-    </article>`).join('');
+  document.getElementById('ma-titulo').textContent = `${m.nombre} — ambientes`;
+  document.getElementById('ma-cuerpo').innerHTML = obtenerGruposAmbientes(m).map(g => `
+    ${g.grupo ? `<h4 class="modal-amb__grupo">${g.grupo}</h4>` : ''}
+    <dl class="modal-amb__lista">
+      ${g.items.map(a => `<dt>${a.label}</dt><dd>${a.detalle}</dd>`).join('')}
+    </dl>
+  `).join('');
+
+  modal.classList.add('abierto');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('ma-cerrar').focus();
+}
+
+function cerrarModalAmbientes() {
+  const modal = document.getElementById('modal-amb');
+  if (!modal) return;
+  modal.classList.remove('abierto');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+function iniciarModalAmbientes() {
+  const modal = document.getElementById('modal-amb');
+  if (!modal) return;
+
+  // Por delegación, como el modal de reserva: así también funciona con las
+  // tarjetas que recién se pintaron (pintarUnidadesTarifas corre después).
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-ambientes]');
+    if (!b) return;
+    abrirModalAmbientes(b.dataset.ambientes);
+  });
+  document.getElementById('ma-cerrar').addEventListener('click', cerrarModalAmbientes);
+  modal.querySelector('.modal-amb__fondo').addEventListener('click', cerrarModalAmbientes);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal.classList.contains('abierto')) cerrarModalAmbientes();
+  });
 }
 
 function pintarAlquiler() {
-  pintarUnidades();
-  pintarTarifas('tarifas-grid');
+  pintarUnidadesTarifas();
 
   document.getElementById('notas-tarifas').innerHTML =
     CONFIG.notasTarifas.map(n => `<li>${n}</li>`).join('');
@@ -847,4 +979,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   iniciarNav();
   iniciarRevelado();
   iniciarReservas();
+  iniciarModalAmbientes();
 });

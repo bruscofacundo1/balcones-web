@@ -48,7 +48,12 @@
   --nav-h: 88px;   /* antes 72 — las tres referencias andan entre 90 y 100 */
   --nav-gap: 16px; /* separación de la barra con el borde de arriba: flota, no toca */
   --ancho: 1180px;
-  --sec-y: clamp(96px, 12vw, 170px);   /* antes clamp(64px, 9vw, 112px) */
+  /* antes clamp(96px, 12vw, 170px) — que a su vez venía de clamp(64px, 9vw,
+     112px): entre dos secciones seguidas (cada una con este padding arriba
+     Y abajo) el salto llegaba a 340px de gris vacío, como entre "Cómo se
+     alquila" y "La casa por dentro". Baja a un punto medio entre las dos
+     versiones anteriores. */
+  --sec-y: clamp(72px, 9vw, 128px);
 }
 
 /* --------------------------------------------------------------- reset -- */
@@ -704,11 +709,19 @@ a { color: var(--terracota); }
   margin: 0; max-width: 56ch;
 }
 
+/* Antes las flechas heredaban left:0/right:0 de .carrusel__nav — pero acá
+   el carrusel es a todo el ancho de la pantalla (.carrusel--pantalla se
+   sale del contenedor), así que "0" era el borde real del navegador: la
+   flecha quedaba mitad afuera de la vista. Un inset fijo las trae adentro,
+   flotando sobre la foto que asoma al costado — más cerca de cómo se ve
+   en la referencia. */
 .carrusel--pantalla .carrusel__nav {
   top: 50%; width: 54px; height: 54px;
   border-radius: var(--radio-sm);
   background: rgba(255, 255, 255, .9); border-color: transparent;
 }
+.carrusel--pantalla .carrusel__nav--prev { left: max(16px, calc(50vw - var(--ancho) / 2 - 4px)); }
+.carrusel--pantalla .carrusel__nav--next { right: max(16px, calc(50vw - var(--ancho) / 2 - 4px)); }
 
 @media (max-width: 760px) {
   .carrusel, .carrusel__pista { min-height: 430px; }
@@ -1311,69 +1324,224 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
    scrollea, no siendo él mismo el que scrollea. */
 .todas-actividades__cuerpo { flex: 1 1 auto; overflow-y: auto; padding: 28px 0 40px; }
 
-/* --------------------------------------------------------------- tarifas - */
-/* Antes eran tres tarjetas con borde, sombra y un badge "Más buscada": el
-   patrón exacto de una tabla de planes de software. Ninguna casa de campo
-   muestra los precios así. Ahora son tres columnas de texto separadas por una
-   línea fina, y los precios van en mono tabular para que se lean como datos y
-   no como oferta. El badge se sacó del todo: temporada alta no es un plan que
-   el huésped elige, es cuándo viene. */
-.tarifas { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0; }
-.tarifa {
-  background: transparent; border: 0; border-left: 1px solid var(--borde);
-  padding: 2px 34px; display: flex; flex-direction: column;
+/* ------------------------------------------------------ unidades + tarifas */
+/* Antes esta sección tenía el trío completo (antetitulo + h2 + bajada) como
+   el resto del sitio. El usuario lo simplificó a un solo título: ya no hace
+   falta explicar de más arriba, la fila de abajo (con fotos y precio) habla
+   sola. Mismo tratamiento que #la-casa .casa__intro h2 (centrado, en
+   terracota) para no inventar un lenguaje nuevo. */
+.tarifas__titulo { text-align: center; color: var(--terracota); margin: 0 0 56px; }
+
+/* "La casa por dentro" centrado, sin filtros por planta (el usuario los
+   sacó: mostraba el carrusel siempre con todos los ambientes mezclados en
+   vez de separados). Sin la línea divisoria de .encabezado-seccion
+   tampoco — los otros títulos centrados del sitio (#la-casa, tarifas) no
+   la llevan; ahí se ve como parte del patrón izquierda, no del centrado. */
+.ambientes__encabezado {
+  max-width: 660px; margin: 0 auto 56px; padding-bottom: 0; border-bottom: 0;
+  text-align: center;
 }
-.tarifa:first-child { border-left: 0; padding-left: 0; }
-.tarifa--destacada { border-color: var(--borde); box-shadow: none; position: static; }
-.tarifa--destacada::before { content: none; }
-.tarifa__nombre { font-family: var(--display); font-size: 1.5rem; font-weight: 400; color: var(--carbon); margin-bottom: 8px; }
-.tarifa__periodo {
-  font-family: var(--mono); font-size: .74rem; letter-spacing: .01em;
-  color: var(--piedra); margin-bottom: 26px; line-height: 1.65;
+/* .tabs de base es flex-start (así lo usan las otras pantallas donde
+   vive, como el selector de modalidad en la reserva); acá, con el título
+   de arriba centrado, los filtros van centrados también. */
+.ambientes__tabs { justify-content: center; margin-bottom: 48px; }
+
+/* "La casa y el lugar" centrado — mismo patrón que .ambientes__encabezado
+   de arriba. */
+.galeria__encabezado {
+  max-width: 660px; margin: 0 auto 56px; padding-bottom: 0; border-bottom: 0;
+  text-align: center;
 }
-.tarifa__precios { list-style: none; padding: 0; margin: 0; }
-.tarifa__precios li {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 14px;
-  padding: 11px 0; border-top: 1px solid var(--borde);
+.galeria__encabezado .bajada { margin-inline: auto; }
+
+/* Una fila por unidad, a todo el ancho de la PANTALLA (no del contenedor) —
+   estilo hotelnafarrola.com: la foto toca el borde real del navegador, foto
+   y texto van mitad y mitad, y las filas quedan pegadas una a la otra (sin
+   gap) para que las celdas de foto/texto formen esa grilla tipo tablero de
+   ajedrez que se ve en la referencia. Mismo truco de "salirse del
+   contenedor" que .carrusel--pantalla (buscá margin-inline: calc(50% - 50vw)
+   más abajo en este archivo). Pasó por tres formatos antes de llegar acá:
+   dos filas de tarjetas separadas, después 3 columnas, después foto angosta
+   + texto ancho con toda la ficha de ambientes a la vista (esa versión se
+   veía "despareja" — la foto se estiraba rarísimo para alcanzar un texto
+   larguísimo). Ahora el texto vuelve a ser corto (la ficha completa por
+   ambiente se mudó a un popup — ver iniciarModalAmbientes en app.js), así
+   que foto y texto vuelven a quedar parejos con align-items: stretch. */
+.unidades-tarifa {
+  display: flex; flex-direction: column; gap: 0;
+  width: 100vw; margin-inline: calc(50% - 50vw);
 }
-.tarifa__precios li:first-child { border-top: 0; }
-.tarifa__precios span { font-size: .93rem; color: var(--carbon-suave); }
-.tarifa__precios strong {
-  font-family: var(--mono); font-size: .98rem; color: var(--carbon); font-weight: 500;
-  font-variant-numeric: tabular-nums; white-space: nowrap;
+.unidad-tarifa { display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; }
+/* de a una sí, de a una no: la foto pasa al segundo lugar. Con las dos
+   columnas del mismo ancho (a diferencia del intento anterior con una
+   columna angosta y otra ancha), `order` sólo cambia el lado visual y no
+   hace falta tocar el ancho de las columnas para nada. */
+.unidad-tarifa:nth-child(even) .unidad-tarifa__foto { order: 2; }
+
+.unidad-tarifa__foto img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* El texto va en un panel de fondo apenas distinto del blanco de la
+   página — así se nota la celda aunque no tenga foto. El padding es
+   asimétrico a propósito: del lado que toca la foto es un margen fijo,
+   nomás para que el texto no quede pegado; del lado que da al borde de la
+   pantalla usa la misma fórmula que .carrusel--pantalla para alinearse con
+   el resto del contenido del sitio (el título de la sección, el texto de
+   "La casa", etc.) en vez de ir literalmente hasta el borde. */
+.unidad-tarifa__cuerpo {
+  background: var(--arena);
+  /* justify-content: flex-start (no "center"): en la referencia el título
+     arranca pegado arriba, con su rayita, y recién después el texto — no
+     centrado en el medio de la celda. */
+  display: flex; flex-direction: column; justify-content: flex-start;
+  /* Antes clamp(40px, 6vw, 72px): con align-items:stretch en .unidad-tarifa,
+     la foto toma la misma altura que este panel de texto — un padding tan
+     generoso hacía tanto al panel como a la foto más altos de lo que
+     hacía falta, y esa era la "cantidad de espacio de más" que se notaba.
+     Achicarlo también achica la foto, sin tocar el resto (mismas
+     columnas, mismos elementos, mismo orden). */
+  padding-block: clamp(28px, 4vw, 48px);
+  padding-left: 56px;
+  padding-right: max(24px, calc(50vw - var(--ancho) / 2));
 }
-.tarifa__precios li:first-child span { font-weight: 400; color: var(--carbon-suave); }
-.tarifa__precios li:first-child strong { color: var(--carbon); font-size: .98rem; }
-.tarifa__unidad {
-  font-family: var(--mono); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--piedra); margin: 14px 0 0; padding-top: 14px; border-top: 1px solid var(--borde);
+.unidad-tarifa:nth-child(even) .unidad-tarifa__cuerpo {
+  padding-left: max(24px, calc(50vw - var(--ancho) / 2));
+  padding-right: 56px;
+}
+
+/* Título en terracota (no en carbón, el color por defecto de los h3): así
+   se distingue de un vistazo del cuerpo del texto, como el título celeste
+   de hotelnafarrola.com contra su texto gris. La rayita corta debajo es
+   el mismo detalle de esa referencia. */
+.unidad-tarifa__cuerpo h3 {
+  font-size: 1.6rem; margin-bottom: 10px; color: var(--terracota); position: relative;
+}
+.unidad-tarifa__cuerpo h3::after {
+  content: ''; display: block; width: 48px; height: 2px;
+  background: var(--terracota); margin-top: 8px;
+}
+.unidad-tarifa__meta {
+  font-family: var(--mono); font-size: .72rem; letter-spacing: .01em;
+  color: var(--piedra); margin-bottom: 14px;
+}
+.unidad-tarifa__texto { font-size: .96rem; color: var(--piedra); margin: 0 0 14px; max-width: 480px; }
+
+/* Estilo hotelnafarrola.com: sólo el ícono, en una pastilla circular pareja.
+   Con 13 a 15 comodidades por unidad, poner el texto al lado (como antes)
+   armaba renglones de largo desparejo y quedaba desprolijo; en un grid de
+   celdas fijas el desorden desaparece solo, sea cual sea la cantidad. El
+   nombre de cada una aparece en un tooltip propio al pasar el mouse (o al
+   enfocar con teclado — por eso el tabindex) y queda disponible para
+   lectores de pantalla en todo momento (.sr-solo). Pastillas de 32px, no
+   36px: un poco más compactas, más parecidas a la densidad de la
+   referencia. */
+.unidad-tarifa__comodidades {
+  list-style: none; padding: 0; margin: 0 0 16px;
+  display: grid; grid-template-columns: repeat(auto-fill, 32px);
+  gap: 8px;
+}
+.unidad-tarifa__comodidades li {
+  position: relative;
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--borde); border-radius: 50%; color: var(--piedra);
+  transition: border-color .2s ease, color .2s ease;
+}
+.unidad-tarifa__comodidades li:hover,
+.unidad-tarifa__comodidades li:focus-visible { border-color: var(--terracota); color: var(--terracota); outline: none; }
+.unidad-tarifa__comodidades svg { width: 15px; height: 15px; flex: none; }
+
+/* Tooltip propio (en vez del title nativo, que tarda en aparecer y se ve
+   chico): globo oscuro arriba del ícono, con una florcita apuntando hacia
+   abajo. max-width + white-space: normal para que las comodidades más
+   largas ("Agua de red y perforación propia") envuelvan en vez de
+   desbordar la tarjeta hacia los costados. */
+.unidad-tarifa__comodidades li::after {
+  content: attr(data-tip);
+  position: absolute; bottom: calc(100% + 9px); left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--carbon); color: #fff; font-size: .72rem; font-weight: 500;
+  line-height: 1.3; text-align: center; white-space: normal; max-width: 150px;
+  padding: 6px 10px; border-radius: 5px;
+  opacity: 0; pointer-events: none; transition: opacity .15s ease, transform .15s ease;
+  z-index: 5;
+}
+.unidad-tarifa__comodidades li::before {
+  content: ''; position: absolute; bottom: calc(100% + 4px); left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: var(--carbon);
+  opacity: 0; pointer-events: none; transition: opacity .15s ease;
+}
+.unidad-tarifa__comodidades li:hover::after,   .unidad-tarifa__comodidades li:hover::before,
+.unidad-tarifa__comodidades li:focus-visible::after, .unidad-tarifa__comodidades li:focus-visible::before {
+  opacity: 1; transform: translateX(-50%) translateY(0);
+}
+
+.sr-solo {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* Antes eran dos cosas separadas: un párrafo "Reservá desde $X" y, debajo,
+   un botón "Ver disponibilidad". El usuario pidió juntarlas en un solo
+   botón — el precio hace de gancho y de llamado a la acción al mismo
+   tiempo, un botón menos para leer. El segundo botón ("Más info") abre el
+   popup con la ficha completa por ambiente. */
+.unidad-tarifa__acciones { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 6px; }
+.unidad-tarifa__boton strong {
+  font-family: var(--mono); font-weight: 600; font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 780px) {
-  .tarifa { border-left: 0; border-top: 1px solid var(--borde); padding: 34px 0 0; }
-  .tarifa:first-child { border-top: 0; padding-top: 2px; }
+  .unidad-tarifa { grid-template-columns: 1fr; }
+  .unidad-tarifa:nth-child(even) .unidad-tarifa__foto { order: 0; }
+  .unidad-tarifa__foto { aspect-ratio: 4/3; }
+  .unidad-tarifa__cuerpo,
+  .unidad-tarifa:nth-child(even) .unidad-tarifa__cuerpo {
+    padding: 32px 24px;
+  }
 }
 
-/* ------------------------------------------------- unidades (variante A) - */
-/* La casa completa ocupa más que las plantas a propósito: es lo que más se
-   alquila y no quedan tres columnas iguales. */
-.unidades {
-  display: grid; grid-template-columns: 1.4fr 1fr 1fr;
-  gap: 22px; margin-bottom: 54px; align-items: start;
+/* --------------------------------------- popup "Ver los ambientes" ----- */
+/* Mismo lenguaje visual que .modal-res (la caja centrada con velo detrás),
+   pero un componente aparte: .modal-res es específico del flujo de
+   reserva (pasos, calendario) y mezclar los dos hubiera significado pelear
+   contra ese CSS en vez de reusarlo. Ver iniciarModalAmbientes() en app.js. */
+.modal-amb {
+  position: fixed; inset: 0; z-index: 90;
+  visibility: hidden; transition: visibility 0s .25s;
 }
-.unidad { display: flex; flex-direction: column; }
-.unidad__foto {
-  width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
-  border-radius: var(--radio-sm); margin-bottom: 16px;
+.modal-amb.abierto { visibility: visible; transition: visibility 0s; }
+.modal-amb__fondo {
+  position: absolute; inset: 0; background: rgba(26, 22, 19, .55);
+  opacity: 0; transition: opacity .25s ease;
 }
-.unidad--principal .unidad__foto { aspect-ratio: 16 / 10; }
-.unidad__cuerpo h3 { font-size: 1.2rem; margin-bottom: 4px; }
-.unidad--principal .unidad__cuerpo h3 { font-size: 1.5rem; }
-.unidad__meta {
-  font-family: var(--mono); font-size: .72rem; letter-spacing: .01em;
-  color: var(--piedra); font-weight: 400; margin-bottom: 12px;
+.modal-amb.abierto .modal-amb__fondo { opacity: 1; }
+.modal-amb__caja {
+  position: relative; z-index: 1; margin: 5vh auto; width: min(560px, calc(100% - 48px));
+  max-height: 90vh; display: flex; flex-direction: column;
+  background: var(--crema); border-radius: var(--radio); box-shadow: var(--sombra);
+  opacity: 0; transform: translateY(16px); transition: opacity .25s ease, transform .25s ease;
 }
-.unidad__texto { font-size: .92rem; color: var(--piedra); margin: 0; }
+.modal-amb.abierto .modal-amb__caja { opacity: 1; transform: none; }
+.modal-amb__cab {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 22px 24px; border-bottom: 1px solid var(--borde);
+}
+.modal-amb__cab h3 { margin: 0; font-size: 1.25rem; }
+.modal-amb__cerrar {
+  width: 34px; height: 34px; flex: none; border-radius: 50%;
+  border: 1px solid var(--borde); background: transparent; color: var(--carbon);
+  font-size: 1.3rem; line-height: 1; cursor: pointer; transition: all .18s ease;
+}
+.modal-amb__cerrar:hover { background: var(--carbon); color: #fff; border-color: var(--carbon); }
+.modal-amb__cuerpo { padding: 24px; overflow-y: auto; }
+.modal-amb__grupo {
+  font-family: var(--display); font-size: 1.05rem; color: var(--terracota);
+  margin: 0 0 14px;
+}
+.modal-amb__grupo:not(:first-child) { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--borde); }
+.modal-amb__lista { display: flex; flex-direction: column; gap: 14px; margin: 0; }
+.modal-amb__lista dt { font-weight: 600; color: var(--carbon); font-size: .92rem; margin-bottom: 2px; }
+.modal-amb__lista dd { margin: 0; font-size: .9rem; color: var(--piedra); }
 
 
 #modalidades { margin-bottom: 22px; }
@@ -1401,18 +1569,6 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 .faq__respuesta { padding: 0 40px 22px 0; font-size: .96rem; color: var(--carbon-suave); }
 .faq__respuesta p:last-child { margin-bottom: 0; }
 .preguntas__pie { margin: 34px 0 0; }
-.tarifa__detalle { list-style: none; padding: 0; margin: 0 0 4px; font-size: .88rem; }
-.tarifa__detalle li { padding: 8px 0; border-top: 1px solid var(--borde); display: flex; justify-content: space-between; gap: 12px; }
-.tarifa__detalle span { color: var(--piedra); }
-/* El botón de cada columna pasa a ser un link subrayado: tres botones con
-   caja, uno al lado del otro, era parte de lo que hacía leer el bloque como
-   una comparativa de planes. */
-.tarifa .boton {
-  margin-top: auto; align-self: flex-start; padding: 22px 0 0;
-  background: none; border: 0; border-bottom: 1px solid currentColor;
-  color: var(--terracota); font-weight: 500; border-radius: 0;
-}
-.tarifa .boton:hover { color: var(--terracota-osc); background: none; }
 
 .nota-tarifas {
   margin-top: 32px; padding: 22px 26px;
@@ -1952,17 +2108,12 @@ html.anim .revelar--foto.visible { transform: none; }
   .galeria { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 180px; }
   .cal__meses { grid-template-columns: 1fr; }
   /* la casa completa arriba a lo ancho y las dos plantas debajo */
-  .unidades { grid-template-columns: 1fr 1fr; }
-  .unidad--principal { grid-column: 1 / -1; }
-  .unidad--principal .unidad__foto { aspect-ratio: 21 / 9; }
   .banda__foto, .banda--principal .banda__foto { width: 240px; }
   .banda { gap: 26px; }
 }
 
 @media (max-width: 760px) {
   body { font-size: 16px; }
-  .unidades { grid-template-columns: 1fr; gap: 30px; }
-  .unidad--principal .unidad__foto { aspect-ratio: 16 / 10; }
   .campos { grid-template-columns: 1fr; }
   .lightbox__btn--prev { left: 8px; }
   .lightbox__btn--next { right: 8px; }

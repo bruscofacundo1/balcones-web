@@ -31,7 +31,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=69">
+<link rel="stylesheet" href="css/estilos.css?v=89">
 
 <script type="application/ld+json">
 {
@@ -117,11 +117,12 @@
 
 <!-- ========================================================= LA CASA ==== -->
 <!-- Sin foto: texto centrado, angosto, título grande en terracota — estilo
-     beckons.com. Va en el mismo tono arena que "por qué reservar acá" de
-     abajo, para que las dos se lean como un solo bloque y recién después
-     de "Reservar" se pase a blanco (antes cada sección tenía su propio
-     fondo y quedaba un salto de color de más). -->
-<section class="seccion seccion--arena" id="la-casa">
+     beckons.com. Blanca, junto con "Por qué reservar acá" de abajo: el
+     gris queda para "Cómo se alquila", que ya lo necesita porque el panel
+     de texto de cada tarjeta es arena — así ese gris arranca de una sola
+     vez ahí, en vez de un salto blanco-gris-blanco-gris apenas se empieza
+     a bajar. -->
+<section class="seccion" id="la-casa">
   <div class="contenedor contenedor--angosto casa__intro revelar">
     <span class="antetitulo">La casa</span>
     <h2 id="casa-titulo"></h2>
@@ -140,7 +141,7 @@
      masaguilo.com hacen lo mismo). El título y el botón de la izquierda son
      fijos (van en el HTML, no en CONFIG); la lista de la derecha la pinta
      pintarReservaDirecta() desde CONFIG.textos.directo. -->
-<section class="seccion--arena seccion--directo" id="directo" aria-label="Por qué reservar en esta web">
+<section class="seccion--directo" id="directo" aria-label="Por qué reservar en esta web">
   <!-- La línea marca el ancho estándar del sitio (1180px, con el margen de
        siempre) — "larga pero sin tocar el borde" — y no la mismo columna
        angosta de 860px que el contenido de adentro. Con el padding chico
@@ -159,27 +160,20 @@
 </section>
 
 <!-- ============================================== CÓMO SE ALQUILA + PRECIOS ==== -->
-<!-- Antes eran dos secciones ("Cómo se alquila" arriba de los ambientes y
-     "Tarifas" abajo de todo) y repetían lo mismo: el nombre, las plazas y el
-     detalle de cada unidad aparecían en las dos. Ahora es una sola.
+<!-- Antes había tres tarjetas describiendo cada unidad (foto + texto) y,
+     más abajo, tres tarjetas de precio por temporada que volvían a nombrar
+     esas mismas unidades — el mismo dato contado dos veces. Ahora es una
+     sola fila: cada unidad es una columna con su foto, su descripción, su
+     precio por temporada y un desplegable con lo que incluye.
 
      Va acá, pegada a "La casa", porque la sección que sigue tiene las pestañas
      "Planta alta / Planta baja": esas etiquetas no significan nada hasta que se
      explica que la casa se divide en dos plantas independientes. -->
 <section class="seccion seccion--arena" id="tarifas">
   <div class="contenedor">
-    <div class="encabezado-seccion encabezado-seccion--centro revelar">
-      <span class="antetitulo">Cómo se alquila</span>
-      <h2>Entera o por planta</h2>
-      <p class="bajada">Cada planta tiene su cocina completa, su baño y su acceso propio: podés
-        tomar la casa entera o solamente una, sin compartir nada. El precio cambia según la
-        época del año y el calendario calcula el total exacto de tus fechas.</p>
-    </div>
+    <h2 class="tarifas__titulo revelar">Cómo se alquila</h2>
 
-    <div id="alquiler-a">
-      <div class="unidades cascada" id="unidades-tira"></div>
-      <div class="tarifas cascada" id="tarifas-grid"></div>
-    </div>
+    <div class="unidades-tarifa cascada" id="unidades-tarifa"></div>
 
     <div class="nota-tarifas revelar">
       <strong>Buenos a saber</strong>
@@ -191,12 +185,18 @@
 <!-- ======================================================= AMBIENTES ==== -->
 <section class="seccion" id="ambientes-sec">
   <div class="contenedor">
-    <div class="encabezado-seccion revelar">
+    <!-- Centrado (no con .encabezado-seccion--centro: esa clase quedó en
+         desuso hace rato y hoy en realidad alinea a la izquierda — ver el
+         comentario en estilos.css). Regla propia más abajo. -->
+    <div class="encabezado-seccion ambientes__encabezado revelar">
       <span class="antetitulo">Ambiente por ambiente</span>
       <h2>La casa por dentro</h2>
     </div>
 
-    <div class="tabs" id="tabs-ambientes" role="tablist">
+    <!-- Vuelven los filtros (se habían sacado): con 21 ambientes en el
+         carrusel y sin forma de saltar a una planta puntual, había que
+         clickear "siguiente" muchas veces para llegar a planta baja. -->
+    <div class="tabs ambientes__tabs" id="tabs-ambientes" role="tablist">
       <button class="tab" role="tab" aria-selected="true"  data-planta="todas">Todo</button>
       <button class="tab" role="tab" aria-selected="false" data-planta="alta">Planta alta</button>
       <button class="tab" role="tab" aria-selected="false" data-planta="baja">Planta baja</button>
@@ -215,7 +215,10 @@
 <!-- ========================================================= GALERÍA ==== -->
 <section class="seccion seccion--arena" id="galeria">
   <div class="contenedor">
-    <div class="encabezado-seccion encabezado-seccion--centro revelar">
+    <!-- Centrado con una clase propia, no .encabezado-seccion--centro: esa
+         clase quedó en desuso y hoy en realidad alinea a la izquierda (ver
+         el comentario en estilos.css). -->
+    <div class="encabezado-seccion galeria__encabezado revelar">
       <h2>La casa y el lugar</h2>
       <p class="bajada">Fotos reales, sacadas en distintas épocas del año. Hacé clic para verlas grandes.</p>
     </div>
@@ -383,6 +386,18 @@
   </div>
 </div>
 
+<!-- ==================== POPUP "VER LOS AMBIENTES" (tarifas) ============= -->
+<div class="modal-amb" id="modal-amb" aria-hidden="true">
+  <div class="modal-amb__fondo"></div>
+  <div class="modal-amb__caja" role="dialog" aria-modal="true" aria-labelledby="ma-titulo">
+    <header class="modal-amb__cab">
+      <h3 id="ma-titulo">Ambientes</h3>
+      <button class="modal-amb__cerrar" id="ma-cerrar" aria-label="Cerrar">&times;</button>
+    </header>
+    <div class="modal-amb__cuerpo" id="ma-cuerpo"></div>
+  </div>
+</div>
+
 <!-- (el drawer lateral de reservas se sacó: el flujo final es el modal de
      arriba, ver git log si hace falta recuperarlo) -->
 
@@ -396,7 +411,6 @@
   <div class="todas-fotos__filtros filtros" id="tf-filtros">
     <button class="tab" aria-selected="true"  data-cat="todas">Todas</button>
     <button class="tab" aria-selected="false" data-cat="casa">La casa</button>
-    <button class="tab" aria-selected="false" data-cat="interiores">Interiores</button>
     <button class="tab" aria-selected="false" data-cat="aire-libre">Galerías y aire libre</button>
     <button class="tab" aria-selected="false" data-cat="entorno">El entorno</button>
   </div>
@@ -413,11 +427,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=69"></script>
-<script src="js/contenido.js?v=69"></script>
-<script src="js/disponibilidad.js?v=69"></script>
-<script src="js/precios.js?v=69"></script><script src="js/calendario.js?v=69"></script>
-<script src="js/pie.js?v=69"></script>
-<script src="js/app.js?v=69"></script>
+<script src="js/config.js?v=89"></script>
+<script src="js/contenido.js?v=89"></script>
+<script src="js/disponibilidad.js?v=89"></script>
+<script src="js/precios.js?v=89"></script><script src="js/calendario.js?v=89"></script>
+<script src="js/pie.js?v=89"></script>
+<script src="js/app.js?v=89"></script>
 </body>
 </html>
