@@ -31,7 +31,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=82">
+<link rel="stylesheet" href="css/estilos.css?v=83">
 
 <script type="application/ld+json">
 {
@@ -117,11 +117,12 @@
 
 <!-- ========================================================= LA CASA ==== -->
 <!-- Sin foto: texto centrado, angosto, título grande en terracota — estilo
-     beckons.com. Va en el mismo tono arena que "por qué reservar acá" de
-     abajo, para que las dos se lean como un solo bloque y recién después
-     de "Reservar" se pase a blanco (antes cada sección tenía su propio
-     fondo y quedaba un salto de color de más). -->
-<section class="seccion seccion--arena" id="la-casa">
+     beckons.com. Blanca, junto con "Por qué reservar acá" de abajo: el
+     gris queda para "Cómo se alquila", que ya lo necesita porque el panel
+     de texto de cada tarjeta es arena — así ese gris arranca de una sola
+     vez ahí, en vez de un salto blanco-gris-blanco-gris apenas se empieza
+     a bajar. -->
+<section class="seccion" id="la-casa">
   <div class="contenedor contenedor--angosto casa__intro revelar">
     <span class="antetitulo">La casa</span>
     <h2 id="casa-titulo"></h2>
@@ -140,7 +141,7 @@
      masaguilo.com hacen lo mismo). El título y el botón de la izquierda son
      fijos (van en el HTML, no en CONFIG); la lista de la derecha la pinta
      pintarReservaDirecta() desde CONFIG.textos.directo. -->
-<section class="seccion--arena seccion--directo" id="directo" aria-label="Por qué reservar en esta web">
+<section class="seccion--directo" id="directo" aria-label="Por qué reservar en esta web">
   <!-- La línea marca el ancho estándar del sitio (1180px, con el margen de
        siempre) — "larga pero sin tocar el borde" — y no la mismo columna
        angosta de 860px que el contenido de adentro. Con el padding chico
@@ -168,7 +169,7 @@
      Va acá, pegada a "La casa", porque la sección que sigue tiene las pestañas
      "Planta alta / Planta baja": esas etiquetas no significan nada hasta que se
      explica que la casa se divide en dos plantas independientes. -->
-<section class="seccion" id="tarifas">
+<section class="seccion seccion--arena" id="tarifas">
   <div class="contenedor">
     <h2 class="tarifas__titulo revelar">Cómo se alquila</h2>
 
@@ -418,11 +419,11 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=82"></script>
-<script src="js/contenido.js?v=82"></script>
-<script src="js/disponibilidad.js?v=82"></script>
-<script src="js/precios.js?v=82"></script><script src="js/calendario.js?v=82"></script>
-<script src="js/pie.js?v=82"></script>
-<script src="js/app.js?v=82"></script>
+<script src="js/config.js?v=83"></script>
+<script src="js/contenido.js?v=83"></script>
+<script src="js/disponibilidad.js?v=83"></script>
+<script src="js/precios.js?v=83"></script><script src="js/calendario.js?v=83"></script>
+<script src="js/pie.js?v=83"></script>
+<script src="js/app.js?v=83"></script>
 </body>
 </html>
