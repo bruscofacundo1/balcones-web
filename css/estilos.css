@@ -48,7 +48,12 @@
   --nav-h: 88px;   /* antes 72 — las tres referencias andan entre 90 y 100 */
   --nav-gap: 16px; /* separación de la barra con el borde de arriba: flota, no toca */
   --ancho: 1180px;
-  --sec-y: clamp(96px, 12vw, 170px);   /* antes clamp(64px, 9vw, 112px) */
+  /* antes clamp(96px, 12vw, 170px) — que a su vez venía de clamp(64px, 9vw,
+     112px): entre dos secciones seguidas (cada una con este padding arriba
+     Y abajo) el salto llegaba a 340px de gris vacío, como entre "Cómo se
+     alquila" y "La casa por dentro". Baja a un punto medio entre las dos
+     versiones anteriores. */
+  --sec-y: clamp(72px, 9vw, 128px);
 }
 
 /* --------------------------------------------------------------- reset -- */
