@@ -718,10 +718,25 @@ function iconoComodidad(texto) {
     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONOS_COMODIDAD[key]}</svg>`;
 }
 
-/** Una fila por unidad, a todo el ancho, con la foto alternando de lado —
-    estilo hotelnafarrola.com. Antes eran dos filas de tarjetas separadas
-    (las unidades arriba, las temporadas abajo) que repetían el nombre de
-    cada unidad dos veces; después pasó a 3 columnas, y ahora a esto. */
+/** Devuelve la ficha de ambientes que le corresponde mostrar a una
+    modalidad. "alta" y "baja" tienen la suya propia en config.js; "completa"
+    no repite las dos enteras ahí (sería un dato más para mantener sincronizado
+    con las otras dos) — la arma al vuelo combinando `alta` y `baja`, con un
+    título de grupo para no perder de qué planta es cada ambiente. */
+function obtenerGruposAmbientes(m) {
+  if (m.ambientes) return [{ grupo: null, items: m.ambientes }];
+  if (m.id === 'completa') {
+    return CONFIG.modalidades
+      .filter(x => x.id !== 'completa' && x.ambientes)
+      .map(x => ({ grupo: x.nombre, items: x.ambientes }));
+  }
+  return [];
+}
+
+/** Una fila por unidad, a todo el ancho de la pantalla, con la foto
+    alternando de lado — estilo hotelnafarrola.com. Pasó por varios formatos
+    antes de llegar acá (ver el comentario de .unidad-tarifa en estilos.css
+    para la historia completa). */
 function pintarUnidadesTarifas() {
   const cont = document.getElementById('unidades-tarifa');
   if (!cont) return;
@@ -736,6 +751,7 @@ function pintarUnidadesTarifas() {
     // baja a mano: si el día de mañana cambia el orden o los valores, esto
     // sigue siendo correcto sin tocar nada acá.
     const desde = Math.min(...CONFIG.temporadas.map(t => t.precios[m.id]));
+    const tieneAmbientes = obtenerGruposAmbientes(m).length > 0;
     return `
     <article class="unidad-tarifa${rev}">
       <div class="unidad-tarifa__foto">
@@ -750,18 +766,59 @@ function pintarUnidadesTarifas() {
           ${m.comodidades.map(c => `<li tabindex="0" data-tip="${c}">${iconoComodidad(c)}<span class="sr-solo">${c}</span></li>`).join('')}
         </ul>
 
-        ${m.ambientes ? `<details class="unidad-tarifa__detalle">
-          <summary>Ver los ambientes</summary>
-          <dl class="unidad-tarifa__ambientes">
-            ${m.ambientes.map(a => `<dt>${a.label}</dt><dd>${a.detalle}</dd>`).join('')}
-          </dl>
-        </details>` : ''}
-
-        <p class="unidad-tarifa__desde">Reservá desde <strong>${pesos(desde)}</strong> la noche</p>
-        <a class="boton unidad-tarifa__boton" href="reserva.html" data-reservar>Ver disponibilidad</a>
+        <div class="unidad-tarifa__acciones">
+          <a class="boton boton--primario unidad-tarifa__boton" href="reserva.html" data-reservar>Reservar desde <strong>${pesos(desde)}</strong></a>
+          ${tieneAmbientes ? `<button type="button" class="boton boton--linea" data-ambientes="${m.id}">Más info</button>` : ''}
+        </div>
       </div>
     </article>`;
   }).join('');
+}
+
+/* --------------------------------------- popup "Ver los ambientes" ----- */
+function abrirModalAmbientes(id) {
+  const modal = document.getElementById('modal-amb');
+  const m = CONFIG.modalidades.find(x => x.id === id);
+  if (!modal || !m) return;
+
+  document.getElementById('ma-titulo').textContent = `${m.nombre} — ambientes`;
+  document.getElementById('ma-cuerpo').innerHTML = obtenerGruposAmbientes(m).map(g => `
+    ${g.grupo ? `<h4 class="modal-amb__grupo">${g.grupo}</h4>` : ''}
+    <dl class="modal-amb__lista">
+      ${g.items.map(a => `<dt>${a.label}</dt><dd>${a.detalle}</dd>`).join('')}
+    </dl>
+  `).join('');
+
+  modal.classList.add('abierto');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('ma-cerrar').focus();
+}
+
+function cerrarModalAmbientes() {
+  const modal = document.getElementById('modal-amb');
+  if (!modal) return;
+  modal.classList.remove('abierto');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+function iniciarModalAmbientes() {
+  const modal = document.getElementById('modal-amb');
+  if (!modal) return;
+
+  // Por delegación, como el modal de reserva: así también funciona con las
+  // tarjetas que recién se pintaron (pintarUnidadesTarifas corre después).
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-ambientes]');
+    if (!b) return;
+    abrirModalAmbientes(b.dataset.ambientes);
+  });
+  document.getElementById('ma-cerrar').addEventListener('click', cerrarModalAmbientes);
+  modal.querySelector('.modal-amb__fondo').addEventListener('click', cerrarModalAmbientes);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal.classList.contains('abierto')) cerrarModalAmbientes();
+  });
 }
 
 function pintarAlquiler() {
@@ -891,4 +948,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   iniciarNav();
   iniciarRevelado();
   iniciarReservas();
+  iniciarModalAmbientes();
 });

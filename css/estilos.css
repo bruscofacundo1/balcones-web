@@ -1312,87 +1312,57 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 .todas-actividades__cuerpo { flex: 1 1 auto; overflow-y: auto; padding: 28px 0 40px; }
 
 /* ------------------------------------------------------ unidades + tarifas */
-/* Una fila por unidad, a todo el ancho, con la foto alternando de lado —
-   estilo hotelnafarrola.com. Pasó por dos formatos antes de llegar acá: dos
-   filas de tarjetas separadas (unidades arriba, temporadas abajo, repitiendo
-   el nombre de cada una dos veces) y después 3 columnas una al lado de la
-   otra. Antes la foto estiraba (align-items: stretch) a la altura que
-   pidiera el texto: con la ficha por ambiente el texto se hizo mucho más
-   largo que antes y la foto terminaba recortada rarísimo, altísima, para
-   alcanzarlo — se veía deforme. Ahora la foto tiene su propia proporción
-   fija (aspect-ratio) y el texto simplemente sigue de largo debajo si hace
-   falta: no tienen por qué terminar a la misma altura. */
-.unidades-tarifa { display: flex; flex-direction: column; gap: 64px; }
-/* La foto va más angosta que el texto (antes era 1fr 1fr, mitad y mitad):
-   con la ficha por ambiente el texto pide bastante más lugar que una foto
-   sola, y en las 3 referencias con más texto (masaguilo, nafarrola) la foto
-   tampoco ocupa la mitad. minmax() la deja cómoda en pantallas grandes sin
-   que se achique de más en las medianas. */
-.unidad-tarifa {
-  display: grid; grid-template-columns: minmax(240px, 380px) 1fr;
-  gap: clamp(32px, 5vw, 64px); align-items: start;
+/* Una fila por unidad, a todo el ancho de la PANTALLA (no del contenedor) —
+   estilo hotelnafarrola.com: la foto toca el borde real del navegador, foto
+   y texto van mitad y mitad, y las filas quedan pegadas una a la otra (sin
+   gap) para que las celdas de foto/texto formen esa grilla tipo tablero de
+   ajedrez que se ve en la referencia. Mismo truco de "salirse del
+   contenedor" que .carrusel--pantalla (buscá margin-inline: calc(50% - 50vw)
+   más abajo en este archivo). Pasó por tres formatos antes de llegar acá:
+   dos filas de tarjetas separadas, después 3 columnas, después foto angosta
+   + texto ancho con toda la ficha de ambientes a la vista (esa versión se
+   veía "despareja" — la foto se estiraba rarísimo para alcanzar un texto
+   larguísimo). Ahora el texto vuelve a ser corto (la ficha completa por
+   ambiente se mudó a un popup — ver iniciarModalAmbientes en app.js), así
+   que foto y texto vuelven a quedar parejos con align-items: stretch. */
+.unidades-tarifa {
+  display: flex; flex-direction: column; gap: 0;
+  width: 100vw; margin-inline: calc(50% - 50vw);
 }
-/* de a una sí, de a una no: la foto pasa al segundo lugar. OJO: en un grid,
-   `order` no sólo cambia el orden visual — cambia a qué columna del
-   auto-placement va cada ítem. Con las dos columnas del mismo ancho (1fr
-   1fr, como era antes) eso no se notaba; ahora que son de ancho distinto,
-   sin este segundo cambio la foto terminaba en la columna ancha y el
-   texto en la angosta, exactamente al revés de lo que se quería. Por eso
-   acá también se invierte el ancho de las columnas en las filas pares:
-   así la angosta (380px) siempre le toca a la foto, sea cual sea el lado
-   en el que esté. */
-.unidad-tarifa:nth-child(even) { grid-template-columns: 1fr minmax(240px, 380px); }
+.unidad-tarifa { display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; }
+/* de a una sí, de a una no: la foto pasa al segundo lugar. Con las dos
+   columnas del mismo ancho (a diferencia del intento anterior con una
+   columna angosta y otra ancha), `order` sólo cambia el lado visual y no
+   hace falta tocar el ancho de las columnas para nada. */
 .unidad-tarifa:nth-child(even) .unidad-tarifa__foto { order: 2; }
 
-.unidad-tarifa__foto { aspect-ratio: 4 / 5; }
-.unidad-tarifa__foto img {
-  width: 100%; height: 100%; object-fit: cover; border-radius: var(--radio-sm);
+.unidad-tarifa__foto img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* El texto va en un panel de fondo apenas distinto del blanco de la
+   página — así se nota la celda aunque no tenga foto. El padding es
+   asimétrico a propósito: del lado que toca la foto es un margen fijo,
+   nomás para que el texto no quede pegado; del lado que da al borde de la
+   pantalla usa la misma fórmula que .carrusel--pantalla para alinearse con
+   el resto del contenido del sitio (el título de la sección, el texto de
+   "La casa", etc.) en vez de ir literalmente hasta el borde. */
+.unidad-tarifa__cuerpo {
+  background: var(--arena);
+  display: flex; flex-direction: column; justify-content: center;
+  padding-block: clamp(40px, 6vw, 72px);
+  padding-left: 56px;
+  padding-right: max(24px, calc(50vw - var(--ancho) / 2));
 }
+.unidad-tarifa:nth-child(even) .unidad-tarifa__cuerpo {
+  padding-left: max(24px, calc(50vw - var(--ancho) / 2));
+  padding-right: 56px;
+}
+
 .unidad-tarifa__cuerpo h3 { font-size: 1.6rem; margin-bottom: 4px; }
 .unidad-tarifa__meta {
   font-family: var(--mono); font-size: .72rem; letter-spacing: .01em;
   color: var(--piedra); margin-bottom: 22px;
 }
-/* Sin max-width en ch: con la columna más ancha (ver .unidad-tarifa de
-   arriba), un tope en caracteres volvía a angostar el bloque de texto por
-   dentro de su propia columna — justo lo que se quería evitar. */
-.unidad-tarifa__texto { font-size: .96rem; color: var(--piedra); margin: 0 0 10px; max-width: 62ch; }
-
-/* Ficha por ambiente, plegada atrás de un "Ver los ambientes" — el mismo
-   lenguaje +/− de las preguntas frecuentes (.faq), pero angosto para caber
-   en la tarjeta. Plegada por defecto para que la tarjeta quede pareja con
-   la foto (ver comentario de .unidad-tarifa arriba); quien quiere el
-   detalle completo lo despliega con un clic, igual que el "Más Info" de
-   hotelnafarrola.com. */
-.unidad-tarifa__detalle { margin: 0 0 22px; }
-.unidad-tarifa__detalle summary {
-  cursor: pointer; list-style: none; position: relative;
-  padding-right: 22px; display: inline-block;
-  font-size: .88rem; font-weight: 500; color: var(--terracota);
-}
-.unidad-tarifa__detalle summary::-webkit-details-marker { display: none; }
-.unidad-tarifa__detalle summary::after {
-  content: '+'; position: absolute; right: 2px; top: 50%; transform: translateY(-50%);
-  font-size: 1.1rem; line-height: 1;
-}
-.unidad-tarifa__detalle[open] summary::after { content: '−'; }
-.unidad-tarifa__detalle summary:hover { color: var(--terracota-osc); }
-
-/* La etiqueta de cada ambiente en negrita como un mini-título, la
-   descripción debajo. Es el detalle real (camas, muebles) — separado de
-   los íconos de arriba, que son las comodidades generales de la unidad. */
-/* display:none explícito en vez de confiar en el colapso nativo de
-   <details>: un simple selector de clase le termina ganando de
-   especificidad a la regla interna del navegador que oculta el contenido
-   cuando falta el atributo `open`, y el listado quedaba visible siempre. */
-.unidad-tarifa__ambientes { display: none; flex-direction: column; gap: 12px; margin: 16px 0 0; }
-.unidad-tarifa__detalle[open] .unidad-tarifa__ambientes { display: flex; }
-.unidad-tarifa__ambientes dt {
-  font-weight: 600; color: var(--carbon); font-size: .9rem; margin-bottom: 2px;
-}
-.unidad-tarifa__ambientes dd {
-  margin: 0; font-size: .88rem; color: var(--piedra); max-width: 62ch;
-}
+.unidad-tarifa__texto { font-size: .96rem; color: var(--piedra); margin: 0 0 22px; max-width: 480px; }
 
 /* Estilo hotelnafarrola.com: sólo el ícono, en una pastilla circular pareja.
    Con 13 a 15 comodidades por unidad, poner el texto al lado (como antes)
@@ -1447,33 +1417,68 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
   overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
 
-.unidad-tarifa__desde {
-  font-size: 1.05rem; color: var(--carbon-suave);
-  margin: 0 0 20px; padding-top: 20px; border-top: 1px solid var(--borde);
+/* Antes eran dos cosas separadas: un párrafo "Reservá desde $X" y, debajo,
+   un botón "Ver disponibilidad". El usuario pidió juntarlas en un solo
+   botón — el precio hace de gancho y de llamado a la acción al mismo
+   tiempo, un botón menos para leer. El segundo botón ("Más info") abre el
+   popup con la ficha completa por ambiente. */
+.unidad-tarifa__acciones { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 6px; }
+.unidad-tarifa__boton strong {
+  font-family: var(--mono); font-weight: 600; font-variant-numeric: tabular-nums;
 }
-.unidad-tarifa__desde strong {
-  font-family: var(--mono); font-weight: 500; color: var(--carbon);
-  font-variant-numeric: tabular-nums;
-}
-
-.unidad-tarifa__boton {
-  align-self: flex-start; padding: 0 0 2px;
-  background: none; border: 0; border-bottom: 1px solid currentColor;
-  color: var(--terracota); font-weight: 500; border-radius: 0;
-}
-.unidad-tarifa__boton:hover { color: var(--terracota-osc); background: none; }
 
 @media (max-width: 780px) {
-  .unidades-tarifa { gap: 44px; }
-  /* La regla de abajo (que invierte el ancho de columnas en las filas
-     pares) tiene más especificidad que un simple ".unidad-tarifa" — sin
-     repetirla acá con :nth-child(even), en mobile seguiría ganando y las
-     filas pares no volverían a una sola columna. */
-  .unidad-tarifa,
-  .unidad-tarifa:nth-child(even) { grid-template-columns: 1fr; }
+  .unidad-tarifa { grid-template-columns: 1fr; }
   .unidad-tarifa:nth-child(even) .unidad-tarifa__foto { order: 0; }
   .unidad-tarifa__foto { aspect-ratio: 4/3; }
+  .unidad-tarifa__cuerpo,
+  .unidad-tarifa:nth-child(even) .unidad-tarifa__cuerpo {
+    padding: 32px 24px;
+  }
 }
+
+/* --------------------------------------- popup "Ver los ambientes" ----- */
+/* Mismo lenguaje visual que .modal-res (la caja centrada con velo detrás),
+   pero un componente aparte: .modal-res es específico del flujo de
+   reserva (pasos, calendario) y mezclar los dos hubiera significado pelear
+   contra ese CSS en vez de reusarlo. Ver iniciarModalAmbientes() en app.js. */
+.modal-amb {
+  position: fixed; inset: 0; z-index: 90;
+  visibility: hidden; transition: visibility 0s .25s;
+}
+.modal-amb.abierto { visibility: visible; transition: visibility 0s; }
+.modal-amb__fondo {
+  position: absolute; inset: 0; background: rgba(26, 22, 19, .55);
+  opacity: 0; transition: opacity .25s ease;
+}
+.modal-amb.abierto .modal-amb__fondo { opacity: 1; }
+.modal-amb__caja {
+  position: relative; z-index: 1; margin: 5vh auto; width: min(560px, calc(100% - 48px));
+  max-height: 90vh; display: flex; flex-direction: column;
+  background: var(--crema); border-radius: var(--radio); box-shadow: var(--sombra);
+  opacity: 0; transform: translateY(16px); transition: opacity .25s ease, transform .25s ease;
+}
+.modal-amb.abierto .modal-amb__caja { opacity: 1; transform: none; }
+.modal-amb__cab {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 22px 24px; border-bottom: 1px solid var(--borde);
+}
+.modal-amb__cab h3 { margin: 0; font-size: 1.25rem; }
+.modal-amb__cerrar {
+  width: 34px; height: 34px; flex: none; border-radius: 50%;
+  border: 1px solid var(--borde); background: transparent; color: var(--carbon);
+  font-size: 1.3rem; line-height: 1; cursor: pointer; transition: all .18s ease;
+}
+.modal-amb__cerrar:hover { background: var(--carbon); color: #fff; border-color: var(--carbon); }
+.modal-amb__cuerpo { padding: 24px; overflow-y: auto; }
+.modal-amb__grupo {
+  font-family: var(--display); font-size: 1.05rem; color: var(--terracota);
+  margin: 0 0 14px;
+}
+.modal-amb__grupo:not(:first-child) { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--borde); }
+.modal-amb__lista { display: flex; flex-direction: column; gap: 14px; margin: 0; }
+.modal-amb__lista dt { font-weight: 600; color: var(--carbon); font-size: .92rem; margin-bottom: 2px; }
+.modal-amb__lista dd { margin: 0; font-size: .9rem; color: var(--piedra); }
 
 
 #modalidades { margin-bottom: 22px; }
