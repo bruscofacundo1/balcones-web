@@ -1316,8 +1316,12 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
    estilo hotelnafarrola.com. Pasó por dos formatos antes de llegar acá: dos
    filas de tarjetas separadas (unidades arriba, temporadas abajo, repitiendo
    el nombre de cada una dos veces) y después 3 columnas una al lado de la
-   otra. La foto estira a la altura que pida el texto (align-items: stretch +
-   object-fit: cover), no al revés. */
+   otra. Antes la foto estiraba (align-items: stretch) a la altura que
+   pidiera el texto: con la ficha por ambiente el texto se hizo mucho más
+   largo que antes y la foto terminaba recortada rarísimo, altísima, para
+   alcanzarlo — se veía deforme. Ahora la foto tiene su propia proporción
+   fija (aspect-ratio) y el texto simplemente sigue de largo debajo si hace
+   falta: no tienen por qué terminar a la misma altura. */
 .unidades-tarifa { display: flex; flex-direction: column; gap: 64px; }
 /* La foto va más angosta que el texto (antes era 1fr 1fr, mitad y mitad):
    con la ficha por ambiente el texto pide bastante más lugar que una foto
@@ -1326,16 +1330,24 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
    que se achique de más en las medianas. */
 .unidad-tarifa {
   display: grid; grid-template-columns: minmax(240px, 380px) 1fr;
-  gap: clamp(32px, 5vw, 64px); align-items: stretch;
+  gap: clamp(32px, 5vw, 64px); align-items: start;
 }
-/* de a una sí, de a una no: la foto pasa al segundo lugar */
+/* de a una sí, de a una no: la foto pasa al segundo lugar. OJO: en un grid,
+   `order` no sólo cambia el orden visual — cambia a qué columna del
+   auto-placement va cada ítem. Con las dos columnas del mismo ancho (1fr
+   1fr, como era antes) eso no se notaba; ahora que son de ancho distinto,
+   sin este segundo cambio la foto terminaba en la columna ancha y el
+   texto en la angosta, exactamente al revés de lo que se quería. Por eso
+   acá también se invierte el ancho de las columnas en las filas pares:
+   así la angosta (380px) siempre le toca a la foto, sea cual sea el lado
+   en el que esté. */
+.unidad-tarifa:nth-child(even) { grid-template-columns: 1fr minmax(240px, 380px); }
 .unidad-tarifa:nth-child(even) .unidad-tarifa__foto { order: 2; }
 
-.unidad-tarifa__foto { min-height: 320px; }
+.unidad-tarifa__foto { aspect-ratio: 4 / 5; }
 .unidad-tarifa__foto img {
   width: 100%; height: 100%; object-fit: cover; border-radius: var(--radio-sm);
 }
-.unidad-tarifa__cuerpo { display: flex; flex-direction: column; justify-content: center; }
 .unidad-tarifa__cuerpo h3 { font-size: 1.6rem; margin-bottom: 4px; }
 .unidad-tarifa__meta {
   font-family: var(--mono); font-size: .72rem; letter-spacing: .01em;
@@ -1346,10 +1358,35 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
    dentro de su propia columna — justo lo que se quería evitar. */
 .unidad-tarifa__texto { font-size: .96rem; color: var(--piedra); margin: 0 0 10px; max-width: 62ch; }
 
-/* Ficha por ambiente: la etiqueta en negrita como un mini-título, la
+/* Ficha por ambiente, plegada atrás de un "Ver los ambientes" — el mismo
+   lenguaje +/− de las preguntas frecuentes (.faq), pero angosto para caber
+   en la tarjeta. Plegada por defecto para que la tarjeta quede pareja con
+   la foto (ver comentario de .unidad-tarifa arriba); quien quiere el
+   detalle completo lo despliega con un clic, igual que el "Más Info" de
+   hotelnafarrola.com. */
+.unidad-tarifa__detalle { margin: 0 0 22px; }
+.unidad-tarifa__detalle summary {
+  cursor: pointer; list-style: none; position: relative;
+  padding-right: 22px; display: inline-block;
+  font-size: .88rem; font-weight: 500; color: var(--terracota);
+}
+.unidad-tarifa__detalle summary::-webkit-details-marker { display: none; }
+.unidad-tarifa__detalle summary::after {
+  content: '+'; position: absolute; right: 2px; top: 50%; transform: translateY(-50%);
+  font-size: 1.1rem; line-height: 1;
+}
+.unidad-tarifa__detalle[open] summary::after { content: '−'; }
+.unidad-tarifa__detalle summary:hover { color: var(--terracota-osc); }
+
+/* La etiqueta de cada ambiente en negrita como un mini-título, la
    descripción debajo. Es el detalle real (camas, muebles) — separado de
-   los íconos de abajo, que son las comodidades generales de la unidad. */
-.unidad-tarifa__ambientes { margin: 0 0 24px; display: flex; flex-direction: column; gap: 12px; }
+   los íconos de arriba, que son las comodidades generales de la unidad. */
+/* display:none explícito en vez de confiar en el colapso nativo de
+   <details>: un simple selector de clase le termina ganando de
+   especificidad a la regla interna del navegador que oculta el contenido
+   cuando falta el atributo `open`, y el listado quedaba visible siempre. */
+.unidad-tarifa__ambientes { display: none; flex-direction: column; gap: 12px; margin: 16px 0 0; }
+.unidad-tarifa__detalle[open] .unidad-tarifa__ambientes { display: flex; }
 .unidad-tarifa__ambientes dt {
   font-weight: 600; color: var(--carbon); font-size: .9rem; margin-bottom: 2px;
 }
@@ -1428,9 +1465,14 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 
 @media (max-width: 780px) {
   .unidades-tarifa { gap: 44px; }
-  .unidad-tarifa { grid-template-columns: 1fr; }
+  /* La regla de abajo (que invierte el ancho de columnas en las filas
+     pares) tiene más especificidad que un simple ".unidad-tarifa" — sin
+     repetirla acá con :nth-child(even), en mobile seguiría ganando y las
+     filas pares no volverían a una sola columna. */
+  .unidad-tarifa,
+  .unidad-tarifa:nth-child(even) { grid-template-columns: 1fr; }
   .unidad-tarifa:nth-child(even) .unidad-tarifa__foto { order: 0; }
-  .unidad-tarifa__foto { min-height: 0; aspect-ratio: 4/3; }
+  .unidad-tarifa__foto { aspect-ratio: 4/3; }
 }
 
 

@@ -746,13 +746,16 @@ function pintarUnidadesTarifas() {
         <p class="unidad-tarifa__texto">${m.texto}</p>
         <p class="unidad-tarifa__meta">Personas: ${m.plazas} · m²: ${m.m2}</p>
 
-        ${m.ambientes ? `<dl class="unidad-tarifa__ambientes">
-          ${m.ambientes.map(a => `<dt>${a.label}</dt><dd>${a.detalle}</dd>`).join('')}
-        </dl>` : ''}
-
         <ul class="unidad-tarifa__comodidades">
           ${m.comodidades.map(c => `<li tabindex="0" data-tip="${c}">${iconoComodidad(c)}<span class="sr-solo">${c}</span></li>`).join('')}
         </ul>
+
+        ${m.ambientes ? `<details class="unidad-tarifa__detalle">
+          <summary>Ver los ambientes</summary>
+          <dl class="unidad-tarifa__ambientes">
+            ${m.ambientes.map(a => `<dt>${a.label}</dt><dd>${a.detalle}</dd>`).join('')}
+          </dl>
+        </details>` : ''}
 
         <p class="unidad-tarifa__desde">Reservá desde <strong>${pesos(desde)}</strong> la noche</p>
         <a class="boton unidad-tarifa__boton" href="reserva.html" data-reservar>Ver disponibilidad</a>
