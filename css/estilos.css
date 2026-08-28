@@ -1319,8 +1319,13 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
    otra. La foto estira a la altura que pida el texto (align-items: stretch +
    object-fit: cover), no al revés. */
 .unidades-tarifa { display: flex; flex-direction: column; gap: 64px; }
+/* La foto va más angosta que el texto (antes era 1fr 1fr, mitad y mitad):
+   con la ficha por ambiente el texto pide bastante más lugar que una foto
+   sola, y en las 3 referencias con más texto (masaguilo, nafarrola) la foto
+   tampoco ocupa la mitad. minmax() la deja cómoda en pantallas grandes sin
+   que se achique de más en las medianas. */
 .unidad-tarifa {
-  display: grid; grid-template-columns: 1fr 1fr;
+  display: grid; grid-template-columns: minmax(240px, 380px) 1fr;
   gap: clamp(32px, 5vw, 64px); align-items: stretch;
 }
 /* de a una sí, de a una no: la foto pasa al segundo lugar */
@@ -1334,37 +1339,75 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 .unidad-tarifa__cuerpo h3 { font-size: 1.6rem; margin-bottom: 4px; }
 .unidad-tarifa__meta {
   font-family: var(--mono); font-size: .72rem; letter-spacing: .01em;
-  color: var(--piedra); margin-bottom: 14px;
+  color: var(--piedra); margin-bottom: 22px;
 }
-.unidad-tarifa__texto { font-size: .96rem; color: var(--piedra); margin: 0 0 10px; max-width: 46ch; }
+/* Sin max-width en ch: con la columna más ancha (ver .unidad-tarifa de
+   arriba), un tope en caracteres volvía a angostar el bloque de texto por
+   dentro de su propia columna — justo lo que se quería evitar. */
+.unidad-tarifa__texto { font-size: .96rem; color: var(--piedra); margin: 0 0 10px; max-width: 62ch; }
+
+/* Ficha por ambiente: la etiqueta en negrita como un mini-título, la
+   descripción debajo. Es el detalle real (camas, muebles) — separado de
+   los íconos de abajo, que son las comodidades generales de la unidad. */
+.unidad-tarifa__ambientes { margin: 0 0 24px; display: flex; flex-direction: column; gap: 12px; }
+.unidad-tarifa__ambientes dt {
+  font-weight: 600; color: var(--carbon); font-size: .9rem; margin-bottom: 2px;
+}
+.unidad-tarifa__ambientes dd {
+  margin: 0; font-size: .88rem; color: var(--piedra); max-width: 62ch;
+}
 
 /* Estilo hotelnafarrola.com: sólo el ícono, en una pastilla circular pareja.
-   Con 15 a 20 comodidades por unidad, poner el texto al lado (como antes)
+   Con 13 a 15 comodidades por unidad, poner el texto al lado (como antes)
    armaba renglones de largo desparejo y quedaba desprolijo; en un grid de
    celdas fijas el desorden desaparece solo, sea cual sea la cantidad. El
-   nombre de cada una sigue disponible al pasar el mouse (title) y para
-   lectores de pantalla (.sr-solo). */
+   nombre de cada una aparece en un tooltip propio al pasar el mouse (o al
+   enfocar con teclado — por eso el tabindex) y queda disponible para
+   lectores de pantalla en todo momento (.sr-solo). */
 .unidad-tarifa__comodidades {
   list-style: none; padding: 0; margin: 0 0 22px;
   display: grid; grid-template-columns: repeat(auto-fill, 36px);
   gap: 10px;
 }
 .unidad-tarifa__comodidades li {
+  position: relative;
   width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
   border: 1px solid var(--borde); border-radius: 50%; color: var(--piedra);
   transition: border-color .2s ease, color .2s ease;
 }
-.unidad-tarifa__comodidades li:hover { border-color: var(--terracota); color: var(--terracota); }
+.unidad-tarifa__comodidades li:hover,
+.unidad-tarifa__comodidades li:focus-visible { border-color: var(--terracota); color: var(--terracota); outline: none; }
 .unidad-tarifa__comodidades svg { width: 17px; height: 17px; flex: none; }
+
+/* Tooltip propio (en vez del title nativo, que tarda en aparecer y se ve
+   chico): globo oscuro arriba del ícono, con una florcita apuntando hacia
+   abajo. max-width + white-space: normal para que las comodidades más
+   largas ("Agua de red y perforación propia") envuelvan en vez de
+   desbordar la tarjeta hacia los costados. */
+.unidad-tarifa__comodidades li::after {
+  content: attr(data-tip);
+  position: absolute; bottom: calc(100% + 9px); left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--carbon); color: #fff; font-size: .72rem; font-weight: 500;
+  line-height: 1.3; text-align: center; white-space: normal; max-width: 150px;
+  padding: 6px 10px; border-radius: 5px;
+  opacity: 0; pointer-events: none; transition: opacity .15s ease, transform .15s ease;
+  z-index: 5;
+}
+.unidad-tarifa__comodidades li::before {
+  content: ''; position: absolute; bottom: calc(100% + 4px); left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: var(--carbon);
+  opacity: 0; pointer-events: none; transition: opacity .15s ease;
+}
+.unidad-tarifa__comodidades li:hover::after,   .unidad-tarifa__comodidades li:hover::before,
+.unidad-tarifa__comodidades li:focus-visible::after, .unidad-tarifa__comodidades li:focus-visible::before {
+  opacity: 1; transform: translateX(-50%) translateY(0);
+}
 
 .sr-solo {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
-}
-
-.unidad-tarifa__distribucion {
-  font-size: .84rem; color: var(--piedra); margin: 0 0 24px; max-width: 46ch;
-  padding-left: 12px; border-left: 2px solid var(--borde);
 }
 
 .unidad-tarifa__desde {

@@ -58,16 +58,22 @@ const CONFIG = {
       // Para estar libre necesita las dos plantas libres
       ocupa: ['alta', 'baja'],
       detalle: '2 plantas · 4 dormitorios · 2 baños · 2 cocinas',
-      texto: 'Las dos plantas para vos. Ideal para familias grandes o dos familias que viajan juntas.',
-      // Unión de las comodidades de ambas plantas (juntando "una cocina
-      // completa" de cada una en "una cocina completa por planta", etc.)
+      texto: 'Las dos plantas para vos, cada una con entrada, cocina y baño propios. Arriba, la suite con ' +
+        'cama king, vestidor con placard grande, escritorio y vista a las sierras; el segundo dormitorio ' +
+        'con dos camas de plaza y media más una individual; y un living-comedor con sofá cama, mesa grande ' +
+        'y salida a una terraza enorme con vista al valle. Abajo, un dormitorio con cama doble y cucheta, ' +
+        'cocina-comedor propia y acceso directo desde el garage doble cerrado. El parque se comparte entre ' +
+        'las dos. Ideal para familias grandes o dos familias que viajan juntas.',
+      // Unión de las comodidades de ambas plantas. "Cocina completa", "baño
+      // completo", "TV y living", "vestidor" y "galería" quedan afuera de
+      // esta lista: ya están explicados (con más detalle) en el texto y en
+      // `ambientes` de cada planta — repetirlos acá era decir lo mismo dos
+      // veces con un ícono en el medio.
       comodidades: [
-        'Wifi', 'Una cocina completa por planta', 'Un baño completo por planta',
-        'Aire acondicionado frío/calor', 'Calefacción a gas', 'Ventiladores de techo',
+        'Wifi', 'Aire acondicionado frío/calor', 'Calefacción a gas', 'Ventiladores de techo',
         'Agua caliente permanente', 'Agua de red y perforación propia',
-        'Asador, parrilla y disco', 'Galería cubierta con vista', 'Hamaca paraguaya',
-        'Mesa de ping pong', 'Cochera cubierta', 'Ropa de cama y toallas',
-        'TV y living amplio', 'Parque con árboles', 'Vestidor en la suite',
+        'Asador, parrilla y disco', 'Hamaca paraguaya', 'Mesa de ping pong',
+        'Cochera cubierta', 'Ropa de cama y toallas', 'Parque con árboles',
         'Acceso independiente por planta', 'Se admiten mascotas',
         'Estacionamiento para varios autos'
       ]
@@ -79,18 +85,25 @@ const CONFIG = {
       m2: 100,                                     // << REVISAR >> superficie real
       ocupa: ['alta'],
       detalle: '2 dormitorios · 1 baño · cocina · galería con vista',
-      texto: 'La suite con cama queen y el dormitorio de tres camas, más el living y la galería del atardecer.',
-      // Cómo se reparten las camas: no es una comodidad con ícono, es una
-      // aclaración de texto aparte (se muestra debajo de los íconos).
-      distribucion: 'Dos dormitorios: la habitación principal tiene vestidor en suite y cama queen para 2; ' +
-        'la otra tiene 3 camas. El living suma un sofá cama para 2 personas más.',
+      texto: 'Dos dormitorios y un living-comedor con vista a las sierras y al valle desde cualquier ' +
+        'rincón — es la planta más alta de la casa.',
+      // Ficha por ambiente: es el detalle real de cada espacio (camas,
+      // muebles, calefacción propia), separado de `comodidades` para no
+      // repetir en el ícono lo que ya se explica acá con más precisión.
+      ambientes: [
+        { label: 'Dormitorio principal',
+          detalle: 'Cama king, vestidor con placard grande, escritorio, TV, calefactor y aire acondicionado propios.' },
+        { label: 'Segundo dormitorio',
+          detalle: '2 camas de 1½ plaza + 1 individual, escritorio, placard grande, calefactor y ventilador de techo.' },
+        { label: 'Living y cocina',
+          detalle: 'Sofá cama, mesa grande, TV, aire acondicionado, cocina totalmente equipada (heladera, horno, microondas, pava eléctrica, tostadora, licuadora). Sale a una terraza enorme con la misma vista.' },
+        { label: 'Baño', detalle: 'Muy amplio.' }
+      ],
       comodidades: [
-        'Wifi', 'Cocina completa', 'Baño completo', 'Aire acondicionado frío/calor',
-        'Calefacción a gas', 'Ventiladores de techo', 'Agua caliente permanente',
-        'Agua de red y perforación propia', 'Asador, parrilla y disco',
-        'Galería cubierta con vista', 'Hamaca paraguaya', 'Ropa de cama y toallas',
-        'TV y living amplio', 'Parque con árboles', 'Vestidor en la suite',
-        'Acceso independiente por planta', 'Se admiten mascotas',
+        'Wifi', 'Aire acondicionado frío/calor', 'Calefacción a gas', 'Ventiladores de techo',
+        'Agua caliente permanente', 'Agua de red y perforación propia',
+        'Asador, parrilla y disco', 'Hamaca paraguaya', 'Ropa de cama y toallas',
+        'Parque con árboles', 'Acceso independiente por planta', 'Se admiten mascotas',
         'Estacionamiento para varios autos'
       ]
     },
@@ -101,15 +114,21 @@ const CONFIG = {
       m2: 70,                                      // << REVISAR >> superficie real
       ocupa: ['baja'],
       detalle: '1 dormitorio · 1 baño · cocina-comedor · acceso propio',
-      texto: 'Una habitación con cama doble y cucheta, cocina-comedor y entrada independiente. Fresca y tranquila.',
-      distribucion: 'Un dormitorio con cama doble y 2 camas simples en cucheta, más cocina-comedor y baño. ' +
-        'Está conectada con el garage doble cerrado.',
+      texto: 'Un dormitorio con cama doble y cucheta, con entrada independiente por el garage.',
+      ambientes: [
+        { label: 'Dormitorio',
+          detalle: 'Cama doble + 2 camas cucheta individuales, placard grande, ventilador de techo, ventana al parque.' },
+        { label: 'Cocina-comedor', detalle: 'Ambiente aparte, heladera, pava eléctrica, buena vajilla.' },
+        { label: 'Baño', detalle: 'Amplio.' },
+        { label: 'Garage',
+          detalle: 'Doble, cerrado, conecta directo con la cocina-comedor — bajás del auto y ya estás adentro. De uso exclusivo de esta planta cuando se alquila por separado.' }
+      ],
       comodidades: [
-        'Wifi', 'Cocina completa', 'Baño completo', 'Aire acondicionado frío/calor',
-        'Calefacción a gas', 'Ventiladores de techo', 'Agua caliente permanente',
-        'Agua de red y perforación propia', 'Mesa de ping pong', 'Cochera cubierta',
-        'Ropa de cama y toallas', 'Parque con árboles', 'Acceso independiente por planta',
-        'Se admiten mascotas', 'Estacionamiento para varios autos'
+        'Wifi', 'Aire acondicionado frío/calor', 'Calefacción a gas', 'Ventiladores de techo',
+        'Agua caliente permanente', 'Agua de red y perforación propia',
+        'Mesa de ping pong', 'Cochera cubierta', 'Ropa de cama y toallas',
+        'Parque con árboles', 'Acceso independiente por planta', 'Se admiten mascotas',
+        'Estacionamiento para varios autos'
       ]
     }
   ],
