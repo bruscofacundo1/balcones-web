@@ -1312,6 +1312,13 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 .todas-actividades__cuerpo { flex: 1 1 auto; overflow-y: auto; padding: 28px 0 40px; }
 
 /* ------------------------------------------------------ unidades + tarifas */
+/* Antes esta sección tenía el trío completo (antetitulo + h2 + bajada) como
+   el resto del sitio. El usuario lo simplificó a un solo título: ya no hace
+   falta explicar de más arriba, la fila de abajo (con fotos y precio) habla
+   sola. Mismo tratamiento que #la-casa .casa__intro h2 (centrado, en
+   terracota) para no inventar un lenguaje nuevo. */
+.tarifas__titulo { text-align: center; color: var(--terracota); margin: 0 0 56px; }
+
 /* Una fila por unidad, a todo el ancho de la PANTALLA (no del contenedor) —
    estilo hotelnafarrola.com: la foto toca el borde real del navegador, foto
    y texto van mitad y mitad, y las filas quedan pegadas una a la otra (sin
