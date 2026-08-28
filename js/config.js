@@ -28,11 +28,13 @@ const CONFIG = {
     googleResenas: '',                             // << REVISAR >> ver CONTEXTO.md para cómo conseguir el link correcto
     bookingResenas: '',                            // << REVISAR >>
     direccion: 'Arroyo de los Patos, Nono, Valle de Traslasierra, Córdoba',
-    // Coordenadas aproximadas para el mapa (reemplazá por las exactas de la casa)
+    // Coordenadas reales, de la ficha de "Balcones del Arroyo" en Google Maps
+    // (la que ya tiene 24 reseñas y 4.9 estrellas — confirmada por el usuario
+    // el 2026-08-28). Antes eran un placeholder aproximado.
     mapa: {
-      lat: -31.8060,                              // << REVISAR >>
-      lng: -65.0180,                              // << REVISAR >>
-      zoom: 13
+      lat: -31.7743622,
+      lng: -64.9952442,
+      zoom: 15
     }
   },
 
