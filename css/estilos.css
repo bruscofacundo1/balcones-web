@@ -1358,7 +1358,13 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
      arranca pegado arriba, con su rayita, y recién después el texto — no
      centrado en el medio de la celda. */
   display: flex; flex-direction: column; justify-content: flex-start;
-  padding-block: clamp(40px, 6vw, 72px);
+  /* Antes clamp(40px, 6vw, 72px): con align-items:stretch en .unidad-tarifa,
+     la foto toma la misma altura que este panel de texto — un padding tan
+     generoso hacía tanto al panel como a la foto más altos de lo que
+     hacía falta, y esa era la "cantidad de espacio de más" que se notaba.
+     Achicarlo también achica la foto, sin tocar el resto (mismas
+     columnas, mismos elementos, mismo orden). */
+  padding-block: clamp(28px, 4vw, 48px);
   padding-left: 56px;
   padding-right: max(24px, calc(50vw - var(--ancho) / 2));
 }
@@ -1372,17 +1378,17 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
    de hotelnafarrola.com contra su texto gris. La rayita corta debajo es
    el mismo detalle de esa referencia. */
 .unidad-tarifa__cuerpo h3 {
-  font-size: 1.6rem; margin-bottom: 16px; color: var(--terracota); position: relative;
+  font-size: 1.6rem; margin-bottom: 10px; color: var(--terracota); position: relative;
 }
 .unidad-tarifa__cuerpo h3::after {
   content: ''; display: block; width: 48px; height: 2px;
-  background: var(--terracota); margin-top: 12px;
+  background: var(--terracota); margin-top: 8px;
 }
 .unidad-tarifa__meta {
   font-family: var(--mono); font-size: .72rem; letter-spacing: .01em;
-  color: var(--piedra); margin-bottom: 22px;
+  color: var(--piedra); margin-bottom: 14px;
 }
-.unidad-tarifa__texto { font-size: .96rem; color: var(--piedra); margin: 0 0 22px; max-width: 480px; }
+.unidad-tarifa__texto { font-size: .96rem; color: var(--piedra); margin: 0 0 14px; max-width: 480px; }
 
 /* Estilo hotelnafarrola.com: sólo el ícono, en una pastilla circular pareja.
    Con 13 a 15 comodidades por unidad, poner el texto al lado (como antes)
@@ -1390,21 +1396,23 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
    celdas fijas el desorden desaparece solo, sea cual sea la cantidad. El
    nombre de cada una aparece en un tooltip propio al pasar el mouse (o al
    enfocar con teclado — por eso el tabindex) y queda disponible para
-   lectores de pantalla en todo momento (.sr-solo). */
+   lectores de pantalla en todo momento (.sr-solo). Pastillas de 32px, no
+   36px: un poco más compactas, más parecidas a la densidad de la
+   referencia. */
 .unidad-tarifa__comodidades {
-  list-style: none; padding: 0; margin: 0 0 22px;
-  display: grid; grid-template-columns: repeat(auto-fill, 36px);
-  gap: 10px;
+  list-style: none; padding: 0; margin: 0 0 16px;
+  display: grid; grid-template-columns: repeat(auto-fill, 32px);
+  gap: 8px;
 }
 .unidad-tarifa__comodidades li {
   position: relative;
-  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
   border: 1px solid var(--borde); border-radius: 50%; color: var(--piedra);
   transition: border-color .2s ease, color .2s ease;
 }
 .unidad-tarifa__comodidades li:hover,
 .unidad-tarifa__comodidades li:focus-visible { border-color: var(--terracota); color: var(--terracota); outline: none; }
-.unidad-tarifa__comodidades svg { width: 17px; height: 17px; flex: none; }
+.unidad-tarifa__comodidades svg { width: 15px; height: 15px; flex: none; }
 
 /* Tooltip propio (en vez del title nativo, que tarda en aparecer y se ve
    chico): globo oscuro arriba del ícono, con una florcita apuntando hacia
