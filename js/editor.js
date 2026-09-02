@@ -17,8 +17,10 @@
    nada distinto en la pantalla — el modo edición no se activa solo.
 
    Lo que se puede editar acá es lo que YA está en Contenido.catalogo(): los
-   textos sueltos (hero, "La casa", notas de tarifas) y las dos colecciones,
-   Preguntas frecuentes y Opiniones — con "agregar" y "eliminar" incluido.
+   textos sueltos (hero, "La casa", "Dónde estamos", "Qué hacer en la zona",
+   notas de tarifas) y las colecciones — Preguntas frecuentes, Opiniones,
+   "La casa por dentro", Distancias y Actividades — con "agregar" y
+   "eliminar" incluido.
 
    Las tarifas por temporada (precios, rangos de fecha) quedan afuera a
    propósito: tienen reglas cruzadas (que no falte ni se pise ningún día del
@@ -85,7 +87,13 @@ function iniciarEditor() {
     'contacto.telefonoVisible': ['pintarNavContacto', 'pintarPie'],
     'contacto.email': ['pintarPie'],
     'contacto.instagram': ['pintarNavContacto', 'pintarPie'],
-    'contacto.facebook': ['pintarNavContacto', 'pintarPie']
+    'contacto.facebook': ['pintarNavContacto', 'pintarPie'],
+    'textos.ubicacionTitulo': ['pintarDistancias'],
+    'textos.ubicacionTexto': ['pintarDistancias'],
+    'contacto.direccion': ['pintarDistancias'],
+    distancias: ['pintarDistancias'],
+    'textos.actividadesTitulo': ['pintarActividades'],
+    'textos.actividadesBajada': ['pintarActividades']
   };
   /* "textos.directo.<id>.titulo" y "modalidades.<id>.texto" son caminos
      dinámicos (uno por cada ítem/modalidad que exista) — más simple probar
@@ -107,6 +115,9 @@ function iniciarEditor() {
       // funciona sin exportar nada — a diferencia de escribirla desde acá
       // (ver el comentario en agregarAmbienteNuevo()), leerla sí es seguro.
       pintarCarruselAmbientes(typeof plantaAmbientes !== 'undefined' ? plantaAmbientes : 'todas');
+    }
+    if (camino === 'ACTIVIDADES' && typeof pintarActividades === 'function') {
+      pintarActividades();
     }
   }
 
@@ -135,12 +146,16 @@ function iniciarEditor() {
       body.ed-modo [data-campo]:hover { outline-color: #2d7dd2; }
       body.ed-modo [data-coleccion] details,
       body.ed-modo [data-coleccion] .opinion,
-      body.ed-modo [data-coleccion] .carrusel__pie {
+      body.ed-modo [data-coleccion] .carrusel__pie,
+      body.ed-modo [data-coleccion="distancias"] li,
+      body.ed-modo [data-coleccion="ACTIVIDADES"] .actividad {
         cursor: pointer; outline: 1px dashed transparent; outline-offset: 2px;
       }
       body.ed-modo [data-coleccion] details:hover,
       body.ed-modo [data-coleccion] .opinion:hover,
-      body.ed-modo [data-coleccion] .carrusel__pie:hover { outline-color: #2d7dd2; }
+      body.ed-modo [data-coleccion] .carrusel__pie:hover,
+      body.ed-modo [data-coleccion="distancias"] li:hover,
+      body.ed-modo [data-coleccion="ACTIVIDADES"] .actividad:hover { outline-color: #2d7dd2; }
       .ed-agregar {
         display: inline-flex; align-items: center; gap: 6px; margin-top: 16px;
         background: transparent; border: 1px dashed #2d7dd2; color: #2d7dd2;
@@ -437,6 +452,81 @@ function iniciarEditor() {
     if (figura) abrirPopoverAmbienteItem(figura.querySelector('.carrusel__pie'), indice);
   }
 
+  /* ------------------------------------------------------ Distancias -- */
+  function abrirPopoverDistanciaItem(el, indice) {
+    const item = CONFIG.distancias[indice];
+    if (!item) return;
+    abrirPopover(el, {
+      campos: [
+        { clave: 'lugar', etiqueta: 'Lugar', tipo: 'texto', valor: item.lugar || '' },
+        { clave: 'km', etiqueta: 'Distancia (ej: "8 km")', tipo: 'texto', valor: item.km || '' }
+      ],
+      onGuardar(valores) {
+        item.lugar = valores.lugar.trim();
+        item.km = valores.km.trim();
+        pendientes.add('distancias');
+        actualizarBarra();
+        repintar('distancias');
+      },
+      onEliminar() {
+        CONFIG.distancias.splice(indice, 1);
+        pendientes.add('distancias');
+        actualizarBarra();
+        repintar('distancias');
+      }
+    });
+  }
+
+  function agregarDistanciaNueva() {
+    CONFIG.distancias.push({ lugar: 'Nuevo lugar', km: '0 km' });
+    pendientes.add('distancias');
+    actualizarBarra();
+    repintar('distancias');
+    const indice = CONFIG.distancias.length - 1;
+    const el = document.querySelector(`[data-coleccion="distancias"] [data-i="${indice}"]`);
+    if (el) abrirPopoverDistanciaItem(el, indice);
+  }
+
+  /* ------------------------------------------- Qué hacer en la zona (ACTIVIDADES) */
+  function abrirPopoverActividadItem(el, indice) {
+    const item = ACTIVIDADES[indice];
+    if (!item) return;
+    abrirPopover(el, {
+      campos: [
+        { clave: 'foto', etiqueta: 'Archivo en img/ (sin extensión, ej: "rio-playa")', tipo: 'texto', valor: item.foto || '' },
+        { clave: 'titulo', etiqueta: 'Título', tipo: 'texto', valor: item.titulo || '' },
+        { clave: 'texto', etiqueta: 'Descripción', tipo: 'largo', valor: item.texto || '' }
+      ],
+      onGuardar(valores) {
+        item.foto = valores.foto.trim();
+        item.titulo = valores.titulo.trim();
+        item.texto = valores.texto.trim();
+        pendientes.add('ACTIVIDADES');
+        actualizarBarra();
+        repintar('ACTIVIDADES');
+      },
+      onEliminar() {
+        ACTIVIDADES.splice(indice, 1);
+        pendientes.add('ACTIVIDADES');
+        actualizarBarra();
+        repintar('ACTIVIDADES');
+      }
+    });
+  }
+
+  function agregarActividadNueva() {
+    ACTIVIDADES.push({ foto: '', titulo: 'Nueva actividad', texto: '' });
+    pendientes.add('ACTIVIDADES');
+    actualizarBarra();
+    repintar('ACTIVIDADES');
+    const indice = ACTIVIDADES.length - 1;
+    // Sólo el panel de "Ver todo lo que hay para hacer" muestra siempre el
+    // último ítem — la tira de la home es una selección fija de las primeras
+    // 4 (ver el comentario en tarjetasActividades()).
+    const el = document.querySelector(`#todas-actividades-grid [data-i="${indice}"]`);
+    if (el) abrirPopoverActividadItem(el, indice);
+  }
+
   /* ------------------------------------------------- guardar de verdad -- */
   function avisar(mensaje) {
     const aviso = document.createElement('div');
@@ -512,7 +602,9 @@ function iniciarEditor() {
       boton.dataset.coleccion = cual;
       boton.textContent = cual === 'FAQ' ? '+ Nueva pregunta'
         : cual === 'RESENAS' ? '+ Nueva opinión'
-        : '+ Nuevo ambiente';
+        : cual === 'AMBIENTES' ? '+ Nuevo ambiente'
+        : cual === 'distancias' ? '+ Agregar lugar'
+        : '+ Agregar actividad';
       marcador.appendChild(boton);
     });
   }
@@ -525,6 +617,8 @@ function iniciarEditor() {
       if (agregarBtn.dataset.coleccion === 'FAQ') agregarFaqNueva();
       else if (agregarBtn.dataset.coleccion === 'RESENAS') agregarResenaNueva();
       else if (agregarBtn.dataset.coleccion === 'AMBIENTES') agregarAmbienteNuevo();
+      else if (agregarBtn.dataset.coleccion === 'distancias') agregarDistanciaNueva();
+      else if (agregarBtn.dataset.coleccion === 'ACTIVIDADES') agregarActividadNueva();
       return;
     }
 
@@ -548,6 +642,18 @@ function iniciarEditor() {
     if (ambientePie) {
       const figura = ambientePie.closest('.carrusel__item');
       abrirPopoverAmbienteItem(ambientePie, Number(figura.dataset.ambI));
+      return;
+    }
+
+    const distanciaItem = e.target.closest('[data-coleccion="distancias"] li');
+    if (distanciaItem) {
+      abrirPopoverDistanciaItem(distanciaItem, Number(distanciaItem.dataset.i));
+      return;
+    }
+
+    const actividadItem = e.target.closest('[data-coleccion="ACTIVIDADES"] .actividad');
+    if (actividadItem) {
+      abrirPopoverActividadItem(actividadItem, Number(actividadItem.dataset.i));
       return;
     }
 

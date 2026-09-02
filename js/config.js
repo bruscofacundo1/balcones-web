@@ -335,7 +335,17 @@ const CONFIG = {
       'Lo mejor pasa afuera. Las galerías cubiertas miran al oeste, así que el atardecer ' +
       'sobre las sierras se ve desde la mesa, desde la hamaca paraguaya y desde la parrilla. ' +
       'Alrededor hay parque con árboles, espacio para los chicos y silencio de campo.'
-    ]
+    ],
+    // Sección "Dónde estamos" (mapa y distancias).
+    ubicacionTitulo: 'En Arroyo de los Patos, a un paso de todo',
+    ubicacionTexto: 'El campo está sobre el camino vecinal, en el paraje Arroyo de los Patos, con las ' +
+      'Sierras Grandes de frente y el arroyo a pocos minutos caminando. Nono y Mina Clavero ' +
+      'quedan cerca para las compras, la feria y las salidas, pero acá lo que se escucha ' +
+      'de noche son los grillos.',
+    // Sección "Traslasierra alrededor tuyo" (actividades).
+    actividadesTitulo: 'Traslasierra alrededor tuyo',
+    actividadesBajada: 'Ríos, senderos, pueblos serranos y el camino de las Altas Cumbres, ' +
+      'todo a distancia de una salida de un día.'
   },
 
   /* --------------------------------------------------------- comodidades

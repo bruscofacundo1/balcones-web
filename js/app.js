@@ -239,8 +239,10 @@ function pintarTextosCasa() {
 }
 
 function pintarDistancias() {
-  document.getElementById('distancias').innerHTML = CONFIG.distancias.map(d => `
-    <li><span class="lugar">${d.lugar}</span><span class="dist">${d.km}</span></li>`).join('');
+  document.getElementById('ubicacion-titulo').textContent = CONFIG.textos.ubicacionTitulo;
+  document.getElementById('ubicacion-texto').textContent = CONFIG.textos.ubicacionTexto;
+  document.getElementById('distancias').innerHTML = CONFIG.distancias.map((d, i) => `
+    <li data-i="${i}"><span class="lugar">${d.lugar}</span><span class="dist">${d.km}</span></li>`).join('');
   document.getElementById('mapa-direccion').textContent = CONFIG.contacto.direccion;
 
   const { lat, lng, zoom } = CONFIG.contacto.mapa;
@@ -365,8 +367,13 @@ function iniciarCarruselAmbientes() {
  * — si arrancara en opacity:0 quedaría invisible aunque después se abra.
  */
 function tarjetasActividades(lista, conRevelado) {
-  return lista.map(a => `
-    <article class="actividad ${conRevelado ? 'revelar revelar--foto' : ''}">
+  // `i` es el índice dentro de `lista`, que acá siempre coincide con el
+  // índice real en ACTIVIDADES: tanto `ACTIVIDADES.slice(0, 4)` (la tira de
+  // la home) como la lista completa arrancan en la posición 0, así que las
+  // primeras 4 tarjetas quedan numeradas igual en los dos lugares. Lo usa
+  // el modo edición (js/editor.js) para saber qué ítem tocar.
+  return lista.map((a, i) => `
+    <article class="actividad ${conRevelado ? 'revelar revelar--foto' : ''}" data-i="${i}">
       <img src="${THUMB(a.foto)}" alt="${a.titulo}" loading="lazy">
       <div class="actividad__cuerpo">
         <h3>${a.titulo}</h3>
@@ -376,6 +383,8 @@ function tarjetasActividades(lista, conRevelado) {
 }
 
 function pintarActividades() {
+  document.getElementById('actividades-titulo').textContent = CONFIG.textos.actividadesTitulo;
+  document.getElementById('actividades-bajada').textContent = CONFIG.textos.actividadesBajada;
   document.getElementById('actividades').innerHTML = tarjetasActividades(ACTIVIDADES.slice(0, 4), !animacionesListas);
   document.getElementById('todas-actividades-grid').innerHTML = tarjetasActividades(ACTIVIDADES, false);
 }

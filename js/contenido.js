@@ -79,6 +79,20 @@
         meta:   { tipo: 'texto', max: 60, etiqueta: 'Dato corto (ej: "2 plazas · Cama king")' },
         texto:  { tipo: 'largo', max: 300, etiqueta: 'Descripción' }
       }
+    },
+    // "Traslasierra alrededor tuyo". Misma lógica que AMBIENTES: la foto
+    // tiene que existir de antes en img/, no hay subida acá.
+    ACTIVIDADES: {
+      etiqueta: 'Actividades ("Qué hacer en la zona")',
+      grupo: 'Qué hacer en la zona',
+      singular: 'actividad',
+      plural: 'actividades',
+      maxItems: 30,
+      campos: {
+        foto:   { tipo: 'texto', max: 60, etiqueta: 'Archivo en img/ (sin extensión, ej: "rio-playa")' },
+        titulo: { tipo: 'texto', max: 60, etiqueta: 'Título' },
+        texto:  { tipo: 'largo', max: 250, etiqueta: 'Descripción' }
+      }
     }
   };
 
@@ -95,7 +109,8 @@
     if (nombre === 'FAQ') return typeof FAQ !== 'undefined' ? FAQ : null;
     if (nombre === 'RESENAS') return typeof RESENAS !== 'undefined' ? RESENAS : null;
     if (nombre === 'AMBIENTES') return typeof AMBIENTES !== 'undefined' ? AMBIENTES : null;
-    return null;   // los rangos de temporada sí viven adentro de CONFIG
+    if (nombre === 'ACTIVIDADES') return typeof ACTIVIDADES !== 'undefined' ? ACTIVIDADES : null;
+    return null;   // los rangos de temporada y "distancias" sí viven adentro de CONFIG
   }
 
   /* --------------------------------------------- revisores por ficha -- */
@@ -174,6 +189,7 @@
       'contacto.instagram':       { tipo: 'texto', max: 120, etiqueta: 'Link de Instagram', grupo: 'Contacto', opcional: true },
       'contacto.facebook':        { tipo: 'texto', max: 120, etiqueta: 'Link de Facebook', grupo: 'Contacto', opcional: true },
       'contacto.googleResenas':   { tipo: 'texto', max: 200, etiqueta: 'Link para dejar reseña en Google', grupo: 'Contacto', opcional: true },
+      'contacto.direccion':       { tipo: 'texto', max: 160, etiqueta: 'Dirección (como se muestra)', grupo: 'Ubicación' },
 
       'reglas.senaPorcentaje':    { tipo: 'entero', min: 0, max: 100, etiqueta: 'Seña (% del total)', grupo: 'Reglas' },
       'reglas.horaCheckIn':       { tipo: 'texto', max: 10, etiqueta: 'Hora de ingreso', grupo: 'Reglas' },
@@ -183,6 +199,20 @@
       'textos.heroBajada':        { tipo: 'largo', max: 400, etiqueta: 'Bajada del inicio', grupo: 'Textos' },
       'textos.casaTitulo':        { tipo: 'texto', max: 120, etiqueta: 'Título de "La casa"', grupo: 'Textos' },
       'textos.casaTexto':         { tipo: 'lista', max: 700, etiqueta: 'Párrafos de "La casa"', grupo: 'Textos' },
+
+      'textos.ubicacionTitulo':   { tipo: 'texto', max: 120, etiqueta: 'Título de "Dónde estamos"', grupo: 'Ubicación' },
+      'textos.ubicacionTexto':    { tipo: 'largo', max: 500, etiqueta: 'Texto de "Dónde estamos"', grupo: 'Ubicación' },
+      'distancias': {
+        tipo: 'coleccion', etiqueta: 'Distancias a pueblos cercanos', grupo: 'Ubicación',
+        singular: 'lugar', plural: 'lugares', maxItems: 20,
+        campos: {
+          lugar: { tipo: 'texto', max: 60, etiqueta: 'Lugar' },
+          km:    { tipo: 'texto', max: 20, etiqueta: 'Distancia (ej: "8 km")' }
+        }
+      },
+
+      'textos.actividadesTitulo': { tipo: 'texto', max: 120, etiqueta: 'Título de "Qué hacer en la zona"', grupo: 'Qué hacer en la zona' },
+      'textos.actividadesBajada': { tipo: 'largo', max: 300, etiqueta: 'Bajada de "Qué hacer en la zona"', grupo: 'Qué hacer en la zona' },
 
       'notasTarifas':             { tipo: 'lista', max: 300, etiqueta: 'Aclaraciones debajo de las tarifas', grupo: 'Textos' }
     };
