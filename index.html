@@ -31,7 +31,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=95">
+<link rel="stylesheet" href="css/estilos.css?v=96">
 
 <script type="application/ld+json">
 {
@@ -234,13 +234,11 @@
     <div class="ubicacion__layout">
       <div class="revelar">
         <span class="antetitulo">Dónde estamos</span>
-        <h2>En Arroyo de los Patos, a un paso de todo</h2>
-        <p class="bajada" id="mapa-direccion"></p>
-        <p>El campo está sobre el camino vecinal, en el paraje Arroyo de los Patos, con las
-          Sierras Grandes de frente y el arroyo a pocos minutos caminando. Nono y Mina Clavero
-          quedan cerca para las compras, la feria y las salidas, pero acá lo que se escucha
-          de noche son los grillos.</p>
-        <ul class="distancias" id="distancias"></ul>
+        <h2 id="ubicacion-titulo" data-campo="textos.ubicacionTitulo"></h2>
+        <p class="bajada" id="mapa-direccion" data-campo="contacto.direccion"></p>
+        <p id="ubicacion-texto" data-campo="textos.ubicacionTexto"></p>
+        <ul class="distancias" id="distancias" data-coleccion="distancias"></ul>
+        <div data-agregar-en="distancias"></div>
         <p style="margin-top:22px">
           <a class="boton boton--linea" id="mapa-link" href="#" target="_blank" rel="noopener">Abrir en Google Maps</a>
         </p>
@@ -257,11 +255,10 @@
 <section class="seccion seccion--arena" id="actividades-sec">
   <div class="contenedor">
     <div class="encabezado-seccion encabezado-seccion--centro revelar">
-      <h2>Traslasierra alrededor tuyo</h2>
-      <p class="bajada">Ríos, senderos, pueblos serranos y el camino de las Altas Cumbres,
-        todo a distancia de una salida de un día.</p>
+      <h2 id="actividades-titulo" data-campo="textos.actividadesTitulo"></h2>
+      <p class="bajada" id="actividades-bajada" data-campo="textos.actividadesBajada"></p>
     </div>
-    <div class="actividades cascada" id="actividades"></div>
+    <div class="actividades cascada" id="actividades" data-coleccion="ACTIVIDADES"></div>
     <p class="actividades__pie revelar">
       <button class="boton boton--linea" id="btn-ver-actividades">Ver todo lo que hay para hacer</button>
     </p>
@@ -278,7 +275,8 @@
   </div>
   <div class="todas-actividades__cuerpo">
     <div class="contenedor">
-      <div class="actividades" id="todas-actividades-grid"></div>
+      <div class="actividades" id="todas-actividades-grid" data-coleccion="ACTIVIDADES"></div>
+      <div data-agregar-en="ACTIVIDADES"></div>
     </div>
   </div>
 </div>
@@ -438,12 +436,12 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=95"></script>
-<script src="js/contenido.js?v=95"></script>
-<script src="js/disponibilidad.js?v=95"></script>
-<script src="js/precios.js?v=95"></script><script src="js/calendario.js?v=95"></script>
-<script src="js/pie.js?v=95"></script>
-<script src="js/app.js?v=95"></script>
-<script src="js/editor.js?v=95"></script>
+<script src="js/config.js?v=96"></script>
+<script src="js/contenido.js?v=96"></script>
+<script src="js/disponibilidad.js?v=96"></script>
+<script src="js/precios.js?v=96"></script><script src="js/calendario.js?v=96"></script>
+<script src="js/pie.js?v=96"></script>
+<script src="js/app.js?v=96"></script>
+<script src="js/editor.js?v=96"></script>
 </body>
 </html>
