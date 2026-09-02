@@ -12,12 +12,22 @@
    desde la página inicial, no escondido entre los demás.
    ============================================================================ */
 
+/* Recuerda las opciones de la última llamada real, para que el modo edición
+   (js/editor.js) pueda pedir un repintado con pintarPie() a secas —sin tener
+   que saber si esta página lo llamó con {cta:true, enInicio:true} o con
+   {cta:false}— y no pierda el CTA de "Escribinos y coordinamos" ni el
+   prefijo de los anclas al repintar después de editar un dato de contacto. */
+let ultimasOpcionesPie = {};
+
 /**
  * Dibuja el pie dentro de <footer class="pie" id="pie"></footer>.
  * `opciones.cta` = true agrega arriba el bloque de "Escribinos y coordinamos"
  * (va en el inicio; en las páginas de reserva estorba).
  */
-function pintarPie(opciones = {}) {
+function pintarPie(opciones) {
+  if (opciones) ultimasOpcionesPie = opciones;
+  opciones = ultimasOpcionesPie;
+
   const pie = document.getElementById('pie');
   if (!pie) return;
 
@@ -30,9 +40,9 @@ function pintarPie(opciones = {}) {
   const raiz = opciones.enInicio ? '' : 'index.html';
 
   const redes = [];
-  if (c.instagram) redes.push(`<a href="${c.instagram}" target="_blank" rel="noopener">Instagram</a>`);
-  if (c.facebook) redes.push(`<a href="${c.facebook}" target="_blank" rel="noopener">Facebook</a>`);
-  redes.push(`<a href="${wsp}" target="_blank" rel="noopener">WhatsApp</a>`);
+  if (c.instagram) redes.push(`<a href="${c.instagram}" target="_blank" rel="noopener" data-campo="contacto.instagram">Instagram</a>`);
+  if (c.facebook) redes.push(`<a href="${c.facebook}" target="_blank" rel="noopener" data-campo="contacto.facebook">Facebook</a>`);
+  redes.push(`<a href="${wsp}" target="_blank" rel="noopener" data-campo="contacto.whatsapp">WhatsApp</a>`);
 
   // Sólo se publica lo que esté cargado de verdad: un CUIT vacío o un número
   // de registro inventado son peores que no mostrar nada.
@@ -61,8 +71,8 @@ function pintarPie(opciones = {}) {
         <div class="pie__col">
           <h3>Contacto</h3>
           <ul class="pie__lista">
-            <li><a href="${wsp}" target="_blank" rel="noopener">${c.telefonoVisible}</a></li>
-            <li><a href="mailto:${c.email}">${c.email}</a></li>
+            <li><a href="${wsp}" target="_blank" rel="noopener" data-campo="contacto.telefonoVisible">${c.telefonoVisible}</a></li>
+            <li><a href="mailto:${c.email}" data-campo="contacto.email">${c.email}</a></li>
             <li>${c.direccion}</li>
           </ul>
         </div>
