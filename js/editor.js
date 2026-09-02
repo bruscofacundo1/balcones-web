@@ -87,10 +87,20 @@ function iniciarEditor() {
     'contacto.instagram': ['pintarNavContacto', 'pintarPie'],
     'contacto.facebook': ['pintarNavContacto', 'pintarPie']
   };
+  /* "textos.directo.<id>.titulo" y "modalidades.<id>.texto" son caminos
+     dinámicos (uno por cada ítem/modalidad que exista) — más simple probar
+     el prefijo acá que enumerar cada id a mano en REPINTAR, que además se
+     desactualizaría solo si alguna vez cambia la cantidad de ítems. */
   function repintar(camino) {
     (REPINTAR[camino] || []).forEach(nombre => {
       if (typeof window[nombre] === 'function') window[nombre]();
     });
+    if (camino.indexOf('textos.directo.') === 0 && typeof pintarReservaDirecta === 'function') {
+      pintarReservaDirecta();
+    }
+    if (camino.indexOf('modalidades.') === 0 && typeof pintarAlquiler === 'function') {
+      pintarAlquiler();
+    }
   }
 
   /* -------------------------------------------------------------- estilos */
