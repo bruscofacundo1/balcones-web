@@ -221,8 +221,10 @@ function pintarReservaDirecta() {
     const li = document.createElement('li');
     const h = document.createElement('h3');
     h.textContent = conValores(item.titulo);
+    h.dataset.campo = `textos.directo.${item.id}.titulo`;
     const p = document.createElement('p');
     p.textContent = conValores(item.texto);
+    p.dataset.campo = `textos.directo.${item.id}.texto`;
     li.append(h, p);
     cont.appendChild(li);
   }
@@ -794,7 +796,7 @@ function pintarUnidadesTarifas() {
       </div>
       <div class="unidad-tarifa__cuerpo">
         <h3>${m.nombre}</h3>
-        <p class="unidad-tarifa__texto">${m.texto}</p>
+        <p class="unidad-tarifa__texto" data-campo="modalidades.${m.id}.texto">${m.texto}</p>
         <p class="unidad-tarifa__meta">Personas: ${m.plazas} · m²: ${m.m2}</p>
 
         <ul class="unidad-tarifa__comodidades">

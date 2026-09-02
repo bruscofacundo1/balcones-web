@@ -309,12 +309,16 @@ const CONFIG = {
        y `reglas.senaPorcentaje`: si acá se escribieran a mano, el día que
        cambien las condiciones esta franja seguiría prometiendo lo viejo y
        legales.html diría otra cosa. */
+    // `id` es nuevo: sin él, Contenido.leerCamino/escribirCamino (que buscan
+    // los tramos de un array por `.id`, no por posición) no podían armar un
+    // camino de catálogo para editar un ítem suelto de esta lista — hacía
+    // falta para que el modo edición (js/editor.js) pudiera tocarlos.
     directo: [
-      { titulo: 'Sin intermediarios',
+      { id: 'intermediarios', titulo: 'Sin intermediarios',
         texto: 'Sin comisión de plataforma.' },
-      { titulo: 'Trato directo',
+      { id: 'trato', titulo: 'Trato directo',
         texto: 'Te contestamos nosotros, por WhatsApp.' },
-      { titulo: 'Seña del {sena}%',
+      { id: 'sena', titulo: 'Seña del {sena}%',
         texto: 'El resto, en efectivo o transferencia.' }
     ],
     // El título es el nombre de la casa, nada más: en la portada el trabajo

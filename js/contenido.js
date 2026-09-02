@@ -167,6 +167,31 @@
       'notasTarifas':             { tipo: 'lista', max: 300, etiqueta: 'Aclaraciones debajo de las tarifas', grupo: 'Textos' }
     };
 
+    // "Por qué reservar acá": título y texto de cada uno de los 3 ítems.
+    // El de la seña tiene {sena} adentro del título — se reemplaza solo al
+    // pintar (ver conValores() en pintarReservaDirecta), así que si se edita
+    // conviene dejar esa parte tal cual.
+    for (const d of ((config.textos && config.textos.directo) || [])) {
+      campos[`textos.directo.${d.id}.titulo`] = {
+        tipo: 'texto', max: 60,
+        etiqueta: `Título — "${d.titulo}"`, grupo: 'Por qué reservar acá'
+      };
+      campos[`textos.directo.${d.id}.texto`] = {
+        tipo: 'texto', max: 150,
+        etiqueta: `Texto — "${d.titulo}"`, grupo: 'Por qué reservar acá'
+      };
+    }
+
+    // La descripción de cada tarjeta en "Cómo se alquila". Los precios y el
+    // desglose por ambiente de cada modalidad NO entran acá — sólo la frase
+    // de entrada.
+    for (const m of (config.modalidades || [])) {
+      campos[`modalidades.${m.id}.texto`] = {
+        tipo: 'largo', max: 400,
+        etiqueta: `Descripción — ${m.nombre}`, grupo: 'Cómo se alquila'
+      };
+    }
+
     // Precios: una entrada por temporada y modalidad.
     for (const t of (config.temporadas || [])) {
       for (const m of (config.modalidades || [])) {
