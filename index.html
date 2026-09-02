@@ -31,7 +31,7 @@
 
 <!-- El ?v= es para que el navegador no se quede con la versión vieja del
      archivo cuando se publica un cambio: subir el número al actualizar. -->
-<link rel="stylesheet" href="css/estilos.css?v=90">
+<link rel="stylesheet" href="css/estilos.css?v=91">
 
 <script type="application/ld+json">
 {
@@ -109,8 +109,8 @@
        siempre a la vista. Repetir la acción en la portada era el tipo de
        texto de más que se decidió sacar en esta pasada. -->
   <div class="contenedor hero__contenido">
-    <h1 id="hero-titulo">Balcones del Arroyo</h1>
-    <p class="hero__texto" id="hero-bajada"></p>
+    <h1 id="hero-titulo" data-campo="textos.heroTitulo">Balcones del Arroyo</h1>
+    <p class="hero__texto" id="hero-bajada" data-campo="textos.heroBajada"></p>
   </div>
   <div class="hero__puntos" id="hero-puntos" role="tablist" aria-label="Fotos de portada"></div>
 </section>
@@ -125,8 +125,8 @@
 <section class="seccion" id="la-casa">
   <div class="contenedor contenedor--angosto casa__intro revelar">
     <span class="antetitulo">La casa</span>
-    <h2 id="casa-titulo"></h2>
-    <div id="casa-texto"></div>
+    <h2 id="casa-titulo" data-campo="textos.casaTitulo"></h2>
+    <div id="casa-texto" data-campo="textos.casaTexto"></div>
     <p class="casa__cifras" id="casa-cifras"></p>
     <!-- Las comodidades se sacan de acá por ahora — quedan por definir dónde
          van. Sigue en el DOM (oculta) para que pintarComodidades() no
@@ -177,7 +177,7 @@
 
     <div class="nota-tarifas revelar">
       <strong>Buenos a saber</strong>
-      <ul id="notas-tarifas"></ul>
+      <ul id="notas-tarifas" data-campo="notasTarifas"></ul>
     </div>
   </div>
 </section>
@@ -299,12 +299,15 @@
   </div>
 
   <div class="opiniones-carrusel" id="opiniones-carrusel">
-    <div class="opiniones-pista" id="opiniones-pista"></div>
+    <div class="opiniones-pista" id="opiniones-pista" data-coleccion="RESENAS"></div>
   </div>
 
   <div class="contenedor opiniones__pie revelar">
     <a class="boton boton--linea" id="btn-opinion-google" href="#" target="_blank" rel="noopener" hidden>Dejanos tu opinión en Google</a>
     <a class="boton boton--linea" id="btn-opinion-booking" href="#" target="_blank" rel="noopener" hidden>Dejanos tu opinión en Booking</a>
+    <!-- El editor pone acá el "+ Nueva opinión" en modo edición: adentro de
+         .opiniones-pista no sirve porque esa tira se anima y se duplica. -->
+    <span data-agregar-en="RESENAS"></span>
   </div>
 </section>
 
@@ -318,6 +321,13 @@
       <h2>Lo que siempre nos consultan</h2>
       <p class="bajada" id="preguntas-bajada"></p>
     </div>
+    <!-- Sin data-coleccion (y sin "+ Nueva pregunta") acá a propósito: esta
+         lista es sólo una selección (FAQ_DESTACADAS), no el FAQ completo —
+         agregar una pregunta acá no sabría en qué lugar del array real
+         insertarla. El "+ Nueva pregunta" vive en preguntas.html, que sí
+         muestra el listado completo. Las preguntas que sí están acá se
+         pueden editar igual: los <details> llevan el índice real (ver
+         htmlFaq() en app.js). -->
     <div class="faq revelar" id="faq"></div>
     <p class="preguntas__pie revelar">
       <a class="boton boton--fantasma" href="preguntas.html">Ver todas las preguntas</a>
@@ -427,11 +437,12 @@
   <div class="lightbox__tira" id="lb-tira"></div>
 </div>
 
-<script src="js/config.js?v=90"></script>
-<script src="js/contenido.js?v=90"></script>
-<script src="js/disponibilidad.js?v=90"></script>
-<script src="js/precios.js?v=90"></script><script src="js/calendario.js?v=90"></script>
-<script src="js/pie.js?v=90"></script>
-<script src="js/app.js?v=90"></script>
+<script src="js/config.js?v=91"></script>
+<script src="js/contenido.js?v=91"></script>
+<script src="js/disponibilidad.js?v=91"></script>
+<script src="js/precios.js?v=91"></script><script src="js/calendario.js?v=91"></script>
+<script src="js/pie.js?v=91"></script>
+<script src="js/app.js?v=91"></script>
+<script src="js/editor.js?v=91"></script>
 </body>
 </html>

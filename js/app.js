@@ -385,10 +385,14 @@ function mesCorto(iso) {
   return `${MESES_CORTOS[Number(m[2]) - 1]} ${m[1]}`;
 }
 
-function tarjetaOpinion(r) {
+/* `i` es el índice real dentro de RESENAS. Se necesita para el modo edición
+   (js/editor.js): la tira se duplica para el loop infinito, así que cada
+   opinión aparece dos veces en el DOM con el mismo data-i — cualquiera de
+   las dos copias mapea a la misma RESENAS[i]. */
+function tarjetaOpinion(r, i) {
   const estrellas = Math.max(0, Math.min(5, r.estrellas || 5));
   return `
-    <article class="opinion">
+    <article class="opinion" data-i="${i}">
       <div class="opinion__estrellas" aria-label="${estrellas} de 5 estrellas">
         ${'★'.repeat(estrellas)}${'☆'.repeat(5 - estrellas)}
       </div>
@@ -865,9 +869,13 @@ function pintarAlquiler() {
    queda para el que ya decidió y quiere el detalle, en preguntas.html. */
 const FAQ_DESTACADAS = [0, 3, 4, 5];
 
+/* `f._i` es el índice real dentro de FAQ (no la posición en `lista`, que acá
+   es sólo una selección de FAQ_DESTACADAS) — lo necesita el modo edición
+   (js/editor.js) para saber qué pregunta tocar cuando alguien la edita desde
+   el inicio, donde no se ven todas. */
 function htmlFaq(lista) {
   return lista.map(f => `
-    <details>
+    <details data-i="${f._i}">
       <summary>${f.p}</summary>
       <div class="faq__respuesta">${f.r.split('\n').map(x => `<p>${x}</p>`).join('')}</div>
     </details>`).join('');
@@ -875,7 +883,9 @@ function htmlFaq(lista) {
 
 function pintarFaq() {
   // Sólo se publica `p` y `r`. El campo `revisar` es una nota interna.
-  document.getElementById('faq').innerHTML = htmlFaq(FAQ_DESTACADAS.map(i => FAQ[i]).filter(Boolean));
+  document.getElementById('faq').innerHTML = htmlFaq(
+    FAQ_DESTACADAS.map(i => FAQ[i] && Object.assign({ _i: i }, FAQ[i])).filter(Boolean)
+  );
   document.getElementById('preguntas-bajada').textContent =
     'Las que más nos preguntan. El resto, un clic más allá.';
 
@@ -980,4 +990,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   iniciarRevelado();
   iniciarReservas();
   iniciarModalAmbientes();
+  if (typeof iniciarEditor === 'function') iniciarEditor();
 });
