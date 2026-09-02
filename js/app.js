@@ -923,13 +923,13 @@ function pintarNavContacto() {
   const wsp = `https://wa.me/${c.whatsapp}?text=${encodeURIComponent(mensaje)}`;
 
   const redes = [];
-  if (c.instagram) redes.push(`<a href="${c.instagram}" target="_blank" rel="noopener">Instagram</a>`);
-  if (c.facebook) redes.push(`<a href="${c.facebook}" target="_blank" rel="noopener">Facebook</a>`);
+  if (c.instagram) redes.push(`<a href="${c.instagram}" target="_blank" rel="noopener" data-campo="contacto.instagram">Instagram</a>`);
+  if (c.facebook) redes.push(`<a href="${c.facebook}" target="_blank" rel="noopener" data-campo="contacto.facebook">Facebook</a>`);
 
   cont.innerHTML = `
     <span class="antetitulo">Contacto</span>
     <p class="nav__contacto-direccion">${c.direccion}</p>
-    <a class="nav__contacto-wsp" href="${wsp}" target="_blank" rel="noopener">${c.telefonoVisible}</a>
+    <a class="nav__contacto-wsp" href="${wsp}" target="_blank" rel="noopener" data-campo="contacto.telefonoVisible">${c.telefonoVisible}</a>
     ${redes.length ? `<div class="nav__contacto-redes">${redes.join('')}</div>` : ''}
   `;
 }

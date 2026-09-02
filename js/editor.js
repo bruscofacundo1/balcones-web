@@ -77,7 +77,15 @@ function iniciarEditor() {
     'textos.casaTexto': ['pintarTextosCasa'],
     notasTarifas: ['pintarAlquiler'],
     FAQ: ['pintarFaq', 'pintarFaqCompleto'],
-    RESENAS: ['pintarResenas']
+    RESENAS: ['pintarResenas'],
+    // El teléfono y el WhatsApp aparecen en dos lugares (el pie y el cajón
+    // del menú) que se pintan con funciones separadas — hay que repintar
+    // las dos para que no quede uno actualizado y el otro con el dato viejo.
+    'contacto.whatsapp': ['pintarNavContacto', 'pintarPie', 'pintarContacto'],
+    'contacto.telefonoVisible': ['pintarNavContacto', 'pintarPie'],
+    'contacto.email': ['pintarPie'],
+    'contacto.instagram': ['pintarNavContacto', 'pintarPie'],
+    'contacto.facebook': ['pintarNavContacto', 'pintarPie']
   };
   function repintar(camino) {
     (REPINTAR[camino] || []).forEach(nombre => {
@@ -460,7 +468,13 @@ function iniciarEditor() {
     }
 
     const campoEl = e.target.closest('[data-campo]');
-    if (campoEl) abrirPopoverCampo(campoEl, campoEl.dataset.campo);
+    if (campoEl) {
+      // Varios campos de contacto están marcados sobre un <a href> (el
+      // teléfono, el mail, las redes) — sin esto, el clic para editar
+      // terminaba además siguiendo el link de verdad.
+      e.preventDefault();
+      abrirPopoverCampo(campoEl, campoEl.dataset.campo);
+    }
   });
 
   /* --------------------------------------------------------- el botón -- */
