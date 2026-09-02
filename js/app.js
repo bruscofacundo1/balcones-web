@@ -284,8 +284,12 @@ function pintarCarruselAmbientes(planta = 'todas') {
   carrLista = planta === 'todas' ? AMBIENTES : AMBIENTES.filter(a => a.planta === planta);
   carrIndice = 0;
 
+  // `data-i` es la posición dentro de `carrLista` (puede estar filtrada por
+  // planta) — la usa la navegación del carrusel para saber cuál está activa.
+  // `data-amb-i` es el índice real en AMBIENTES, que el modo edición
+  // necesita para saber qué ambiente tocar sin importar el filtro.
   pista.innerHTML = carrLista.map((a, i) => `
-    <figure class="carrusel__item" data-i="${i}">
+    <figure class="carrusel__item" data-i="${i}" data-amb-i="${AMBIENTES.indexOf(a)}">
       <img src="${IMG(a.foto)}" alt="${a.titulo}" loading="lazy"
            data-foto="${a.foto}" data-titulo="${a.titulo}">
       <figcaption class="carrusel__pie">

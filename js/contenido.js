@@ -60,6 +60,25 @@
         fecha:     { tipo: 'texto', max: 7, etiqueta: 'Cuándo (AAAA-MM)' },
         estrellas: { tipo: 'entero', min: 1, max: 5, etiqueta: 'Estrellas' }
       }
+    },
+    // El carrusel de "La casa por dentro". `foto` es el nombre del archivo
+    // en img/ (sin extensión ni carpeta) — no hay un selector de fotos acá,
+    // a diferencia de la galería de "La casa y el lugar" (FOTOS), que ya
+    // tiene su propio sistema completo de subida en la pestaña "Fotos" del
+    // panel. Para AMBIENTES, la foto tiene que existir de antes en img/.
+    AMBIENTES: {
+      etiqueta: 'Ambientes ("La casa por dentro")',
+      grupo: 'La casa por dentro',
+      singular: 'ambiente',
+      plural: 'ambientes',
+      maxItems: 40,
+      campos: {
+        foto:   { tipo: 'texto', max: 60, etiqueta: 'Archivo en img/ (sin extensión, ej: "dorm-principal")' },
+        planta: { tipo: 'texto', max: 20, etiqueta: 'Planta (alta / baja / exterior)' },
+        titulo: { tipo: 'texto', max: 60, etiqueta: 'Título' },
+        meta:   { tipo: 'texto', max: 60, etiqueta: 'Dato corto (ej: "2 plazas · Cama king")' },
+        texto:  { tipo: 'largo', max: 300, etiqueta: 'Descripción' }
+      }
     }
   };
 
@@ -75,6 +94,7 @@
   function listaViva(nombre) {
     if (nombre === 'FAQ') return typeof FAQ !== 'undefined' ? FAQ : null;
     if (nombre === 'RESENAS') return typeof RESENAS !== 'undefined' ? RESENAS : null;
+    if (nombre === 'AMBIENTES') return typeof AMBIENTES !== 'undefined' ? AMBIENTES : null;
     return null;   // los rangos de temporada sí viven adentro de CONFIG
   }
 
