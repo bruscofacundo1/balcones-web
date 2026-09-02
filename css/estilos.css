@@ -675,6 +675,10 @@ a { color: var(--terracota); }
 }
 .carrusel__punto--activo { background: var(--carbon); }
 
+/* Vacío y sin tomar lugar salvo en modo edición, donde js/editor.js le
+   mete el botón "+ Nuevo ambiente" adentro. */
+.ambientes__agregar { text-align: center; margin-top: 8px; }
+
 /* ------------------------------------------ carrusel a pantalla (var. C) - */
 /* Misma mecánica que el de arriba, otra piel: la foto ocupa casi todo el alto
    de la ventana (por eso va en vh, así se acomoda al zoom y a cada monitor) y

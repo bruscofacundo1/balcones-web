@@ -101,6 +101,13 @@ function iniciarEditor() {
     if (camino.indexOf('modalidades.') === 0 && typeof pintarAlquiler === 'function') {
       pintarAlquiler();
     }
+    if (camino === 'AMBIENTES' && typeof pintarCarruselAmbientes === 'function') {
+      // `plantaAmbientes` es un `let` de app.js: como los dos son <script>
+      // clásicos (no módulos), se leen el mismo ámbito de arriba y esto
+      // funciona sin exportar nada — a diferencia de escribirla desde acá
+      // (ver el comentario en agregarAmbienteNuevo()), leerla sí es seguro.
+      pintarCarruselAmbientes(typeof plantaAmbientes !== 'undefined' ? plantaAmbientes : 'todas');
+    }
   }
 
   /* -------------------------------------------------------------- estilos */
@@ -127,11 +134,13 @@ function iniciarEditor() {
       }
       body.ed-modo [data-campo]:hover { outline-color: #2d7dd2; }
       body.ed-modo [data-coleccion] details,
-      body.ed-modo [data-coleccion] .opinion {
+      body.ed-modo [data-coleccion] .opinion,
+      body.ed-modo [data-coleccion] .carrusel__pie {
         cursor: pointer; outline: 1px dashed transparent; outline-offset: 2px;
       }
       body.ed-modo [data-coleccion] details:hover,
-      body.ed-modo [data-coleccion] .opinion:hover { outline-color: #2d7dd2; }
+      body.ed-modo [data-coleccion] .opinion:hover,
+      body.ed-modo [data-coleccion] .carrusel__pie:hover { outline-color: #2d7dd2; }
       .ed-agregar {
         display: inline-flex; align-items: center; gap: 6px; margin-top: 16px;
         background: transparent; border: 1px dashed #2d7dd2; color: #2d7dd2;
@@ -376,6 +385,58 @@ function iniciarEditor() {
     if (el) abrirPopoverResenaItem(el, indice);
   }
 
+  /* ------------------------------------------- La casa por dentro (AMBIENTES) */
+  /* Índice real en AMBIENTES: no el "data-i" del carrusel, que es la
+     posición dentro de carrLista y puede estar filtrada por planta (ver el
+     comentario en pintarCarruselAmbientes()). */
+  function abrirPopoverAmbienteItem(el, indice) {
+    const item = AMBIENTES[indice];
+    if (!item) return;
+    abrirPopover(el, {
+      campos: [
+        { clave: 'foto', etiqueta: 'Archivo en img/ (sin extensión, ej: "dorm-principal")', tipo: 'texto', valor: item.foto || '' },
+        { clave: 'planta', etiqueta: 'Planta (alta / baja / exterior)', tipo: 'texto', valor: item.planta || '' },
+        { clave: 'titulo', etiqueta: 'Título', tipo: 'texto', valor: item.titulo || '' },
+        { clave: 'meta', etiqueta: 'Dato corto (ej: "2 plazas · Cama king")', tipo: 'texto', valor: item.meta || '' },
+        { clave: 'texto', etiqueta: 'Descripción', tipo: 'largo', valor: item.texto || '' }
+      ],
+      onGuardar(valores) {
+        item.foto = valores.foto.trim();
+        item.planta = valores.planta.trim();
+        item.titulo = valores.titulo.trim();
+        item.meta = valores.meta.trim();
+        item.texto = valores.texto.trim();
+        pendientes.add('AMBIENTES');
+        actualizarBarra();
+        repintar('AMBIENTES');
+      },
+      onEliminar() {
+        AMBIENTES.splice(indice, 1);
+        pendientes.add('AMBIENTES');
+        actualizarBarra();
+        repintar('AMBIENTES');
+      }
+    });
+  }
+
+  function agregarAmbienteNuevo() {
+    AMBIENTES.push({ foto: '', planta: 'alta', titulo: 'Nuevo ambiente', meta: '', texto: '' });
+    pendientes.add('AMBIENTES');
+    actualizarBarra();
+    // Clickear la pestaña "Todo" en vez de tocar `plantaAmbientes` a mano:
+    // es un `let` de app.js, no una propiedad real de `window`, así que
+    // editor.js no la puede reasignar desde afuera. Clickeando la pestaña,
+    // el handler que ya existe en app.js la actualiza bien y repinta con el
+    // filtro correcto — si no, el ambiente recién agregado podía quedar
+    // fuera de la vista filtrada y no había forma de abrirlo.
+    const tabTodo = document.querySelector('#tabs-ambientes [data-planta="todas"]');
+    if (tabTodo) tabTodo.click();
+    else if (typeof pintarCarruselAmbientes === 'function') pintarCarruselAmbientes('todas');
+    const indice = AMBIENTES.length - 1;
+    const figura = document.querySelector(`[data-coleccion="AMBIENTES"] [data-amb-i="${indice}"]`);
+    if (figura) abrirPopoverAmbienteItem(figura.querySelector('.carrusel__pie'), indice);
+  }
+
   /* ------------------------------------------------- guardar de verdad -- */
   function avisar(mensaje) {
     const aviso = document.createElement('div');
@@ -449,7 +510,9 @@ function iniciarEditor() {
       boton.type = 'button';
       boton.className = 'ed-agregar';
       boton.dataset.coleccion = cual;
-      boton.textContent = cual === 'FAQ' ? '+ Nueva pregunta' : '+ Nueva opinión';
+      boton.textContent = cual === 'FAQ' ? '+ Nueva pregunta'
+        : cual === 'RESENAS' ? '+ Nueva opinión'
+        : '+ Nuevo ambiente';
       marcador.appendChild(boton);
     });
   }
@@ -461,6 +524,7 @@ function iniciarEditor() {
     if (agregarBtn) {
       if (agregarBtn.dataset.coleccion === 'FAQ') agregarFaqNueva();
       else if (agregarBtn.dataset.coleccion === 'RESENAS') agregarResenaNueva();
+      else if (agregarBtn.dataset.coleccion === 'AMBIENTES') agregarAmbienteNuevo();
       return;
     }
 
@@ -474,6 +538,16 @@ function iniciarEditor() {
     const resenaItem = e.target.closest('[data-coleccion="RESENAS"] .opinion');
     if (resenaItem) {
       abrirPopoverResenaItem(resenaItem, Number(resenaItem.dataset.i));
+      return;
+    }
+
+    // El clic va sobre el epígrafe (.carrusel__pie), no sobre toda la
+    // figura: la foto ya tiene su propio comportamiento (navegar el
+    // carrusel o abrir el visor) y no queremos pisarlo.
+    const ambientePie = e.target.closest('[data-coleccion="AMBIENTES"] .carrusel__pie');
+    if (ambientePie) {
+      const figura = ambientePie.closest('.carrusel__item');
+      abrirPopoverAmbienteItem(ambientePie, Number(figura.dataset.ambI));
       return;
     }
 
