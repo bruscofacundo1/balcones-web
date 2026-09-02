@@ -9,9 +9,12 @@
    tocar el texto ahí mismo, en la página real, y confirmar los cambios todos
    juntos al final con un solo botón.
 
-   Sólo hace algo si hay una sesión de /admin activa — se chequea con
-   GET /api/admin/sesion, la misma cookie que ya usa el panel. Para cualquier
-   visitante sin esa sesión, este archivo no agrega nada a la página.
+   Sólo hace algo si se entra desde /admin (botón "Editar el sitio", que abre
+   el sitio con ?editar=1) Y encima hay una sesión de /admin activa — se
+   chequea con GET /api/admin/sesion, la misma cookie que ya usa el panel.
+   Las dos cosas hacen falta a propósito: un admin que entra al sitio por su
+   cuenta (sin pasar por ese botón) lo ve igual que cualquier visitante, sin
+   nada distinto en la pantalla — el modo edición no se activa solo.
 
    Lo que se puede editar acá es lo que YA está en Contenido.catalogo(): los
    textos sueltos (hero, "La casa", notas de tarifas) y las dos colecciones,
@@ -32,6 +35,29 @@
 
 function iniciarEditor() {
   if (typeof CONFIG === 'undefined' || typeof Contenido === 'undefined') return;
+
+  const CLAVE_ENTRADA = 'bda-editor-entrada';
+
+  // La entrada real es el ?editar=1 que pone el botón "Editar el sitio" de
+  // /admin. Se guarda en sessionStorage (no localStorage: dura lo que dura
+  // la pestaña, no queda prendido para siempre) para que se mantenga al
+  // navegar a otra página del sitio sin tener que volver a pasar por admin
+  // en cada clic. Sin ese `?editar=1` en algún momento de esta pestaña, no
+  // se hace ni el pedido de sesión: el sitio se ve exactamente igual que
+  // para cualquier visitante, sesión de admin o no.
+  try {
+    if (new URLSearchParams(location.search).has('editar')) {
+      sessionStorage.setItem(CLAVE_ENTRADA, '1');
+      // Saca el ?editar=1 de la barra de direcciones — ya cumplió su función.
+      const url = new URL(location.href);
+      url.searchParams.delete('editar');
+      history.replaceState(null, '', url);
+    }
+  } catch (e) { /* localStorage/URL bloqueados: no se activa nada */ }
+
+  let entrada = false;
+  try { entrada = sessionStorage.getItem(CLAVE_ENTRADA) === '1'; } catch (e) { /* modo privado */ }
+  if (!entrada) return;
 
   const CLAVE_MODO = 'bda-modo-edicion';
   const pendientes = new Set();   // caminos con cambios sin guardar: 'textos.heroTitulo', 'FAQ', etc.
