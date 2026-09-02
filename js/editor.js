@@ -47,8 +47,14 @@ function iniciarEditor() {
   // en cada clic. Sin ese `?editar=1` en algún momento de esta pestaña, no
   // se hace ni el pedido de sesión: el sitio se ve exactamente igual que
   // para cualquier visitante, sesión de admin o no.
+  // `entradaFresca` marca ESTE clic en "Editar el sitio", no simplemente
+  // "en algún momento de la pestaña ya se entró así" (eso es `entrada`, más
+  // abajo). Sirve para arrancar directo en modo edición sin pedir un
+  // segundo clic en el botón flotante — ver el comentario en arrancar().
+  let entradaFresca = false;
   try {
     if (new URLSearchParams(location.search).has('editar')) {
+      entradaFresca = true;
       sessionStorage.setItem(CLAVE_ENTRADA, '1');
       // Saca el ?editar=1 de la barra de direcciones — ya cumplió su función.
       const url = new URL(location.href);
@@ -700,8 +706,16 @@ function iniciarEditor() {
     document.body.appendChild(boton);
     boton.addEventListener('click', () => aplicarModo(!modoOn, boton));
 
-    let arranqueOn = false;
-    try { arranqueOn = localStorage.getItem(CLAVE_MODO) === '1'; } catch (e) { /* modo privado */ }
+    // Con `entradaFresca` (este clic en "Editar el sitio") se arranca
+    // directo en modo edición, sin pedir un segundo clic en el botón
+    // flotante. Al navegar a otra página del sitio dentro de la misma
+    // pestaña (sin volver a pasar por admin) se respeta en cambio lo último
+    // que quedó guardado, por si alguien salió del modo a propósito para
+    // mirar cómo se ve.
+    let arranqueOn = entradaFresca;
+    if (!arranqueOn) {
+      try { arranqueOn = localStorage.getItem(CLAVE_MODO) === '1'; } catch (e) { /* modo privado */ }
+    }
     aplicarModo(arranqueOn, boton);
   }
 }
