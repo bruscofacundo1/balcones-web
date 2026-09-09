@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231d1c1a'/><path d='M20 58 L50 32 L80 58 v22 H20z' fill='%23867446'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/estilos.css?v=98">
+<link rel="stylesheet" href="css/estilos.css?v=99">
 <style>
   body { background: var(--arena); }
 
@@ -572,9 +572,9 @@
   </div>
 </div>
 
-<script src="js/config.js?v=98"></script>
-<script src="js/contenido.js?v=98"></script>
-<script src="js/precios.js?v=98"></script>
+<script src="js/config.js?v=99"></script>
+<script src="js/contenido.js?v=99"></script>
+<script src="js/precios.js?v=99"></script>
 <script>
 /* ============================================================================
    Panel de administración
@@ -714,7 +714,10 @@ function indexarNoches() {
 
 function nombreDe(r) {
   if (r.origen === 'bloqueo') return (r.datos && r.datos.motivo) || 'Bloqueo';
-  if (r.origen === 'booking') return 'Reserva de Booking.com';
+  // El .ics básico de Booking no manda el nombre del huésped (ver
+  // lib/booking-ical.js) — por eso el de "booking" es el único origen donde
+  // el nombre se carga a mano después, desde el detalle de la reserva.
+  if (r.origen === 'booking') return (r.datos && r.datos.nombre) || 'Reserva de Booking.com';
   return (r.datos && r.datos.nombre) || 'Sin nombre';
 }
 
@@ -941,6 +944,7 @@ function abrirDetalle(id) {
   const d = r.datos || {};
   const noches = Precios.nochesEntre(r.entrada, r.salida);
   const esBloqueo = r.origen === 'bloqueo';
+  const esBooking = r.origen === 'booking';
 
   const filas = [
     ['Estado', r.estado],
@@ -965,7 +969,7 @@ function abrirDetalle(id) {
     </dl>
 
     ${r.estado === 'cancelada' ? '' : `
-      ${esBloqueo ? '' : `
+      ${esBloqueo || esBooking ? '' : `
       <div class="fila">
         <div class="campo-ad">
           <label for="ed-pagado">Cobrado hasta ahora</label>
@@ -976,6 +980,12 @@ function abrirDetalle(id) {
           <input type="number" id="ed-total" value="${r.total || 0}" min="0" step="1000">
         </div>
       </div>`}
+      ${esBooking ? `
+      <div class="campo-ad">
+        <label for="ed-nombre">Nombre del huésped</label>
+        <input type="text" id="ed-nombre" value="${escapar(d.nombre || '')}"
+               placeholder="Booking no manda el nombre — cargalo cuando llegue el mail de confirmación">
+      </div>` : ''}
       <div class="campo-ad">
         <label for="ed-nota">Nota interna</label>
         <textarea id="ed-nota" placeholder="Lo que quieras recordar de esta reserva">${escapar(r.nota || '')}</textarea>
@@ -994,9 +1004,10 @@ function abrirDetalle(id) {
 
   $('ed-guardar').addEventListener('click', () => enviar('ed-estado', {
     accion: 'actualizar', id: r.id,
-    pagado: esBloqueo ? undefined : $('ed-pagado').value,
-    total: esBloqueo ? undefined : $('ed-total').value,
-    nota: $('ed-nota').value
+    pagado: esBloqueo || esBooking ? undefined : $('ed-pagado').value,
+    total: esBloqueo || esBooking ? undefined : $('ed-total').value,
+    nota: $('ed-nota').value,
+    datos: esBooking ? { nombre: $('ed-nombre').value.trim() } : undefined
   }, 'Guardado.'));
 
   if ($('ed-confirmar')) {
