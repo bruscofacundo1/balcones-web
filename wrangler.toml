@@ -49,3 +49,11 @@ html_handling = "none"
 [[r2_buckets]]
 binding = "FOTOS_BUCKET"
 bucket_name = "balconesdelarroyo-fotos"
+
+# Trae el calendario de Booking.com y lo refleja acá cada tres horas, sin
+# que nadie tenga que apretar el botón "Sincronizar con Booking" del panel
+# (ver worker.js, `scheduled`, y lib/reservas.js, sincronizarBooking()).
+# Si BOOKING_ICAL_URL todavía no está cargada, esto corre igual y no hace
+# nada (falla en silencio, sólo un log) — no rompe el resto del sitio.
+[triggers]
+crons = ["0 */3 * * *"]
