@@ -20,6 +20,8 @@
    ============================================================================ */
 
 const { nochesOcupadasPublicas } = require('../lib/reservas.js');
+const { configEfectivo } = require('../lib/contenido.js');
+const Precios = require('../js/precios.js');
 
 /** 'AAAA-MM-DD' -> 'AAAAMMDD', el formato de fecha (todo el día) de iCal. */
 function aFechaIcal(iso) {
@@ -60,8 +62,15 @@ function dtstampAhora() {
 
 module.exports = async (req, res) => {
   try {
-    const ocupadas = await nochesOcupadasPublicas();
-    const todas = [...new Set([...(ocupadas ? ocupadas.alta : []), ...(ocupadas ? ocupadas.baja : [])])].sort();
+    const [CONFIG, ocupadas] = await Promise.all([configEfectivo(), nochesOcupadasPublicas()]);
+    // Se exporta con el colchón ya aplicado: así Booking tampoco deja reservar
+    // la noche de margen pegada a una reserva nuestra. Con colchón 0 esto es
+    // exactamente lo de antes.
+    const conMargen = Precios.conColchon(
+      Precios.construirOcupadas(ocupadas || { alta: [], baja: [] }),
+      CONFIG.reglas.colchonNoches
+    );
+    const todas = [...new Set([...conMargen.alta, ...conMargen.baja])].sort();
     const rangos = aRangos(todas);
     const ahora = dtstampAhora();
 

@@ -97,6 +97,41 @@
     return false;
   }
 
+  /**
+   * Colchón entre reservas: suma `colchon` noches de margen a cada lado de
+   * cada noche ocupada. Con `colchon = 1`, una reserva que termina la noche
+   * del 13 bloquea también la del 14, y la próxima entrada posible es el 15.
+   *
+   * Es una regla DERIVADA, no se guarda en ningún lado: la tabla `ocupadas`
+   * de la base sigue teniendo sólo las noches efectivamente reservadas, y el
+   * lock atómico `(planta, noche)` no cambia. Esto sólo se usa para decidir
+   * si una reserva NUEVA puede entrar y para pintar el calendario.
+   *
+   * `colchon = 0` (o menos) devuelve el MISMO objeto sin tocar: el sitio
+   * vuelve exactamente a como estaba antes de que existiera esta regla.
+   *
+   * Acepta Sets o arrays como entrada; siempre devuelve Sets.
+   */
+  function conColchon(ocupadas, colchon) {
+    const n = Math.floor(Number(colchon) || 0);
+    if (n < 1) return ocupadas;
+    const expandir = (noches) => {
+      const salida = new Set(noches);
+      for (const iso of noches) {
+        const base = deIso(iso);
+        for (let d = 1; d <= n; d++) {
+          salida.add(aIso(sumarDias(base, d)));
+          salida.add(aIso(sumarDias(base, -d)));
+        }
+      }
+      return salida;
+    };
+    return {
+      alta: expandir(ocupadas.alta || []),
+      baja: expandir(ocupadas.baja || [])
+    };
+  }
+
   /* ---------------------------------------------------------- temporadas -- */
 
   /** Un rango con año ('2027-03-25') vale sólo ese año; uno sin año
@@ -191,7 +226,7 @@
 
   const Precios = {
     aIso, deIso, sumarDias, nochesEntre, nochesLista,
-    modalidadPorId, construirOcupadas, unirOcupadas,
+    modalidadPorId, construirOcupadas, unirOcupadas, conColchon,
     libre, libreAlguna, hayOcupadasEntre,
     temporadaDe, temporadaFallback, rangoConAnio,
     precioNoche, cotizar

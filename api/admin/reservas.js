@@ -69,16 +69,31 @@ async function crear(req, res) {
   // Aviso previo, para que el panel pueda preguntar "¿la cargo igual?". El
   // choque de verdad lo detecta la base al insertar, más abajo.
   if (!b.forzar) {
-    const ocupadas = Precios.unirOcupadas(
+    const reales = Precios.unirOcupadas(
       Precios.construirOcupadas(DISPONIBILIDAD),
       await nochesPagadas()
     );
-    if (Precios.hayOcupadasEntre(b.entrada, b.salida, modalidad, ocupadas)) {
+    if (Precios.hayOcupadasEntre(b.entrada, b.salida, modalidad, reales)) {
       res.status(409).json({
         error: 'Esas fechas ya están ocupadas.',
         ocupado: true
       });
       return;
+    }
+    // El colchón (noches de margen entre reservas) acá es un aviso, no un
+    // bloqueo: el panel es para casos raros y a veces hace falta cargar una
+    // reserva pegada a propósito. Se responde con `sinMargen` para que el
+    // panel pregunte y reintente con `forzar`, igual que con `ocupado`.
+    const colchon = Math.floor(Number(CONFIG.reglas.colchonNoches) || 0);
+    if (colchon >= 1) {
+      const conMargen = Precios.conColchon(reales, colchon);
+      if (Precios.hayOcupadasEntre(b.entrada, b.salida, modalidad, conMargen)) {
+        res.status(409).json({
+          error: `Estas fechas quedan sin la${colchon > 1 ? 's ' + colchon : ''} noche${colchon > 1 ? 's' : ''} de limpieza de margen con otra reserva.`,
+          sinMargen: true
+        });
+        return;
+      }
     }
   }
 

@@ -142,6 +142,12 @@ const CONFIG = {
     horaCheckIn: '14:00',
     horaCheckOut: '10:00',
     minNochesGeneral: 2,     // mínimo por defecto (cada temporada puede pisarlo)
+    // Noches de margen entre una reserva y la siguiente (para limpieza). Con 1,
+    // si alguien se va la mañana del 14, la noche del 14 queda bloqueada y la
+    // próxima entrada posible es el 15. Editable desde /admin (pestaña Datos);
+    // 0 vuelve al comportamiento sin margen. Se aplica también al calendario
+    // que se le exporta a Booking.
+    colchonNoches: 1,
     mesesVisibles: 12,       // cuántos meses adelante muestra el calendario
     moneda: 'ARS',
     // true  = el precio es por noche de la unidad, sin importar cuántos vengan

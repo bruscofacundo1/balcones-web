@@ -61,7 +61,13 @@ module.exports = async (req, res) => {
 
     const base = Precios.construirOcupadas(DISPONIBILIDAD);
     const pagadas = await nochesPagadas();
-    const ocupadas = Precios.unirOcupadas(base, pagadas);
+    // El colchón (noches de margen entre reservas) se aplica acá igual que en
+    // el calendario del sitio: es la misma cuenta, no una copia. Con 0 no
+    // cambia nada.
+    const ocupadas = Precios.conColchon(
+      Precios.unirOcupadas(base, pagadas),
+      CONFIG.reglas.colchonNoches
+    );
 
     if (Precios.hayOcupadasEntre(reserva.entrada, reserva.salida, modalidad, ocupadas)) {
       res.status(409).json({ error: 'Uy, justo se ocupó una de esas fechas. Elegí otras y probá de nuevo.' });

@@ -194,6 +194,7 @@
       'reglas.senaPorcentaje':    { tipo: 'entero', min: 0, max: 100, etiqueta: 'Seña (% del total)', grupo: 'Reglas' },
       'reglas.horaCheckIn':       { tipo: 'texto', max: 10, etiqueta: 'Hora de ingreso', grupo: 'Reglas' },
       'reglas.horaCheckOut':      { tipo: 'texto', max: 10, etiqueta: 'Hora de salida', grupo: 'Reglas' },
+      'reglas.colchonNoches':     { tipo: 'entero', min: 0, max: 7, etiqueta: 'Noches de margen entre reservas (para limpieza)', grupo: 'Reglas' },
 
       'textos.heroTitulo':        { tipo: 'texto', max: 120, etiqueta: 'Título principal', grupo: 'Textos' },
       'textos.heroBajada':        { tipo: 'largo', max: 400, etiqueta: 'Bajada del inicio', grupo: 'Textos' },
@@ -741,8 +742,14 @@
    *
    * Lo que quede en `disponibilidad.js` se suma, no se pisa: ese archivo sigue
    * siendo la red de seguridad para bloquear algo sin base de datos.
+   *
+   * `colchon` (noches de margen entre reservas, ver CONFIG.reglas.colchonNoches)
+   * expande cada noche ocupada ±colchon antes de volcarla en `OCUPADAS`, así
+   * todo lo que consulta `OCUPADAS` —el calendario, la selección de rango, la
+   * disponibilidad por modalidad— respeta el margen sin tener que saber de él.
+   * Con `colchon = 0` no cambia nada.
    */
-  function aplicarOcupadas(ocupadas) {
+  function aplicarOcupadas(ocupadas, colchon) {
     if (!ocupadas) return false;
     let destino;
     try {
@@ -757,11 +764,26 @@
       if (typeof DISPONIBILIDAD !== 'undefined') base = DISPONIBILIDAD;
     } catch (e) { /* tampoco pasa nada */ }
 
+    // Se juntan las noches reales (archivo + servidor) y recién sobre ese
+    // total se aplica el colchón: expandir cada lista por separado y después
+    // unirlas dejaría fuera los márgenes que caen sobre una noche que ya
+    // estaba ocupada por la otra fuente.
+    const reales = { alta: [], baja: [] };
+    for (const planta of ['alta', 'baja']) {
+      reales[planta] = [
+        ...(base[planta] || []),
+        ...(ocupadas[planta] || [])
+      ];
+    }
+
+    const P = (typeof Precios !== 'undefined' && Precios) ||
+              (typeof window !== 'undefined' && window.Precios) || null;
+    const conMargen = (P && P.conColchon) ? P.conColchon(reales, colchon) : reales;
+
     for (const planta of ['alta', 'baja']) {
       if (!destino[planta]) continue;
       destino[planta].clear();
-      for (const n of (base[planta] || [])) destino[planta].add(n);
-      for (const n of (ocupadas[planta] || [])) destino[planta].add(n);
+      for (const n of (conMargen[planta] || [])) destino[planta].add(n);
     }
     ocupadasConocidas = true;
     return true;
@@ -817,7 +839,7 @@
       const fresco = await traer(ESPERA_MAX);
       aplicar(config, (borrador && borrador.contenido) || (fresco && fresco.contenido) || {});
       aplicarFotos((fresco && fresco.fotos) || []);
-      aplicarOcupadas(fresco && fresco.ocupadas);
+      aplicarOcupadas(fresco && fresco.ocupadas, config.reglas && config.reglas.colchonNoches);
       marcarPreview();
       // No se llama a `repintar`: todas las páginas esperan a `preparar()`
       // antes de pintar nada, así que acá todavía no hay nada pintado.
@@ -850,7 +872,13 @@
       // media home se repintara en cada visita sin necesidad — y eso destapó
       // el bug de `.revelar` en las tarjetas de tarifas y unidades, que
       // quedaban invisibles.
-      aplicarOcupadas(fresco.ocupadas);
+      // El colchón se lee del contenido fresco si vino ahí (por si Naty lo
+      // acaba de cambiar), y si no, del `config` que ya está aplicado.
+      const colchonFresco = fresco.contenido && fresco.contenido['reglas.colchonNoches'];
+      const colchon = (colchonFresco !== undefined && colchonFresco !== null)
+        ? colchonFresco
+        : (config.reglas && config.reglas.colchonNoches);
+      aplicarOcupadas(fresco.ocupadas, colchon);
       redibujarCalendario();
 
       if (cache && JSON.stringify(fresco) === JSON.stringify(cache)) return;

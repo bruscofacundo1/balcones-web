@@ -63,10 +63,15 @@ module.exports = async (req, res) => {
 
     const huespedes = Math.min(Math.max(1, Number(reserva.huespedes) || 2), modalidad.plazas);
 
-    // disponibilidad.js (lo cargado a mano) + lo que ya se pagó online
+    // disponibilidad.js (lo cargado a mano) + lo que ya se pagó online, más el
+    // colchón de noches de margen entre reservas (CONFIG.reglas.colchonNoches).
+    // Es la misma cuenta que hace el calendario del sitio. Con 0 no cambia nada.
     const base = Precios.construirOcupadas(DISPONIBILIDAD);
     const pagadas = await nochesPagadas();
-    const ocupadas = Precios.unirOcupadas(base, pagadas);
+    const ocupadas = Precios.conColchon(
+      Precios.unirOcupadas(base, pagadas),
+      CONFIG.reglas.colchonNoches
+    );
 
     if (Precios.hayOcupadasEntre(reserva.entrada, reserva.salida, modalidad, ocupadas)) {
       res.status(409).json({ error: 'Uy, justo se ocupó una de esas fechas. Elegí otras y probá de nuevo.' });

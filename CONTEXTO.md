@@ -15,6 +15,42 @@ proyecto (vos, otra persona o Claude en otra sesión), leé esto primero.
 
 ---
 
+## Colchón entre reservas (10/09/2026)
+
+Se agregó un margen configurable de N noches entre una reserva y la siguiente,
+para tener tiempo de limpieza. Con `colchón = 1` (el valor que arranca), si
+alguien se va la mañana del 14, la noche del 14 queda bloqueada y la próxima
+entrada posible es el 15. Es **simétrico** (también deja margen antes de cada
+reserva) y aplica a **todo**: reservas de huéspedes y bloqueos del dueño.
+
+- **Es una regla derivada, no se guarda.** La tabla `ocupadas` sigue teniendo
+  sólo las noches efectivamente reservadas; el lock atómico `(planta, noche)`
+  no cambió. El colchón se calcula al vuelo con `Precios.conColchon()`
+  (`js/precios.js`, función pura, con test) justo antes de cada chequeo de
+  "¿entra una reserva nueva?" y antes de pintar el calendario.
+- **Configurable desde el panel**: /admin → Precios y textos → Datos →
+  "Noches de margen entre reservas (para limpieza)". Es
+  `CONFIG.reglas.colchonNoches`, entero 0–7. **Poner 0 vuelve exactamente al
+  comportamiento anterior** (`conColchon` con 0 devuelve el mismo objeto sin
+  tocar).
+- **Dónde se aplica**: el calendario público (`js/contenido.js`,
+  `aplicarOcupadas`), la revalidación al reservar (`api/reservar.js`,
+  `api/crear-pago.js`), y el `.ics` que se le exporta a Booking
+  (`api/calendario.ics.js`) — así Booking tampoco deja reservar la noche de
+  margen pegada a una reserva nuestra.
+- **En el alta manual del panel el colchón avisa, no bloquea**
+  (`api/admin/reservas.js` responde `sinMargen: true`, el panel pregunta
+  "¿cargarla igual, sin margen?" y reintenta con `forzar`), porque a veces
+  hay que cargar dos reservas pegadas a propósito.
+- **Al desplegar esto**, cada reserva que ya exista pasa a bloquear una noche
+  más de cada lado, en el calendario y en el feed de Booking. Es lo buscado,
+  pero es un cambio de comportamiento inmediato.
+
+**Pendiente (fase 2, para más adelante):** detectar reservas de Booking que
+entran sin respetar el margen (porque el huésped reservó allá antes de que el
+`.ics` se actualizara) y avisarlas — cartel en el panel + push por Telegram.
+Hasta entonces, esas se importan en silencio.
+
 ## La migración de Vercel a Cloudflare (22/08/2026)
 
 El sitio se mudó de hosting: repo, Neon y todo lo demás pasaron a la cuenta
