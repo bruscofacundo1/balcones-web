@@ -380,6 +380,19 @@
   }
   /* Cuáles salen en el mosaico de la home. No se puede deducir del número de
      orden: la selección es por categoría (ver Contenido.fotosDestacadas). */
+  /* Las de la portada se ven enmarcadas; las que sólo están en la galería, apagadas. */
+  .foto-tarjeta--portada { border: 2px solid var(--terracota); box-shadow: 0 0 0 3px rgba(180,90,50,.15); }
+  .foto-tarjeta--galeria .foto-tarjeta__portada--no {
+    background: rgba(40,34,28,.62);
+  }
+  .filtro-fotos { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+  .filtro-fotos button {
+    border: 1px solid var(--borde); background: var(--crema); color: var(--carbon-suave);
+    border-radius: 20px; padding: 7px 14px; font-family: var(--texto); font-size: .84rem; cursor: pointer;
+  }
+  .filtro-fotos button[aria-pressed="true"] {
+    background: var(--terracota); border-color: var(--terracota); color: #fff;
+  }
   .foto-tarjeta__portada {
     position: absolute; top: 9px; left: 9px;
     background: var(--terracota); color: #fff;
@@ -1984,7 +1997,7 @@ window.addEventListener('beforeunload', e => {
 
 /* ---------------------------------------------------------------- fotos -- */
 
-const galeria = { cargada: false, fotos: [], importada: false, puedeSubir: false, categorias: [], enConfig: 0 };
+const galeria = { filtro: 'todas', cargada: false, fotos: [], importada: false, puedeSubir: false, categorias: [], enConfig: 0 };
 
 const NOMBRE_CATEGORIA = {
   'casa': 'La casa', 'interiores': 'Interiores',
@@ -2121,12 +2134,23 @@ function pintarFotos() {
 
     <p class="progreso" id="fotos-progreso"></p>
 
+    <div class="filtro-fotos" id="filtro-fotos" role="group" aria-label="Filtrar fotos">
+      <button type="button" data-filtro="todas" aria-pressed="${galeria.filtro === 'todas'}">Todas (${galeria.fotos.length})</button>
+      <button type="button" data-filtro="portada" aria-pressed="${galeria.filtro === 'portada'}">En la portada (${enPortada.size})</button>
+      <button type="button" data-filtro="galeria" aria-pressed="${galeria.filtro === 'galeria'}">Sólo en la galería (${galeria.fotos.length - enPortada.size})</button>
+    </div>
+
     <div class="fotos-grid" id="fotos-grid">
-      ${galeria.fotos.map((foto, i) => `
-        <div class="foto-tarjeta" data-id="${foto.id}">
+      ${galeria.fotos.map((foto, i) => ({ foto, i })).filter(({ foto }) =>
+          galeria.filtro === 'todas' ||
+          (galeria.filtro === 'portada') === enPortada.has(foto.id)
+        ).map(({ foto, i }) => `
+        <div class="foto-tarjeta ${enPortada.has(foto.id) ? 'foto-tarjeta--portada' : 'foto-tarjeta--galeria'}" data-id="${foto.id}">
           <img src="${escapar(miniaturaDe(foto))}" alt="" loading="lazy">
           ${foto.video ? '<span class="foto-tarjeta__portada" style="left:auto;right:8px">▶ Video</span>' : ''}
-          ${enPortada.has(foto.id) ? '<span class="foto-tarjeta__portada">En la portada</span>' : ''}
+          ${enPortada.has(foto.id)
+            ? '<span class="foto-tarjeta__portada">En la portada</span>'
+            : '<span class="foto-tarjeta__portada foto-tarjeta__portada--no">Sólo galería</span>'}
           <div class="foto-tarjeta__cuerpo">
             <input type="text" value="${escapar(foto.t)}" data-titulo="${foto.id}"
               placeholder="Epígrafe" maxlength="120">
@@ -2144,6 +2168,12 @@ function pintarFotos() {
         </div>`).join('')}
     </div>`;
 
+  $('filtro-fotos').addEventListener('click', e => {
+    const b = e.target.closest('[data-filtro]');
+    if (!b) return;
+    galeria.filtro = b.dataset.filtro;
+    pintarFotos();
+  });
   $('btn-subir').addEventListener('click', () => $('archivo-fotos').click());
   $('archivo-fotos').addEventListener('change', subirElegidas);
   $('btn-restaurar-fotos').addEventListener('click', restaurarGaleria);
