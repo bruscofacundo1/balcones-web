@@ -18,7 +18,7 @@
 const { FOTOS } = require('../../js/config.js');
 const { exigirSesion } = require('../../lib/sesion.js');
 const {
-  hayBaseDatos, haySubidaDeFotos, leerHeroVideo, esUrlDelBucket, listarFotos, importarDeConfig,
+  hayBaseDatos, haySubidaDeFotos, guardarSecciones, leerHeroVideo, esUrlDelBucket, listarFotos, importarDeConfig,
   agregarFoto, actualizarFoto, borrarFoto, reordenarFotos, vaciarFotos,
   subirArchivo, borrarArchivosPorUrl
 } = require('../../lib/fotos.js');
@@ -130,6 +130,17 @@ module.exports = async (req, res) => {
     }
 
     if (accion === 'subir') { await subir(req, res); return; }
+    if (accion === 'secciones') {
+      const b = req.body || {};
+      const ids = x => Array.isArray(x) ? [...new Set(x.filter(i => typeof i === 'string'))] : null;
+      const hero = ids(b.hero), dest = ids(b.dest);
+      if (!hero || !dest) { res.status(400).json({ error: 'Faltan las listas.' }); return; }
+      if (hero.length > 6) { res.status(400).json({ error: 'La portada admite hasta 6 fotos.' }); return; }
+      if (dest.length > 8) { res.status(400).json({ error: 'El inicio admite hasta 8 fotos.' }); return; }
+      await guardarSecciones(hero, dest);
+      res.status(200).json({ ok: true });
+      return;
+    }
     if (accion === 'subirVideo') { await subirVideo(req, res); return; }
 
     if (accion === 'editar') {

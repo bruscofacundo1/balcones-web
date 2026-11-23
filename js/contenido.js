@@ -705,6 +705,11 @@
      orden en que salen: primero la casa, después el paisaje, igual que el
      título de la sección ("La casa y el lugar"). */
   function fotosDestacadas(lista) {
+    // Si en el panel se marcaron fotos para el inicio, mandan ellas, en el
+    // orden de la galería. Si no se marcó ninguna, vale la regla de siempre.
+    const marcadas = lista.filter(f => f.dest);
+    if (marcadas.length) return marcadas.slice(0, MAX_INICIO);
+
     const orden = ['casa', 'entorno'];
     const porCat = Math.ceil(8 / orden.length);
     const elegidas = [];
@@ -713,6 +718,29 @@
     });
     return (elegidas.length ? elegidas : lista).slice(0, 8);
   }
+
+  /**
+   * Las fotos de arriba de todo, las que pasan solas al entrar.
+   *
+   * Si en el panel se marcaron, salen esas, en el orden en que se acomodaron
+   * (`f.hero` es la posición). Si no, son las de `CONFIG.heroFotos`, buscadas
+   * por nombre en la galería. Vive acá, igual que `fotosDestacadas`, para que
+   * el panel marque lo mismo que se ve en el sitio.
+   */
+  function fotosHero(lista, heroConfig) {
+    const marcadas = lista.filter(f => typeof f.hero === 'number')
+      .sort((a, b) => a.hero - b.hero);
+    if (marcadas.length) return marcadas.slice(0, MAX_HERO);
+    return (heroConfig || [])
+      .map(h => {
+        const foto = lista.find(f => f.f === h.f);
+        return foto && Object.assign({}, foto, { alt: h.alt });
+      })
+      .filter(Boolean);
+  }
+
+  const MAX_HERO = 6;
+  const MAX_INICIO = 8;
 
   // Video de la portada: { url, poster } o null. Lo lee app.js al pintar el hero.
   let heroVideoActual = null;
@@ -925,7 +953,7 @@
     catalogo, leerCamino, escribirCamino, leerCampo, escribirCampo,
     validar, validarValor, aplicar, aplicarFotos, COLECCIONES,
     revisarCobertura, revisarRango, semanaSanta, domingoDePascua,
-    preparar, leerCache, guardarCache, CLAVE_CACHE, fotosDestacadas,
+    preparar, leerCache, guardarCache, CLAVE_CACHE, fotosDestacadas, fotosHero, MAX_HERO, MAX_INICIO,
     aplicarOcupadas, hayDisponibilidadFresca, heroVideo,
     enPreview, leerPreview, guardarPreview, borrarPreview, PREVIEW_CLAVE
   };

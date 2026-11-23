@@ -131,68 +131,121 @@ function pintarComodidades() {
 }
 
 /* ------------------------------------------------------- portada (hero) --
-   Pasa sola de una foto a la otra cada 6 segundos. Tres cuidados:
-   - la primera foto ya viene escrita en el HTML, así que acá se saltea: si la
-     volviéramos a crear, el navegador la bajaría de nuevo;
-   - las demás van con loading="lazy" — no se ven hasta pasados 6 segundos y no
-     tienen por qué competir con el resto de la página al abrir;
-   - el intervalo se corta cuando la pestaña queda en segundo plano. Si no, al
-     volver el navegador dispara todos los cambios juntos y la portada
-     parpadea.                                                              */
+   Pasa sola de una diapositiva a la otra. Cada diapositiva es una foto (6 s)
+   o el video de portada, si se subió uno: el video se reproduce UNA vez, sin
+   sonido, y recién cuando termina sigue la próxima foto. Al terminar el ciclo
+   vuelve a empezar. Así el video no tapa a las fotos.
+
+   Qué fotos van, y en qué orden, lo decide el panel (ver
+   Contenido.fotosHero). Tres cuidados:
+   - la primera foto de siempre ya viene escrita en el HTML con prioridad alta;
+     si coincide con la primera de la lista se reutiliza en vez de bajarla de nuevo;
+   - las demás van con loading="lazy";
+   - los temporizadores se cortan cuando la pestaña queda en segundo plano; si
+     no, al volver el navegador dispara todos los cambios juntos.          */
 let heroTimer = null;
+let heroFirma = '';
+let heroVisibilidad = false;
 
 function pintarHero() {
   const fondo = document.getElementById('hero-fondo');
   const puntos = document.getElementById('hero-puntos');
-  const fotos = (CONFIG.heroFotos || []).filter(x => x && x.f);
-  if (!fondo || !puntos || fotos.length < 2) return;
-  if (fondo.querySelectorAll('.hero__slide').length > 1) return;   // ya estaba armada
+  if (!fondo || !puntos) return;
 
-  fotos.slice(1).forEach(foto => {
+  const conexion = navigator.connection || {};
+  const sinVideo = window.matchMedia('(prefers-reduced-motion: reduce)').matches || conexion.saveData;
+  const video = sinVideo ? null : Contenido.heroVideo();
+  const fotos = Contenido.fotosHero(FOTOS, CONFIG.heroFotos);
+
+  const items = [];
+  if (video) items.push({ video });
+  fotos.forEach(f => items.push({ src: IMG(f), alt: f.alt || f.t || '' }));
+  if (!items.length) return;
+
+  // Si nada cambió desde la última vez no se toca el DOM: esto se llama de
+  // nuevo cuando llega el contenido editado, y no tiene que reiniciar el ciclo.
+  const firma = JSON.stringify(items.map(i => i.video ? i.video.url : i.src));
+  if (firma === heroFirma) return;
+  heroFirma = firma;
+  detenerHero();
+
+  // Se reaprovechan los <img> que ya están (el primero lo escribe el HTML).
+  const viejas = [...fondo.querySelectorAll('img.hero__slide')];
+  fondo.querySelectorAll('video.hero__slide').forEach(v => v.remove());
+  const slides = items.map(item => {
+    if (item.video) {
+      const el = document.createElement('video');
+      el.className = 'hero__slide';
+      el.muted = true; el.playsInline = true; el.preload = 'auto';
+      el.setAttribute('playsinline', '');
+      el.setAttribute('aria-hidden', 'true');
+      if (item.video.poster) el.poster = item.video.poster;
+      el.src = item.video.url;
+      // Con un solo elemento no hay a quién pasarle: se repite.
+      el.loop = items.length === 1;
+      return el;
+    }
+    const i = viejas.findIndex(v => v.getAttribute('src') === item.src);
+    if (i >= 0) return viejas.splice(i, 1)[0];
     const img = document.createElement('img');
     img.className = 'hero__slide';
-    img.src = `img/${foto.f}.jpg`;
-    img.alt = foto.alt || '';
+    img.src = item.src;
+    img.alt = item.alt;
     img.loading = 'lazy';
-    fondo.appendChild(img);
+    return img;
   });
+  viejas.forEach(v => v.remove());   // las que ya no están en la lista
+  slides.forEach(s => fondo.appendChild(s));
 
-  const slides = [...fondo.querySelectorAll('.hero__slide')];
-  puntos.innerHTML = fotos.map((foto, i) => `
-    <button class="hero__punto${i === 0 ? ' hero__punto--activo' : ''}" role="tab"
-            aria-selected="${i === 0}" aria-label="Foto ${i + 1} de ${fotos.length}"
+  puntos.innerHTML = slides.map((s, i) => `
+    <button class="hero__punto" role="tab" aria-selected="false"
+            aria-label="${s.tagName === 'VIDEO' ? 'Video' : 'Foto'} ${i + 1} de ${slides.length}"
             data-i="${i}"></button>`).join('');
   const bolitas = [...puntos.querySelectorAll('.hero__punto')];
+  puntos.hidden = slides.length < 2;
 
   let actual = 0;
   function mostrar(i) {
+    clearTimeout(heroTimer);
     actual = (i + slides.length) % slides.length;
-    slides.forEach((s, n) => s.classList.toggle('hero__slide--activa', n === actual));
+    slides.forEach((s, n) => {
+      s.classList.toggle('hero__slide--activa', n === actual);
+      if (s.tagName === 'VIDEO' && n !== actual) s.pause();
+    });
     bolitas.forEach((b, n) => {
       b.classList.toggle('hero__punto--activo', n === actual);
       b.setAttribute('aria-selected', String(n === actual));
     });
+    if (slides.length < 2) { if (slides[0].tagName === 'VIDEO') slides[0].play().catch(() => {}); return; }
+
+    const s = slides[actual];
+    const siguiente = () => { if (slides[actual] === s) mostrar(actual + 1); };
+    if (s.tagName === 'VIDEO') {
+      s.currentTime = 0;
+      s.onended = siguiente;
+      s.onerror = siguiente;
+      s.play().catch(siguiente);       // si el navegador no lo deja, se salta
+      heroTimer = setTimeout(siguiente, 60000);   // red de seguridad
+    } else {
+      heroTimer = setTimeout(siguiente, 6000);
+    }
   }
 
-  function arrancar() {
-    detener();
-    heroTimer = setInterval(() => mostrar(actual + 1), 6000);
+  bolitas.forEach(b => b.addEventListener('click', () => mostrar(Number(b.dataset.i))));
+
+  if (!heroVisibilidad) {
+    heroVisibilidad = true;
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { clearTimeout(heroTimer); fondo.querySelectorAll('video').forEach(v => v.pause()); }
+      else if (heroReanudar) heroReanudar();
+    });
   }
-  function detener() {
-    if (heroTimer) { clearInterval(heroTimer); heroTimer = null; }
-  }
-
-  bolitas.forEach(b => b.addEventListener('click', () => {
-    mostrar(Number(b.dataset.i));
-    arrancar();   // reinicia la cuenta: si tocaste, no queremos que cambie enseguida
-  }));
-
-  document.addEventListener('visibilitychange', () => {
-    document.hidden ? detener() : arrancar();
-  });
-
-  arrancar();
+  heroReanudar = () => mostrar(actual);
+  mostrar(0);
 }
+
+let heroReanudar = null;
+function detenerHero() { clearTimeout(heroTimer); heroTimer = null; }
 
 /* La franja de "por qué reservar acá", debajo de la portada.
 
@@ -236,37 +289,6 @@ function pintarTextosCasa() {
     CONFIG.textos.casaTexto.map(p => `<p>${p}</p>`).join('');
   document.getElementById('hero-titulo').textContent = CONFIG.textos.heroTitulo;
   document.getElementById('hero-bajada').textContent = CONFIG.textos.heroBajada;
-}
-
-/** Video de fondo en la portada, si se subió uno desde el panel. La foto de
-    siempre queda debajo: es lo que se ve mientras el video carga, con el ahorro
-    de datos activado o si el visitante pidió menos movimiento. */
-function pintarHeroVideo() {
-  const fondo = document.querySelector('.hero__fondo');
-  if (!fondo) return;
-  const actual = fondo.querySelector('video');
-  const v = Contenido.heroVideo();
-  if (!v) { if (actual) actual.remove(); return; }
-  if (actual && actual.dataset.src === v.url) return;
-  if (actual) actual.remove();
-
-  const conexion = navigator.connection || {};
-  const sinMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (sinMovimiento || conexion.saveData) return;
-
-  const el = document.createElement('video');
-  el.className = 'hero__video';
-  el.dataset.src = v.url;
-  el.muted = true; el.loop = true; el.autoplay = true; el.playsInline = true;
-  el.setAttribute('playsinline', '');
-  el.setAttribute('aria-hidden', 'true');
-  el.preload = 'auto';
-  if (v.poster) el.poster = v.poster;
-  el.src = v.url;
-  // Entra con un fundido cuando ya tiene qué mostrar; antes, la foto.
-  el.addEventListener('playing', () => el.classList.add('listo'), { once: true });
-  fondo.appendChild(el);
-  el.play().catch(() => {});
 }
 
 function pintarDistancias() {
@@ -1012,7 +1034,6 @@ function pintarNavContacto() {
 function pintarDesdeConfig() {
   pintarReservaDirecta();
   pintarTextosCasa();
-  pintarHeroVideo();
   pintarCifras();
   pintarComodidades();
   pintarFaq();
@@ -1033,10 +1054,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // espera un instante; después ya no espera nada.
   await Contenido.preparar(CONFIG, { repintar: pintarDesdeConfig });
 
-  pintarHero();          // una sola vez: agrega las fotos al DOM y arranca el intervalo
+  pintarHero();          // idempotente: sólo rearma si cambió la lista de diapositivas
   pintarReservaDirecta();
   pintarTextosCasa();
-  pintarHeroVideo();
   pintarCifras();
   pintarComodidades();
   iniciarTabsAmbientes();

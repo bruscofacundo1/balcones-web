@@ -401,13 +401,6 @@ a { color: var(--terracota); }
 @media (prefers-reduced-motion: reduce) {
   .hero__slide { transition: none; }
 }
-/* Video de portada: encima de las fotos, que quedan de respaldo. Aparece con
-   un fundido recién cuando empieza a reproducirse. */
-.hero__video {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; opacity: 0; transition: opacity .8s ease;
-}
-.hero__video.listo { opacity: 1; }
 .hero__fondo::after {
   content: '';
   position: absolute; inset: 0;

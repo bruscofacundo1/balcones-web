@@ -385,6 +385,14 @@
   .foto-tarjeta--galeria .foto-tarjeta__portada--no {
     background: rgba(40,34,28,.62);
   }
+  .foto-tarjeta__secciones { display: flex; gap: 12px; align-items: center; font-size: .82rem; }
+  .foto-tarjeta__secciones label { display: flex; gap: 5px; align-items: center; cursor: pointer; }
+  .foto-tarjeta .foto-tarjeta__secciones input { width: auto; padding: 0; }
+  .foto-tarjeta__secciones .crece { flex: 1 1 auto; }
+  .foto-tarjeta__secciones button {
+    border: 1px solid var(--borde); background: var(--crema); border-radius: var(--radio-sm);
+    padding: 4px 9px; cursor: pointer; font-size: .78rem;
+  }
   .filtro-fotos { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
   .filtro-fotos button {
     border: 1px solid var(--borde); background: var(--crema); color: var(--carbon-suave);
@@ -2074,7 +2082,17 @@ function pintarFotos() {
 
   // La misma cuenta que hace el sitio, no una copia: si fueran dos, la marca
   // de acá y lo que se ve en la home se separarían al primer cambio.
-  const enPortada = new Set(Contenido.fotosDestacadas(galeria.fotos).map(f => f.id));
+  const heroIds = Contenido.fotosHero(galeria.fotos, CONFIG.heroFotos).map(f => f.id);
+  const destIds = Contenido.fotosDestacadas(galeria.fotos).map(f => f.id);
+  const enHero = new Set(heroIds);
+  const enDest = new Set(destIds);
+  const soloGaleria = galeria.fotos.filter(f => !enHero.has(f.id) && !enDest.has(f.id)).length;
+  // En "Portada" van en el orden en que pasan; en el resto, en el de la galería.
+  const todas = galeria.fotos.map((foto, i) => ({ foto, i }));
+  const vista = galeria.filtro === 'portada' ? heroIds.map(id => todas.find(x => x.foto.id === id))
+    : galeria.filtro === 'inicio' ? todas.filter(x => enDest.has(x.foto.id))
+    : galeria.filtro === 'galeria' ? todas.filter(x => !enHero.has(x.foto.id) && !enDest.has(x.foto.id))
+    : todas;
 
   cuerpo.innerHTML = `
     <div class="fotos-barra">
@@ -2126,32 +2144,40 @@ function pintarFotos() {
     </p>
 
     <div class="aviso-caja">
-      Las <strong>${enPortada.size} marcadas “en la portada”</strong> son las que
-      salen en el mosaico del inicio. No son las primeras de la lista: se eligen
-      hasta 3 de cada categoría, empezando por el entorno y las de afuera. Por eso
-      cambiar la categoría de una foto puede meterla o sacarla de la portada.
+      Cada foto puede estar en tres lugares, y se elige con las casillas de cada tarjeta:
+      <ul style="margin:6px 0 0 18px;padding:0">
+        <li><strong>Portada</strong> — las de arriba de todo, que pasan solas al entrar
+          (hasta ${Contenido.MAX_HERO}). Si hay un video de portada, va primero y después siguen estas.</li>
+        <li><strong>Inicio</strong> — el mosaico corto de la home (hasta ${Contenido.MAX_INICIO}).</li>
+        <li><strong>Galería</strong> — todas las fotos, siempre: es el "Ver todas".</li>
+      </ul>
     </div>
 
     <p class="progreso" id="fotos-progreso"></p>
 
-    <div class="filtro-fotos" id="filtro-fotos" role="group" aria-label="Filtrar fotos">
-      <button type="button" data-filtro="todas" aria-pressed="${galeria.filtro === 'todas'}">Todas (${galeria.fotos.length})</button>
-      <button type="button" data-filtro="portada" aria-pressed="${galeria.filtro === 'portada'}">En la portada (${enPortada.size})</button>
-      <button type="button" data-filtro="galeria" aria-pressed="${galeria.filtro === 'galeria'}">Sólo en la galería (${galeria.fotos.length - enPortada.size})</button>
+    <div class="filtro-fotos" id="filtro-fotos" role="group" aria-label="Ver por sección">
+      <button type="button" data-filtro="todas" aria-pressed="${galeria.filtro === 'todas'}">Galería completa (${galeria.fotos.length})</button>
+      <button type="button" data-filtro="portada" aria-pressed="${galeria.filtro === 'portada'}">Portada (${heroIds.length})</button>
+      <button type="button" data-filtro="inicio" aria-pressed="${galeria.filtro === 'inicio'}">Inicio (${destIds.length})</button>
+      <button type="button" data-filtro="galeria" aria-pressed="${galeria.filtro === 'galeria'}">Sólo galería (${soloGaleria})</button>
     </div>
+    ${galeria.filtro === 'portada' ? `<p class="nota-fotos">Acá podés cambiar el orden en que pasan:
+      usá las flechas <strong>◀ ▶</strong> de cada foto.</p>` : ''}
 
     <div class="fotos-grid" id="fotos-grid">
-      ${galeria.fotos.map((foto, i) => ({ foto, i })).filter(({ foto }) =>
-          galeria.filtro === 'todas' ||
-          (galeria.filtro === 'portada') === enPortada.has(foto.id)
-        ).map(({ foto, i }) => `
-        <div class="foto-tarjeta ${enPortada.has(foto.id) ? 'foto-tarjeta--portada' : 'foto-tarjeta--galeria'}" data-id="${foto.id}">
+      ${vista.map(({ foto, i }) => `
+        <div class="foto-tarjeta ${enHero.has(foto.id) ? 'foto-tarjeta--portada' : ''}" data-id="${foto.id}">
           <img src="${escapar(miniaturaDe(foto))}" alt="" loading="lazy">
           ${foto.video ? '<span class="foto-tarjeta__portada" style="left:auto;right:8px">▶ Video</span>' : ''}
-          ${enPortada.has(foto.id)
-            ? '<span class="foto-tarjeta__portada">En la portada</span>'
-            : '<span class="foto-tarjeta__portada foto-tarjeta__portada--no">Sólo galería</span>'}
           <div class="foto-tarjeta__cuerpo">
+            <div class="foto-tarjeta__secciones">
+              <label><input type="checkbox" data-seccion="hero" data-id="${foto.id}" ${enHero.has(foto.id) ? 'checked' : ''}> Portada</label>
+              <label><input type="checkbox" data-seccion="dest" data-id="${foto.id}" ${enDest.has(foto.id) ? 'checked' : ''}> Inicio</label>
+              ${galeria.filtro === 'portada' ? `
+                <span class="crece"></span>
+                <button type="button" data-hero-mover="${foto.id}" data-dir="-1" ${heroIds[0] === foto.id ? 'disabled' : ''} aria-label="Antes">◀</button>
+                <button type="button" data-hero-mover="${foto.id}" data-dir="1" ${heroIds[heroIds.length - 1] === foto.id ? 'disabled' : ''} aria-label="Después">▶</button>` : ''}
+            </div>
             <input type="text" value="${escapar(foto.t)}" data-titulo="${foto.id}"
               placeholder="Epígrafe" maxlength="120">
             <select data-categoria="${foto.id}">${opciones(foto.c)}</select>
@@ -2168,6 +2194,14 @@ function pintarFotos() {
         </div>`).join('')}
     </div>`;
 
+  $('fotos-grid').addEventListener('change', e => {
+    const c = e.target.closest('[data-seccion]');
+    if (c) cambiarSeccion(c.dataset.id, c.dataset.seccion, c.checked);
+  });
+  $('fotos-grid').addEventListener('click', e => {
+    const m = e.target.closest('[data-hero-mover]');
+    if (m) moverEnPortada(m.dataset.heroMover, Number(m.dataset.dir));
+  });
   $('filtro-fotos').addEventListener('click', e => {
     const b = e.target.closest('[data-filtro]');
     if (!b) return;
@@ -2415,6 +2449,61 @@ async function guardarOrden(copia) {
   } catch (err) {
     if (err.message !== 'sesion') { avisoFotos('No se pudo guardar el orden: ' + err.message); }
   }
+}
+
+/** Las listas de portada e inicio tal como están hoy (incluye los valores por
+    defecto mientras nadie haya marcado nada), como ids en orden. */
+function seccionesActuales() {
+  return {
+    hero: Contenido.fotosHero(galeria.fotos, CONFIG.heroFotos).map(f => f.id),
+    dest: Contenido.fotosDestacadas(galeria.fotos).map(f => f.id)
+  };
+}
+
+async function guardarSecciones(hero, dest, mensaje) {
+  avisoFotos('Guardando…');
+  try {
+    await api('/api/admin/fotos', { method: 'POST', body: JSON.stringify({ accion: 'secciones', hero, dest }) });
+    galeria.cargada = false;
+    await cargarFotos();
+    avisoFotos(mensaje);
+  } catch (err) {
+    if (err.message === 'sesion') return;
+    // Se repinta para que la casilla vuelva a lo que realmente está guardado.
+    pintarFotos();
+    avisoFotos(err.message);
+  }
+}
+
+async function cambiarSeccion(id, seccion, marcada) {
+  const { hero, dest } = seccionesActuales();
+  const lista = seccion === 'hero' ? hero : dest;
+  const max = seccion === 'hero' ? Contenido.MAX_HERO : Contenido.MAX_INICIO;
+  const i = lista.indexOf(id);
+  if (marcada && i < 0) {
+    if (lista.length >= max) {
+      pintarFotos();
+      avisoFotos(`${seccion === 'hero' ? 'La portada' : 'El inicio'} admite hasta ${max} fotos. Sacá una primero.`);
+      return;
+    }
+    lista.push(id);
+  } else if (!marcada && i >= 0) {
+    lista.splice(i, 1);
+  }
+  // El mosaico del inicio sale en el orden de la galería, no en el de marcado.
+  const orden = galeria.fotos.map(f => f.id);
+  dest.sort((a, b) => orden.indexOf(a) - orden.indexOf(b));
+  await guardarSecciones(hero, dest, seccion === 'hero'
+    ? (marcada ? 'Foto agregada a la portada.' : 'Foto sacada de la portada.')
+    : (marcada ? 'Foto agregada al inicio.' : 'Foto sacada del inicio.'));
+}
+
+async function moverEnPortada(id, dir) {
+  const { hero, dest } = seccionesActuales();
+  const i = hero.indexOf(id), j = i + dir;
+  if (i < 0 || j < 0 || j >= hero.length) return;
+  [hero[i], hero[j]] = [hero[j], hero[i]];
+  await guardarSecciones(hero, dest, 'Orden de la portada guardado.');
 }
 
 async function moverFoto(id, dir) {
