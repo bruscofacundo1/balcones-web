@@ -228,7 +228,10 @@ function pintarHero() {
       s.play().catch(siguiente);       // si el navegador no lo deja, se salta
       heroTimer = setTimeout(siguiente, 60000);   // red de seguridad
     } else {
-      heroTimer = setTimeout(siguiente, 6000);
+      // La primera foto dura menos cuando hay video: la idea es que se llegue
+      // pronto a verlo, no que se quede esperando.
+      const hayVideo = slides.some(x => x.tagName === 'VIDEO');
+      heroTimer = setTimeout(siguiente, actual === 0 && hayVideo ? 3000 : 6000);
     }
   }
 
