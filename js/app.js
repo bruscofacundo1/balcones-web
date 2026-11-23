@@ -132,8 +132,8 @@ function pintarComodidades() {
 
 /* ------------------------------------------------------- portada (hero) --
    Pasa sola de una diapositiva a la otra. Cada diapositiva es una foto (6 s)
-   o el video de portada, si se subió uno: el video se reproduce UNA vez, sin
-   sonido, y recién cuando termina sigue la próxima foto. Al terminar el ciclo
+   o el video de portada, si se subió uno: va después de la primera foto, se
+   reproduce UNA vez, sin sonido, y recién cuando termina sigue la próxima foto. Al terminar el ciclo
    vuelve a empezar. Así el video no tapa a las fotos.
 
    Qué fotos van, y en qué orden, lo decide el panel (ver
@@ -157,9 +157,10 @@ function pintarHero() {
   const video = sinVideo ? null : Contenido.heroVideo();
   const fotos = Contenido.fotosHero(FOTOS, CONFIG.heroFotos);
 
-  const items = [];
-  if (video) items.push({ video });
-  fotos.forEach(f => items.push({ src: IMG(f), alt: f.alt || f.t || '' }));
+  // Orden: la primera foto (la que ya viene en el HTML, así no hay salto al
+  // entrar), después el video, después el resto de las fotos.
+  const items = fotos.map(f => ({ src: IMG(f), alt: f.alt || f.t || '' }));
+  if (video) items.splice(Math.min(1, items.length), 0, { video });
   if (!items.length) return;
 
   // Si nada cambió desde la última vez no se toca el DOM: esto se llama de
