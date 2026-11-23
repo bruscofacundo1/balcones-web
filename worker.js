@@ -27,6 +27,7 @@ import handlerCalendarioIcs from './api/calendario.ics.js';
 import handlerAdminReservas from './api/admin/reservas.js';
 import handlerAdminContenido from './api/admin/contenido.js';
 import handlerAdminFotos from './api/admin/fotos.js';
+import handlerAdminVideo from './api/admin/video.js';
 import handlerAdminSesion from './api/admin/sesion.js';
 import handlerAdminBookingSync from './api/admin/booking-sync.js';
 import { wrap } from './lib/adaptador-cf.js';
@@ -41,6 +42,7 @@ const rutas = {
   '/api/admin/reservas': wrap(handlerAdminReservas),
   '/api/admin/contenido': wrap(handlerAdminContenido),
   '/api/admin/fotos': wrap(handlerAdminFotos),
+  '/api/admin/video': wrap(handlerAdminVideo),
   '/api/admin/sesion': wrap(handlerAdminSesion),
   '/api/admin/booking-sync': wrap(handlerAdminBookingSync)
 };

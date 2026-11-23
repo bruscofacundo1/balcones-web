@@ -238,6 +238,37 @@ function pintarTextosCasa() {
   document.getElementById('hero-bajada').textContent = CONFIG.textos.heroBajada;
 }
 
+/** Video de fondo en la portada, si se subió uno desde el panel. La foto de
+    siempre queda debajo: es lo que se ve mientras el video carga, con el ahorro
+    de datos activado o si el visitante pidió menos movimiento. */
+function pintarHeroVideo() {
+  const fondo = document.querySelector('.hero__fondo');
+  if (!fondo) return;
+  const actual = fondo.querySelector('video');
+  const v = Contenido.heroVideo();
+  if (!v) { if (actual) actual.remove(); return; }
+  if (actual && actual.dataset.src === v.url) return;
+  if (actual) actual.remove();
+
+  const conexion = navigator.connection || {};
+  const sinMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (sinMovimiento || conexion.saveData) return;
+
+  const el = document.createElement('video');
+  el.className = 'hero__video';
+  el.dataset.src = v.url;
+  el.muted = true; el.loop = true; el.autoplay = true; el.playsInline = true;
+  el.setAttribute('playsinline', '');
+  el.setAttribute('aria-hidden', 'true');
+  el.preload = 'auto';
+  if (v.poster) el.poster = v.poster;
+  el.src = v.url;
+  // Entra con un fundido cuando ya tiene qué mostrar; antes, la foto.
+  el.addEventListener('playing', () => el.classList.add('listo'), { once: true });
+  fondo.appendChild(el);
+  el.play().catch(() => {});
+}
+
 function pintarDistancias() {
   document.getElementById('ubicacion-titulo').textContent = CONFIG.textos.ubicacionTitulo;
   document.getElementById('ubicacion-texto').textContent = CONFIG.textos.ubicacionTexto;
@@ -499,7 +530,7 @@ function pintarMosaico() {
   const claseRevelado = animacionesListas ? '' : 'revelar revelar--foto';
 
   cont.innerHTML = destacadas.map((foto, i) => `
-    <figure class="mosaico__item ${claseRevelado}" data-i="${i}">
+    <figure class="mosaico__item ${claseRevelado} ${foto.video ? 'con-video' : ''}" data-i="${i}">
       <img src="${THUMB(foto)}" alt="${foto.t}" loading="lazy">
       ${i === destacadas.length - 1 && restantes > 0
         ? `<figcaption class="mosaico__mas">+${restantes} fotos</figcaption>` : ''}
@@ -528,7 +559,7 @@ function pintarTodasLasFotos(categoria = 'todas') {
   const lista = categoria === 'todas' ? FOTOS : FOTOS.filter(f => f.c === categoria);
 
   document.getElementById('tf-grilla').innerHTML = lista.map((foto, i) => `
-    <figure class="tf__item" data-i="${i}">
+    <figure class="tf__item ${foto.video ? 'con-video' : ''}" data-i="${i}">
       <img src="${THUMB(foto)}" alt="${foto.t}" loading="lazy">
       <figcaption class="tf__pie">${foto.t}</figcaption>
     </figure>`).join('');
@@ -620,8 +651,26 @@ function abrirLightbox(fotos, indice) {
 
 function pintarLightbox() {
   const foto = lbFotos[lbIndice];
-  document.getElementById('lb-img').src = IMG(foto);
-  document.getElementById('lb-img').alt = foto.t;
+  const img = document.getElementById('lb-img');
+  let vid = document.getElementById('lb-video');
+  if (vid) { vid.pause(); vid.remove(); vid = null; }
+  if (foto.video) {
+    // Los videos de la galería se reproducen con controles y con sonido, pero
+    // sólo cuando el visitante los abre: nada arranca solo.
+    img.hidden = true;
+    vid = document.createElement('video');
+    vid.id = 'lb-video';
+    vid.src = foto.video;
+    vid.poster = THUMB(foto);
+    vid.controls = true; vid.autoplay = true; vid.playsInline = true;
+    vid.setAttribute('playsinline', '');
+    img.insertAdjacentElement('afterend', vid);
+    vid.play().catch(() => {});
+  } else {
+    img.hidden = false;
+    img.src = IMG(foto);
+    img.alt = foto.t;
+  }
   document.getElementById('lb-pie').textContent =
     lbFotos.length > 1 ? `${lbIndice + 1} / ${lbFotos.length}  ·  ${foto.t}` : foto.t;
   const solaFoto = lbFotos.length < 2;
@@ -663,6 +712,8 @@ function pintarTiraLightbox() {
 }
 
 function cerrarLightbox() {
+  const vid = document.getElementById('lb-video');
+  if (vid) { vid.pause(); vid.remove(); }
   document.getElementById('lightbox').classList.remove('abierto');
   // si venimos del listado de todas las fotos, ése sigue abierto detrás
   const tf = document.getElementById('todas-fotos');
@@ -961,6 +1012,7 @@ function pintarNavContacto() {
 function pintarDesdeConfig() {
   pintarReservaDirecta();
   pintarTextosCasa();
+  pintarHeroVideo();
   pintarCifras();
   pintarComodidades();
   pintarFaq();
@@ -984,6 +1036,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   pintarHero();          // una sola vez: agrega las fotos al DOM y arranca el intervalo
   pintarReservaDirecta();
   pintarTextosCasa();
+  pintarHeroVideo();
   pintarCifras();
   pintarComodidades();
   iniciarTabsAmbientes();

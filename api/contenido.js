@@ -23,7 +23,7 @@
    ============================================================================ */
 
 const { obtenerOverrides } = require('../lib/contenido.js');
-const { listarFotos } = require('../lib/fotos.js');
+const { listarFotos, leerHeroVideo } = require('../lib/fotos.js');
 const { nochesOcupadasPublicas } = require('../lib/reservas.js');
 
 module.exports = async (req, res) => {
@@ -36,8 +36,8 @@ module.exports = async (req, res) => {
     // mismo momento (antes de pintar el calendario) y así el visitante hace un
     // viaje en vez de dos. Que quede cacheado 60s en el borde es aceptable —
     // el chequeo de verdad lo hace igual la base al confirmar la reserva.
-    const [contenido, fotos, ocupadas] = await Promise.all([
-      obtenerOverrides(), listarFotos(), nochesOcupadasPublicas()
+    const [contenido, fotos, ocupadas, heroVideo] = await Promise.all([
+      obtenerOverrides(), listarFotos(), nochesOcupadasPublicas(), leerHeroVideo()
     ]);
     // `max-age=0, must-revalidate` es para el navegador del visitante: que
     // pregunte siempre (le sale un 304 barato) en vez de quedarse con una
@@ -47,13 +47,13 @@ module.exports = async (req, res) => {
     // `s-maxage` sí es para el borde de Cloudflare, que es quien absorbe el
     // tráfico y evita que cada visita golpee la base.
     res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate, s-maxage=60, stale-while-revalidate=600');
-    res.status(200).json({ contenido, fotos, ocupadas });
+    res.status(200).json({ contenido, fotos, ocupadas, heroVideo });
   } catch (err) {
     console.error('contenido:', err);
     // Nunca un error: el sitio tiene que poder seguir con lo de config.js.
     // `ocupadas: null` es "no se pudo saber", distinto de "no hay ninguna
     // ocupada": con null el calendario no promete una disponibilidad que no
     // pudo confirmar, y el choque lo sigue frenando la base al reservar.
-    res.status(200).json({ contenido: {}, fotos: [], ocupadas: null });
+    res.status(200).json({ contenido: {}, fotos: [], ocupadas: null, heroVideo: null });
   }
 };

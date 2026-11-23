@@ -401,6 +401,13 @@ a { color: var(--terracota); }
 @media (prefers-reduced-motion: reduce) {
   .hero__slide { transition: none; }
 }
+/* Video de portada: encima de las fotos, que quedan de respaldo. Aparece con
+   un fundido recién cuando empieza a reproducirse. */
+.hero__video {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; opacity: 0; transition: opacity .8s ease;
+}
+.hero__video.listo { opacity: 1; }
 .hero__fondo::after {
   content: '';
   position: absolute; inset: 0;
@@ -1189,6 +1196,20 @@ body.con-barra .reserva-pagina { padding-bottom: 130px; }
 .lightbox img {
   max-width: min(1200px, 94vw); max-height: 70vh;
   object-fit: contain; border-radius: var(--radio-sm);
+}
+.lightbox video {
+  max-width: min(1200px, 94vw); max-height: 70vh;
+  background: #000; border-radius: var(--radio-sm);
+}
+@media (max-width: 720px) { .lightbox video { max-height: 58vh; } }
+
+/* Marca de "play" sobre las miniaturas que son video. */
+.con-video { position: relative; }
+.con-video::after {
+  content: ''; position: absolute; top: 50%; left: 50%;
+  width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%;
+  background: rgba(20,16,12,.55) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23fff'%3E%3Cpath d='M9 6.5v11l9-5.5z'/%3E%3C/svg%3E") center / 60% no-repeat;
+  border: 2px solid rgba(255,255,255,.85); pointer-events: none;
 }
 .lightbox__pie {
   position: absolute; bottom: 122px; left: 0; right: 0;

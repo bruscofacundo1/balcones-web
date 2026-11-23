@@ -2068,9 +2068,33 @@ function pintarFotos() {
       <button class="boton boton--primario" id="btn-subir" type="button"
         ${galeria.puedeSubir ? '' : 'disabled'}>Subir fotos</button>
       <input type="file" id="archivo-fotos" accept="image/*" multiple hidden>
+      <button class="boton boton--linea" id="btn-subir-video" type="button"
+        ${galeria.puedeSubirVideo ? '' : 'disabled'}>Subir video a la galería</button>
+      <input type="file" id="archivo-video" accept="video/mp4,video/webm,video/quicktime" hidden>
       <span class="crece"></span>
       <span style="font-size:.85rem;color:var(--piedra)">${galeria.fotos.length} fotos</span>
       <button class="boton boton--linea" id="btn-restaurar-fotos" type="button">Volver a la galería original</button>
+    </div>
+
+    ${galeria.puedeSubirVideo ? '' : `
+      <div class="aviso-caja aviso-caja--mal">
+        <strong>Todavía no se pueden subir videos.</strong>
+        Falta conectar el bucket de R2 (el mismo que usan las fotos): el binding
+        <code>FOTOS_BUCKET</code> y la variable <code>FOTOS_PUBLIC_URL</code>.
+      </div>`}
+
+    <div class="aviso-caja">
+      <strong>Video de la portada.</strong>
+      ${galeria.heroVideo
+        ? `Hoy hay un video de fondo. <a href="${escapar(galeria.heroVideo.url)}" target="_blank" rel="noopener">Verlo</a>`
+        : 'Hoy la portada usa la foto de siempre.'}
+      Va sin sonido y en loop; elegí uno corto (10–20 segundos) y liviano.
+      <div class="fotos-barra" style="margin-top:8px">
+        <button class="boton" id="btn-hero-video" type="button" ${galeria.puedeSubirVideo ? '' : 'disabled'}>
+          ${galeria.heroVideo ? 'Cambiar video de portada' : 'Subir video de portada'}</button>
+        <input type="file" id="archivo-hero" accept="video/mp4,video/webm,video/quicktime" hidden>
+        ${galeria.heroVideo ? '<button class="boton boton--linea" id="btn-quitar-hero" type="button">Sacar el video</button>' : ''}
+      </div>
     </div>
 
     ${galeria.puedeSubir ? '' : `
@@ -2101,6 +2125,7 @@ function pintarFotos() {
       ${galeria.fotos.map((foto, i) => `
         <div class="foto-tarjeta" data-id="${foto.id}">
           <img src="${escapar(miniaturaDe(foto))}" alt="" loading="lazy">
+          ${foto.video ? '<span class="foto-tarjeta__portada" style="left:auto;right:8px">▶ Video</span>' : ''}
           ${enPortada.has(foto.id) ? '<span class="foto-tarjeta__portada">En la portada</span>' : ''}
           <div class="foto-tarjeta__cuerpo">
             <input type="text" value="${escapar(foto.t)}" data-titulo="${foto.id}"
@@ -2122,6 +2147,12 @@ function pintarFotos() {
   $('btn-subir').addEventListener('click', () => $('archivo-fotos').click());
   $('archivo-fotos').addEventListener('change', subirElegidas);
   $('btn-restaurar-fotos').addEventListener('click', restaurarGaleria);
+  $('btn-subir-video').addEventListener('click', () => $('archivo-video').click());
+  $('archivo-video').addEventListener('change', subirVideoGaleria);
+  $('btn-hero-video').addEventListener('click', () => $('archivo-hero').click());
+  $('archivo-hero').addEventListener('change', subirVideoHero);
+  const quitar = $('btn-quitar-hero');
+  if (quitar) quitar.addEventListener('click', quitarVideoHero);
 }
 
 /** La miniatura para mostrar en el panel: la subida, o la del repo. */
@@ -2149,6 +2180,108 @@ async function importarGaleria() {
     if (err.message === 'sesion') return;
     avisoFotos(err.message);
     boton.disabled = false;
+  }
+}
+
+/* ---------------------------------------------------------------- video -- */
+
+const MAX_VIDEO_MB = 80;
+
+/** Un fotograma del video como JPEG: sirve de portada mientras carga. */
+function fotogramaDe(archivo, ladoMax, calidad) {
+  return new Promise((resolver, rechazar) => {
+    const url = URL.createObjectURL(archivo);
+    const v = document.createElement('video');
+    v.muted = true; v.playsInline = true; v.preload = 'auto';
+    const limpiar = () => URL.revokeObjectURL(url);
+    v.onerror = () => { limpiar(); rechazar(new Error('Este navegador no pudo leer el video. Probá con un MP4 (H.264).')); };
+    v.onloadedmetadata = () => { v.currentTime = Math.min(1, (v.duration || 2) / 2); };
+    v.onseeked = () => {
+      const escala = Math.min(1, ladoMax / Math.max(v.videoWidth, v.videoHeight));
+      const c = document.createElement('canvas');
+      c.width = Math.round(v.videoWidth * escala);
+      c.height = Math.round(v.videoHeight * escala);
+      c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+      limpiar();
+      resolver(c.toDataURL('image/jpeg', calidad));
+    };
+    v.src = url;
+  });
+}
+
+/** Sube el video crudo a /api/admin/video (que lo pasa a R2) y devuelve su url
+    pública. Se usa XMLHttpRequest y no fetch porque es lo que da el progreso. */
+function subirArchivoDeVideo(archivo) {
+  if (archivo.size > MAX_VIDEO_MB * 1024 * 1024) {
+    return Promise.reject(new Error(`Pesa ${(archivo.size / 1048576).toFixed(0)} MB; el máximo es ${MAX_VIDEO_MB} MB. Conviene comprimirlo antes.`));
+  }
+  const tipo = archivo.type || 'video/mp4';
+  return new Promise((resolver, rechazar) => {
+    const x = new XMLHttpRequest();
+    x.open('PUT', '/api/admin/video?tipo=' + encodeURIComponent(tipo));
+    x.setRequestHeader('Content-Type', tipo);
+    x.upload.onprogress = e => {
+      if (e.lengthComputable) avisoFotos(`Subiendo video… ${Math.round(e.loaded / e.total * 100)}%`);
+    };
+    x.onerror = () => rechazar(new Error('Se cortó la conexión. Probá de nuevo.'));
+    x.onload = () => {
+      let datos = {};
+      try { datos = JSON.parse(x.responseText); } catch (e) { /* respuesta vacía */ }
+      if (x.status === 401) { mostrarLogin(); rechazar(new Error('sesion')); return; }
+      if (x.status >= 200 && x.status < 300 && datos.url) resolver(datos.url);
+      else rechazar(new Error(datos.error || 'No se pudo subir el video.'));
+    };
+    x.send(archivo);
+  });
+}
+
+async function subirVideoGaleria(e) {
+  const archivo = e.target.files[0];
+  e.target.value = '';
+  if (!archivo) return;
+  try {
+    avisoFotos('Preparando el video…');
+    const miniatura = await fotogramaDe(archivo, LADO_CHICA, 0.78);
+    const video = await subirArchivoDeVideo(archivo);
+    const titulo = archivo.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').slice(0, 120);
+    await api('/api/admin/fotos', {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'subirVideo', video, miniatura, titulo, categoria: 'casa' })
+    });
+    galeria.cargada = false;
+    await cargarFotos();
+    avisoFotos('Video subido. Está al final de la lista: revisá el epígrafe y la categoría.');
+  } catch (err) {
+    if (err.message !== 'sesion') avisoFotos(`Falló la subida: ${err.message}`);
+  }
+}
+
+async function subirVideoHero(e) {
+  const archivo = e.target.files[0];
+  e.target.value = '';
+  if (!archivo) return;
+  try {
+    avisoFotos('Preparando el video…');
+    const poster = await fotogramaDe(archivo, 1600, 0.8);
+    const video = await subirArchivoDeVideo(archivo);
+    await api('/api/admin/video', { method: 'POST', body: JSON.stringify({ accion: 'hero', video, poster }) });
+    galeria.cargada = false;
+    await cargarFotos();
+    avisoFotos('Listo: el video de portada ya está. Puede tardar hasta un minuto en verse en el sitio.');
+  } catch (err) {
+    if (err.message !== 'sesion') avisoFotos(`Falló la subida: ${err.message}`);
+  }
+}
+
+async function quitarVideoHero() {
+  if (!confirm('¿Sacar el video de la portada? Vuelve la foto de siempre.')) return;
+  try {
+    await api('/api/admin/video', { method: 'POST', body: JSON.stringify({ accion: 'quitarHero' }) });
+    galeria.cargada = false;
+    await cargarFotos();
+    avisoFotos('Video de portada sacado.');
+  } catch (err) {
+    if (err.message !== 'sesion') avisoFotos(`No se pudo sacar: ${err.message}`);
   }
 }
 

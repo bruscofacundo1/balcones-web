@@ -577,6 +577,7 @@
       return {
         contenido: datos.contenido || {},
         fotos: datos.fotos || [],
+        heroVideo: datos.heroVideo || null,
         // null = "no se pudo saber". Distinto de {alta:[],baja:[]}, que
         // significa "no hay ninguna noche ocupada".
         ocupadas: datos.ocupadas === undefined ? null : datos.ocupadas
@@ -713,6 +714,11 @@
     return (elegidas.length ? elegidas : lista).slice(0, 8);
   }
 
+  // Video de la portada: { url, poster } o null. Lo lee app.js al pintar el hero.
+  let heroVideoActual = null;
+  function aplicarHeroVideo(v) { heroVideoActual = v && v.url ? v : null; }
+  function heroVideo() { return heroVideoActual; }
+
   function aplicarFotos(lista) {
     if (typeof FOTOS === 'undefined') return;
     if (!fotosOriginales) fotosOriginales = FOTOS.slice();
@@ -839,6 +845,7 @@
       const fresco = await traer(ESPERA_MAX);
       aplicar(config, (borrador && borrador.contenido) || (fresco && fresco.contenido) || {});
       aplicarFotos((fresco && fresco.fotos) || []);
+      aplicarHeroVideo(fresco && fresco.heroVideo);
       aplicarOcupadas(fresco && fresco.ocupadas, config.reglas && config.reglas.colchonNoches);
       marcarPreview();
       // No se llama a `repintar`: todas las páginas esperan a `preparar()`
@@ -850,6 +857,7 @@
     if (cache) {
       aplicar(config, cache.contenido || cache);
       aplicarFotos(cache.fotos);
+      aplicarHeroVideo(cache.heroVideo);
       // La disponibilidad cacheada NO se aplica: es lo único de acá que
       // caduca de verdad (una noche libre ayer puede estar vendida hoy).
       // Se espera la del servidor y hasta entonces `hayDisponibilidadFresca()`
@@ -885,6 +893,7 @@
 
       aplicar(config, fresco.contenido);
       aplicarFotos(fresco.fotos);
+      aplicarHeroVideo(fresco.heroVideo);
       if (typeof repintar === 'function') repintar();
     };
 
@@ -917,7 +926,7 @@
     validar, validarValor, aplicar, aplicarFotos, COLECCIONES,
     revisarCobertura, revisarRango, semanaSanta, domingoDePascua,
     preparar, leerCache, guardarCache, CLAVE_CACHE, fotosDestacadas,
-    aplicarOcupadas, hayDisponibilidadFresca,
+    aplicarOcupadas, hayDisponibilidadFresca, heroVideo,
     enPreview, leerPreview, guardarPreview, borrarPreview, PREVIEW_CLAVE
   };
 

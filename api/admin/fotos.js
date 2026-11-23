@@ -18,7 +18,7 @@
 const { FOTOS } = require('../../js/config.js');
 const { exigirSesion } = require('../../lib/sesion.js');
 const {
-  hayBaseDatos, haySubidaDeFotos, listarFotos, importarDeConfig,
+  hayBaseDatos, haySubidaDeFotos, leerHeroVideo, esUrlDelBucket, listarFotos, importarDeConfig,
   agregarFoto, actualizarFoto, borrarFoto, reordenarFotos, vaciarFotos,
   subirArchivo, borrarArchivosPorUrl
 } = require('../../lib/fotos.js');
@@ -72,6 +72,28 @@ async function subir(req, res) {
   res.status(200).json({ ok: true, id, url: urlGrande });
 }
 
+/** El video ya está en el bucket (lo subió /api/admin/video); acá sólo se
+    registra, con su fotograma de portada que sí llega como data URL. */
+async function subirVideo(req, res) {
+  const b = req.body || {};
+  if (!esUrlDelBucket(b.video)) {
+    res.status(400).json({ error: 'El video no es válido.' });
+    return;
+  }
+  const portada = leerDataUrl(b.miniatura);
+  if (!portada) {
+    res.status(400).json({ error: 'No se pudo leer la portada del video.' });
+    return;
+  }
+  const urlPortada = await subirArchivo(portada.buffer, portada.tipo, '-video.jpg');
+  const categoria = CATEGORIAS.includes(b.categoria) ? b.categoria : 'casa';
+  const titulo = limpiar(b.titulo, 120) || 'Balcones del Arroyo';
+  const id = await agregarFoto({
+    url: b.video, thumb: urlPortada, video: b.video, categoria, titulo
+  });
+  res.status(200).json({ ok: true, id });
+}
+
 module.exports = async (req, res) => {
   if (!exigirSesion(req, res)) return;
 
@@ -87,6 +109,8 @@ module.exports = async (req, res) => {
         fotos,
         importada: fotos.length > 0,
         puedeSubir: haySubidaDeFotos(),
+        puedeSubirVideo: haySubidaDeFotos(),
+        heroVideo: await leerHeroVideo(),
         categorias: CATEGORIAS,
         enConfig: FOTOS.length
       });
@@ -106,6 +130,7 @@ module.exports = async (req, res) => {
     }
 
     if (accion === 'subir') { await subir(req, res); return; }
+    if (accion === 'subirVideo') { await subirVideo(req, res); return; }
 
     if (accion === 'editar') {
       const b = req.body || {};
@@ -117,7 +142,7 @@ module.exports = async (req, res) => {
     if (accion === 'borrar') {
       const fila = await borrarFoto(id);
       if (!fila) { res.status(404).json({ error: 'No existe esa foto.' }); return; }
-      await borrarArchivosPorUrl([fila.url, fila.thumb]);
+      await borrarArchivosPorUrl([fila.url, fila.thumb, fila.video]);
       res.status(200).json({ ok: true });
       return;
     }
@@ -132,7 +157,7 @@ module.exports = async (req, res) => {
 
     if (accion === 'restaurar') {
       const filas = await vaciarFotos();
-      await borrarArchivosPorUrl(filas.flatMap(f => [f.url, f.thumb]));
+      await borrarArchivosPorUrl(filas.flatMap(f => [f.url, f.thumb, f.video]));
       res.status(200).json({ ok: true, borradas: filas.length });
       return;
     }
